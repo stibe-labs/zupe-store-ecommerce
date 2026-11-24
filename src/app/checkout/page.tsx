@@ -1,110 +1,40 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { siteConfig } from "@/config/siteConfig";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
-  ShieldCheck,
-  CreditCard,
-  QrCode,
-  Building2,
-  Truck,
-  CheckCircle2,
-  Lock,
-  ArrowRight,
+  AlertCircle,
   ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
+  CreditCard,
   Loader2,
-  AlertCircle,
-  Sparkles,
-  MapPin,
   LocateFixed,
-  Phone,
+  Lock,
+  MapPin,
   Plus,
-  Minus,
-  X,
-  Trash2,
-  Star,
-  Tag,
-  Check,
   ShoppingBag,
-  Search,
-  Smartphone,
-  User,
-  Mail,
-  Copy,
-  MessageSquare,
-  Package,
+  Trash2,
+  Truck,
+  X,
 } from "lucide-react";
+import { siteConfig } from "@/config/siteConfig";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { AuthCard } from "@/components/AuthCard";
-import { launchFastrrCheckout } from "@/lib/fastrrClient";
-import { loadRazorpayScript, RAZORPAY_KEY_ID } from "@/lib/razorpay";
 import { deduplicateAddresses, normalizeAddressKey, cleanStreetAddress } from "@/lib/addressUtils";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { OrderSummaryCard } from "@/components/checkout/OrderSummaryCard";
+import { PaymentPopupModal, type PaymentPopupOrder } from "@/components/checkout/PaymentPopupModal";
+import { OrderConfirmationView } from "@/components/checkout/OrderConfirmationView";
 
-// Recommended Bump / Upsell Products (Official Catalog Variants & Authentic Pricing)
-const BUMP_PRODUCTS = [
-  {
-    id: "turkiye-jam-pack-4",
-    slug: "turkiye-jam-4-sachet-pack",
-    name: "4 Sachet Strips (Value Pack)",
-    price: 1399,
-    mrp: 2399,
-    poster_image: "/tj/turkiye-jam-4-strips.png",
-    category: "Vitality & Wellness",
-  },
-  {
-    id: "turkiye-jam-pack-6",
-    slug: "turkiye-jam-6-sachet-pack",
-    name: "6 Sachet Strips (Multi-Session Pack)",
-    price: 1899,
-    mrp: 3200,
-    poster_image: "/tj/turkiye-jam-6-strips.png",
-    category: "Vitality & Wellness",
-  },
-  {
-    id: "turkiye-jam-bottle-240g",
-    slug: "turkiye-jam-epimedium-macun",
-    name: "240g Glass Jar + 2 Sachets Free",
-    price: 2899,
-    mrp: 4500,
-    poster_image: "/tj/turkiye-jam-jar-2-strips.png",
-    category: "Vitality & Wellness",
-  },
-  {
-    id: "turkiye-jam-combo-box-14",
-    slug: "turkiye-jam-sachet-box-14",
-    name: "Sachet Box (12 + 2 Sachets)",
-    price: 2899,
-    mrp: 4800,
-    poster_image: "/tj/turkiye-jam-box-14-strips.png",
-    category: "Vitality & Wellness",
-  },
-  {
-    id: "turkiye-jam-pack-3",
-    slug: "turkiye-jam-3-sachet-pack",
-    name: "3 Sachet Strips (Standard Pack)",
-    price: 1099,
-    mrp: 1899,
-    poster_image: "/tj/turkiye-jam-3-strips.png",
-    category: "Vitality & Wellness",
-  },
-  {
-    id: "turkiye-jam-pack-2",
-    slug: "turkiye-jam-2-sachet-pack",
-    name: "2 Sachet Strips (Discovery Pack)",
-    price: 899,
-    mrp: 1499,
-    poster_image: "/tj/turkiye-jam-2-strips.png",
-    category: "Vitality & Wellness",
-  },
-];
+const EASE_OUT = [0.32, 0.72, 0, 1] as const;
 
 function cleanPhoneDigits(raw: string): string {
   if (!raw) return "";
@@ -126,6 +56,8 @@ function cleanPhoneDigits(raw: string): string {
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const prefersReducedMotion = useReducedMotion();
+
   const {
     cart,
     isInitialized,
@@ -142,142 +74,88 @@ function CheckoutContent() {
     hasOutOfStockItems,
     checkCartStock,
   } = useCart();
-  const configuredCodFee = typeof configCodFee === "number" ? configCodFee : 49;
-  const { user, isAuthenticated, isLoading: authLoading, openAuthModal, updateUserProfile } = useAuth();
+
+  // Keep UI COD advance aligned with backend minimum floor (₹2 on PyDart Pay)
+  const rawConfiguredCodFee = typeof configCodFee === "number" ? configCodFee : 49;
+  const effectiveCodAdvance = Math.max(2, rawConfiguredCodFee);
+
+  const { user, isLoading: authLoading, openAuthModal, updateUserProfile } = useAuth();
 
   // Contact & Delivery state
   const [phone, setPhone] = useState(() => cleanPhoneDigits(user?.phone || ""));
-  const [name, setName] = useState(() => (user?.name && !user.name.startsWith("Customer ") ? user.name : ""));
-  // Customer must type their real email address manually
+  const [name, setName] = useState(() =>
+    user?.name && !user.name.startsWith("Customer ") ? user.name : ""
+  );
   const [email, setEmail] = useState("");
-  const [marketingConsent, setMarketingConsent] = useState(true);
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [postalCode, setPostalCode] = useState("");
+
+  // Location & Pincode helpers
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeDetected, setPincodeDetected] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
-  const [locationSuccessMsg, setLocationSuccessMsg] = useState<string | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationNotice, setLocationNotice] = useState<{
+    type: "success" | "warning" | "error";
+    text: string;
+  } | null>(null);
   const [detectedPostOffices, setDetectedPostOffices] = useState<string[]>([]);
-  const [locationAccuracyNotice, setLocationAccuracyNotice] = useState<string | null>(null);
 
-  // Payment method state ("online" | "cod")
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
-
-  // Step progression state ("details" = contact & delivery, "payment" = choose how to pay)
-  const [checkoutStep, setCheckoutStep] = useState<"details" | "payment">("details");
-  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
-
-  // Shiprocket Customer Address Auto-Lookup State
+  // Shiprocket customer auto-lookup
   const [isLookingUpCustomer, setIsLookingUpCustomer] = useState(false);
   const [customerLookupBadge, setCustomerLookupBadge] = useState<string | null>(null);
   const lastLookedUpPhoneRef = useRef<string>("");
 
-  const lookupCustomerDetails = async (rawPhoneInput: string) => {
-    const clean = cleanPhoneDigits(rawPhoneInput);
-    if (clean.length !== 10) return;
-    if (lastLookedUpPhoneRef.current === clean) return;
-    lastLookedUpPhoneRef.current = clean;
-
-    setIsLookingUpCustomer(true);
-    try {
-      const res = await fetch(`/api/checkout/customer-lookup?phone=${encodeURIComponent(clean)}`);
-      const data = await res.json();
-      if (data.success && data.found && data.customer) {
-        const c = data.customer;
-        // Auto-fill Name if empty or generic
-        if (!name || name.startsWith("Customer ")) {
-          if (c.name) setName(c.name);
-        }
-        // Auto-fill Email if empty
-        if (!email && c.email) {
-          setEmail(c.email);
-        }
-        // Auto-fill Address if empty
-        const cleanCustomerStreet = cleanStreetAddress(c.address, c.city, c.state, c.pincode);
-        if (!address && cleanCustomerStreet) {
-          setAddress(cleanCustomerStreet);
-        }
-        if (!city && c.city) {
-          setCity(c.city);
-        }
-        if (!state && c.state) {
-          setState(c.state);
-        }
-        if (!postalCode && c.pincode) {
-          setPostalCode(c.pincode);
-          setPincodeDetected(true);
-        }
-
-        // Add to saved addresses card list so user can see their Shiprocket address card
-        if (cleanCustomerStreet) {
-          const autoAddr = {
-            id: `sr-${clean}`,
-            recipient_name: c.name || name || "Customer",
-            phone: clean,
-            street: cleanCustomerStreet,
-            city: c.city || city || "",
-            state: c.state || state || "",
-            postal_code: c.pincode || postalCode || "",
-            is_default: true,
-            source: data.source === "shiprocket_fastrr" ? "Shiprocket Fastrr" : "Shiprocket",
-          };
-          setSavedAddresses((prev) => {
-            const exists = prev.some((a) => a.street === autoAddr.street || a.id === autoAddr.id);
-            return exists ? prev : [autoAddr, ...prev];
-          });
-          setSelectedAddressId(autoAddr.id);
-        }
-
-        const sourceLabel = data.source === "shiprocket_fastrr" ? "Shiprocket Fastrr" : "Shiprocket";
-        setCustomerLookupBadge(`Auto-filled address for ${c.name || "you"} via ${sourceLabel}`);
-      }
-    } catch (e) {
-      console.warn("[Checkout] customer lookup error:", e);
-    } finally {
-      setIsLookingUpCustomer(false);
-    }
-  };
-
-  // Auto-trigger Shiprocket customer lookup when phone reaches 10 digits
-  useEffect(() => {
-    const clean = cleanPhoneDigits(phone);
-    if (clean.length === 10) {
-      const timer = setTimeout(() => {
-        lookupCustomerDetails(clean);
-      }, 350);
-      return () => clearTimeout(timer);
-    }
-  }, [phone]);
-
-  // Saved Addresses
+  // Saved addresses
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isUsingNewAddress, setIsUsingNewAddress] = useState(false);
 
-  // Submission state
+  // Payment method ("online" | "cod") & mobile summary drawer
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
+
+  // Promo code state
+  const [promoCode, setPromoCode] = useState("");
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+
+  // Submission, popup, verification & confirmation state
   const [loading, setLoading] = useState(false);
-  const [orderComplete, setOrderComplete] = useState(false);
+  const [showPaySpinner, setShowPaySpinner] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
-  const [confirmedOrderId, setConfirmedOrderId] = useState<string>("");
-  const [confirmedPaymentId, setConfirmedPaymentId] = useState<string>("");
-  const [confirmedTotal, setConfirmedTotal] = useState<number>(0);
-  const [confirmedAdvancePaid, setConfirmedAdvancePaid] = useState<number>(0);
-  const [confirmedBalanceDue, setConfirmedBalanceDue] = useState<number>(0);
-  const [confirmedItems, setConfirmedItems] = useState<any[]>([]);
-  const [copiedConfirmedId, setCopiedConfirmedId] = useState(false);
+  const [activePaymentPopup, setActivePaymentPopup] = useState<PaymentPopupOrder | null>(null);
+  const [showPaymentCancelledModal, setShowPaymentCancelledModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [recoveredBanner, setRecoveredBanner] = useState<string | null>(null);
-  const [showPaymentCancelledModal, setShowPaymentCancelledModal] = useState(false);
-  const [cancelledPaymentOrderId, setCancelledPaymentOrderId] = useState<string>("");
-  const [awaitingPaymentOrder, setAwaitingPaymentOrder] = useState<{ orderId: string; amount: number; payUrl: string } | null>(null);
-  const paymentWindowRef = useRef<Window | null>(null);
+
+  // Confirmed order receipt state
+  const [orderComplete, setOrderComplete] = useState(false);
+  const [confirmedOrderId, setConfirmedOrderId] = useState("");
+  const [confirmedPaymentId, setConfirmedPaymentId] = useState("");
+  const [confirmedTotal, setConfirmedTotal] = useState(0);
+  const [confirmedAdvancePaid, setConfirmedAdvancePaid] = useState(0);
+  const [confirmedBalanceDue, setConfirmedBalanceDue] = useState(0);
+  const [confirmedItems, setConfirmedItems] = useState<any[]>([]);
+
   const orderConfirmedInSessionRef = useRef(false);
   const verifyingOrderIdRef = useRef<string | null>(null);
 
-  // Ensure scroll is unlocked and modals/drawers are dismissed on checkout mount
+  // 300ms delayed spinner so instant responses never flicker
+  useEffect(() => {
+    if (!loading) {
+      setShowPaySpinner(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setShowPaySpinner(true), 300);
+    return () => window.clearTimeout(timer);
+  }, [loading]);
+
+  // Unlock scroll on mount
   useEffect(() => {
     if (typeof document !== "undefined") {
       document.body.style.overflow = "";
@@ -287,22 +165,54 @@ function CheckoutContent() {
     }
   }, []);
 
-  // Restore confirmed order from sessionStorage ONLY if user is not checking out a new cart
+  // Pricing & Financial Calculations
+  const isCod = paymentMethod === "cod";
+  const totalItemCount = cart.reduce((sum, it) => sum + it.quantity, 0);
+
+  const regularSubtotal = cart.reduce((sum, it) => {
+    const basePrice = it.original_price || it.price;
+    return sum + basePrice * it.quantity;
+  }, 0);
+
+  const bundleSavings = cart.reduce((sum, it) => {
+    if (it.bundle_tier && it.bundle_tier > 1) {
+      if (it.bundle_savings) return sum + it.bundle_savings;
+      const baseTotal = (it.original_price || it.price) * it.quantity;
+      const actualTotal = it.bundle_total || it.price * it.quantity;
+      return sum + Math.max(0, baseTotal - actualTotal);
+    }
+    return sum;
+  }, 0);
+
+  const effectiveSubtotal = Math.max(0, subtotal - promoDiscount);
+  const gstAmount = Math.round(effectiveSubtotal - effectiveSubtotal / 1.18);
+  const totalDiscount = savings + bundleSavings + promoDiscount;
+
+  const isFreeDelivery = effectiveSubtotal >= freeShippingThreshold;
+  const baseShippingFee = isFreeDelivery ? 0 : standardShippingFee;
+  const onlineGrandTotal = effectiveSubtotal + baseShippingFee;
+  const codGrandTotal = effectiveSubtotal + baseShippingFee + effectiveCodAdvance;
+  const grandTotal = isCod ? codGrandTotal : onlineGrandTotal;
+  const codDoorstepBalance = Math.max(0, effectiveSubtotal + baseShippingFee);
+  const payableNow = isCod ? effectiveCodAdvance : onlineGrandTotal;
+
+  // Restore confirmed order from sessionStorage (only when not starting a fresh cart)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // Once an order is confirmed during this checkout visit, NEVER let a late cart re-hydration
-    // or URL cleanup flip the confirmation screen back to the checkout form!
     if (orderConfirmedInSessionRef.current) return;
 
     try {
-      const hasPaymentCallback = searchParams.get("paid") === "true" || !!searchParams.get("order_id") || !!searchParams.get("cf_order_id") || !!searchParams.get("pydart_order_id");
+      const hasPaymentCallback =
+        searchParams.get("paid") === "true" ||
+        Boolean(searchParams.get("order_id")) ||
+        Boolean(searchParams.get("cf_order_id")) ||
+        Boolean(searchParams.get("pydart_order_id"));
 
       const storedConfirm = sessionStorage.getItem("zupe_confirmed_order");
       if (storedConfirm) {
         const parsed = JSON.parse(storedConfirm);
         const ageMs = Date.now() - (parsed?.confirmedAt || 0);
         if (parsed && parsed.orderId && ageMs < 4 * 3600 * 1000) {
-          // Protect a freshly confirmed order (last 30s) even if D1 cart sync resolves slightly late
           if (cart.length > 0 && !hasPaymentCallback && ageMs > 30_000) {
             sessionStorage.removeItem("zupe_confirmed_order");
             setOrderComplete(false);
@@ -319,7 +229,6 @@ function CheckoutContent() {
         }
       }
 
-      // If user has active items in cart and did NOT arrive via payment callback, they are placing a new order!
       if (cart.length > 0 && !hasPaymentCallback) {
         sessionStorage.removeItem("zupe_confirmed_order");
         setOrderComplete(false);
@@ -327,528 +236,316 @@ function CheckoutContent() {
     } catch {}
   }, [cart.length, searchParams]);
 
-  // PyDart Pay / Cashfree Order Verification Helper with Exponential Polling Retry
-  const verifyCashfreeOrder = async (orderIdToVerify: string, attempt: number = 1) => {
-    setVerifyingPayment(true);
-    setLoading(true);
-    setErrorMessage("");
+  const syncAddressAfterOrder = useCallback(async () => {
     try {
-      const rawOrderId = searchParams.get("order_id") || "";
-      const pydartOrderIdParam = searchParams.get("pydart_order_id") || "";
+      const targetEmail = (email.trim() || user?.email || "").toLowerCase().trim();
+      if (targetEmail && address.trim()) {
+        const cacheKey = `zp_user_addresses_${targetEmail}`;
+        const targetNormKey = normalizeAddressKey(address, postalCode);
+        const existingMatch = savedAddresses.find(
+          (a: any) =>
+            a.id === selectedAddressId ||
+            normalizeAddressKey(a.street, a.postal_code || a.postalCode) === targetNormKey
+        );
 
-      const res = await fetch("/api/cashfree/verify-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          orderId: orderIdToVerify,
-          pydartOrderId: pydartOrderIdParam || undefined,
-          cashfreeOrderId: rawOrderId && rawOrderId !== orderIdToVerify ? rawOrderId : undefined,
-        }),
-      });
-      const data = await res.json();
-      if (data.paid || data.success) {
-        syncAddressAfterOrder();
-        const finalOrderId = data.orderId || orderIdToVerify;
-        const total = data.totalAmount || data.amount || grandTotal;
-        const paymentLabel = data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (PyDart Pay)");
-        const advance = data.advancePaid || (data.isCodPartial ? configuredCodFee : 0);
-        const due = data.isCodPartial ? (data.balanceDue !== undefined && data.balanceDue < total ? data.balanceDue : Math.max(0, total - advance)) : 0;
-        const itemsToSave = (data.order?.items && Array.isArray(data.order.items) && data.order.items.length > 0)
-          ? data.order.items
-          : (cart && cart.length > 0 ? cart : []);
+        if (!existingMatch || isUsingNewAddress) {
+          const sanitizedStreet = cleanStreetAddress(address, city, state, postalCode);
+          const newAddr = {
+            id: existingMatch
+              ? existingMatch.id
+              : `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            user_email: targetEmail,
+            user_id: user?.id,
+            recipient_name: name.trim(),
+            phone: phone.trim(),
+            street: sanitizedStreet,
+            city: city.trim(),
+            state: state.trim(),
+            postal_code: postalCode.trim(),
+            country: "India",
+            is_default: savedAddresses.length === 0,
+            tag: "Home",
+            created_at: new Date().toISOString(),
+          };
 
-        orderConfirmedInSessionRef.current = true;
-        verifyingOrderIdRef.current = null;
-        setConfirmedTotal(total);
-        setConfirmedOrderId(finalOrderId);
-        setConfirmedPaymentId(paymentLabel);
-        setConfirmedAdvancePaid(advance);
-        setConfirmedBalanceDue(due);
-        setConfirmedItems(itemsToSave);
-        setOrderComplete(true);
-        clearCart();
+          const otherAddresses = savedAddresses.filter((a: any) => a.id !== newAddr.id);
+          const updated = deduplicateAddresses([newAddr, ...otherAddresses]);
+          setSavedAddresses(updated);
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(updated));
+          } catch {}
 
-        // Ensure both guest and logged-in user carts are purged & prevent stale pageshow re-verification
-        try {
-          localStorage.removeItem("zp_guest_cart");
-          localStorage.removeItem("zupe_last_order_id");
-          if (phone.trim()) localStorage.setItem("zupe_last_phone", phone.trim());
-          sessionStorage.setItem("zupe_confirmed_order", JSON.stringify({
-            orderId: finalOrderId,
-            total,
-            paymentId: paymentLabel,
-            advancePaid: advance,
-            balanceDue: due,
-            items: itemsToSave,
-            confirmedAt: Date.now(),
-          }));
-        } catch {}
-
-        if (user?.id) {
-          fetch("/api/cart", {
+          await fetch("/api/user/addresses", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.id, items: [] }),
-          }).catch(() => {});
+            body: JSON.stringify(newAddr),
+          });
+        }
+      }
+      if (user && phone.trim() && (!user.phone || user.phone !== phone.trim())) {
+        await updateUserProfile({ phone: phone.trim() });
+      }
+    } catch (e) {
+      console.warn("Failed to sync address:", e);
+    }
+  }, [
+    email,
+    user,
+    address,
+    postalCode,
+    savedAddresses,
+    selectedAddressId,
+    isUsingNewAddress,
+    city,
+    state,
+    name,
+    phone,
+    updateUserProfile,
+  ]);
+
+  // Authoritative server-side payment verification with retry
+  const verifyPaymentOrder = useCallback(
+    async (orderIdToVerify: string, attempt: number = 1) => {
+      setActivePaymentPopup(null);
+      setVerifyingPayment(true);
+      setLoading(true);
+      setErrorMessage("");
+
+      try {
+        const rawOrderId = searchParams.get("order_id") || "";
+        const pydartOrderIdParam = searchParams.get("pydart_order_id") || "";
+
+        const res = await fetch("/api/cashfree/verify-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: orderIdToVerify,
+            pydartOrderId: pydartOrderIdParam || undefined,
+            cashfreeOrderId:
+              rawOrderId && rawOrderId !== orderIdToVerify ? rawOrderId : undefined,
+          }),
+        });
+        const data = await res.json();
+
+        if (data.paid || data.success) {
+          syncAddressAfterOrder();
+          const finalOrderId = data.orderId || orderIdToVerify;
+          const total = data.totalAmount || data.amount || grandTotal;
+          const paymentLabel = data.isCodPartial
+            ? "Cash on Delivery"
+            : data.paymentId || "Online Payment (PyDart Pay)";
+          const advance = data.advancePaid || (data.isCodPartial ? effectiveCodAdvance : 0);
+          const due = data.isCodPartial
+            ? data.balanceDue !== undefined && data.balanceDue < total
+              ? data.balanceDue
+              : Math.max(0, total - advance)
+            : 0;
+          const itemsToSave =
+            Array.isArray(data.order?.items) && data.order.items.length > 0
+              ? data.order.items
+              : cart.length > 0
+              ? cart
+              : [];
+
+          orderConfirmedInSessionRef.current = true;
+          verifyingOrderIdRef.current = null;
+          setConfirmedTotal(total);
+          setConfirmedOrderId(finalOrderId);
+          setConfirmedPaymentId(paymentLabel);
+          setConfirmedAdvancePaid(advance);
+          setConfirmedBalanceDue(due);
+          setConfirmedItems(itemsToSave);
+          setOrderComplete(true);
+          clearCart();
+
+          try {
+            localStorage.removeItem("zp_guest_cart");
+            localStorage.removeItem("zupe_last_order_id");
+            if (phone.trim()) localStorage.setItem("zupe_last_phone", phone.trim());
+            sessionStorage.setItem(
+              "zupe_confirmed_order",
+              JSON.stringify({
+                orderId: finalOrderId,
+                total,
+                paymentId: paymentLabel,
+                advancePaid: advance,
+                balanceDue: due,
+                items: itemsToSave,
+                confirmedAt: Date.now(),
+              })
+            );
+          } catch {}
+
+          if (user?.id) {
+            fetch("/api/cart", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: user.id, items: [] }),
+            }).catch(() => {});
+          }
+
+          try {
+            if (typeof window !== "undefined") {
+              const cleanUrl = new URL(window.location.href);
+              ["cf_order_id", "pydart_order_id", "order_id", "paid", "status", "cancelled"].forEach(
+                (k) => cleanUrl.searchParams.delete(k)
+              );
+              window.history.replaceState(
+                {},
+                "",
+                cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : "")
+              );
+            }
+          } catch {}
+
+          setVerifyingPayment(false);
+          setLoading(false);
+          return;
         }
 
-        // Clean query parameters from URL so refreshes don't re-trigger verification
-        try {
-          if (typeof window !== "undefined") {
-            const cleanUrl = new URL(window.location.href);
-            cleanUrl.searchParams.delete("cf_order_id");
-            cleanUrl.searchParams.delete("pydart_order_id");
-            cleanUrl.searchParams.delete("order_id");
-            cleanUrl.searchParams.delete("paid");
-            window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
-          }
-        } catch {}
+        if (attempt < 3) {
+          window.setTimeout(() => verifyPaymentOrder(orderIdToVerify, attempt + 1), 1500);
+          return;
+        }
 
-        setVerifyingPayment(false);
-        setLoading(false);
-        return;
-      }
+        setShowPaymentCancelledModal(true);
+        setErrorMessage(
+          data.message || "Payment was not completed. Retry online or choose Cash on Delivery."
+        );
 
-      // If pending and we have remaining retries (e.g. gateway status still syncing), retry with 1.5s delay
-      if (attempt < 3) {
-        setTimeout(() => {
-          verifyCashfreeOrder(orderIdToVerify, attempt + 1);
-        }, 1500);
-        return;
-      }
-
-      setCancelledPaymentOrderId(orderIdToVerify);
-      setShowPaymentCancelledModal(true);
-      setErrorMessage(data.message || "Payment is pending or was not completed. Please try again or select Cash on Delivery.");
-
-      // Notify server that payment was abandoned/incomplete so order is marked cancelled and stock restored
-      if (orderIdToVerify) {
         fetch("/api/cashfree/cancel-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: orderIdToVerify, reason: "Payment incomplete or abandoned at gateway" }),
+          body: JSON.stringify({
+            orderId: orderIdToVerify,
+            reason: "Payment incomplete or abandoned at gateway",
+          }),
         }).catch(() => {});
-      }
 
-      // Clean query parameters from URL so refreshes don't re-trigger verification
-      try {
-        if (typeof window !== "undefined") {
-          const cleanUrl = new URL(window.location.href);
-          cleanUrl.searchParams.delete("cf_order_id");
-          cleanUrl.searchParams.delete("order_id");
-          cleanUrl.searchParams.delete("paid");
-          cleanUrl.searchParams.delete("status");
-          cleanUrl.searchParams.delete("cancelled");
-          window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
+        try {
+          if (typeof window !== "undefined") {
+            const cleanUrl = new URL(window.location.href);
+            ["cf_order_id", "pydart_order_id", "order_id", "paid", "status", "cancelled"].forEach(
+              (k) => cleanUrl.searchParams.delete(k)
+            );
+            window.history.replaceState(
+              {},
+              "",
+              cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : "")
+            );
+          }
+        } catch {}
+      } catch {
+        if (attempt < 3) {
+          window.setTimeout(() => verifyPaymentOrder(orderIdToVerify, attempt + 1), 1500);
+          return;
         }
-      } catch {}
-    } catch (e: any) {
-      console.error("Payment verification error:", e);
-      if (attempt < 3) {
-        setTimeout(() => {
-          verifyCashfreeOrder(orderIdToVerify, attempt + 1);
-        }, 1500);
-        return;
+        setShowPaymentCancelledModal(true);
+        setErrorMessage(
+          "Could not verify payment status right now. If money was debited, your order confirms automatically."
+        );
+      } finally {
+        if (attempt >= 3) {
+          verifyingOrderIdRef.current = null;
+          setVerifyingPayment(false);
+          setLoading(false);
+        }
       }
-      setCancelledPaymentOrderId(orderIdToVerify);
-      setShowPaymentCancelledModal(true);
-      setErrorMessage("Could not verify payment status. If money was deducted, your order will be confirmed automatically.");
-    } finally {
-      if (attempt >= 3) {
-        verifyingOrderIdRef.current = null;
-        setVerifyingPayment(false);
-        setLoading(false);
-      }
-    }
-  };
+    },
+    [searchParams, syncAddressAfterOrder, grandTotal, effectiveCodAdvance, cart, clearCart, phone, user?.id]
+  );
 
-  // Switch to COD from Payment Incomplete dialog
-  const handleSwitchToCodFromCancelledModal = () => {
-    setPaymentMethod("cod");
-    setShowPaymentCancelledModal(false);
-    setTimeout(() => {
-      const codCard = document.getElementById("payment-cod-card");
-      if (codCard) {
-        codCard.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 150);
-  };
-
-  // Retry online payment
-  const handleRetryOnlinePayment = () => {
-    setShowPaymentCancelledModal(false);
-    setPaymentMethod("online");
-    setTimeout(() => {
-      const submitBtn = document.getElementById("checkout-submit-btn");
-      if (submitBtn) {
-        submitBtn.click();
-      }
-    }, 150);
-  };
-
-  // User cancelled or exited payment window
-  const handleCancelAwaitingPayment = () => {
-    if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
-      try {
-        paymentWindowRef.current.close();
-      } catch {}
-      paymentWindowRef.current = null;
-    }
-    const cancelledId = awaitingPaymentOrder?.orderId || "";
-    setAwaitingPaymentOrder(null);
-    setCancelledPaymentOrderId(cancelledId);
-    setShowPaymentCancelledModal(true);
-    if (cancelledId) {
-      fetch("/api/cashfree/cancel-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: cancelledId, reason: "Customer cancelled payment from awaiting modal" }),
-      }).catch(() => {});
-    }
-  };
-
-  // User switches to COD directly from the awaiting payment dialog
-  const handleSwitchToCodFromAwaiting = () => {
-    if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
-      try {
-        paymentWindowRef.current.close();
-      } catch {}
-      paymentWindowRef.current = null;
-    }
-    const cancelledId = awaitingPaymentOrder?.orderId || "";
-    setAwaitingPaymentOrder(null);
-    setPaymentMethod("cod");
-    if (cancelledId) {
-      fetch("/api/cashfree/cancel-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: cancelledId, reason: "Customer switched to COD from awaiting modal" }),
-      }).catch(() => {});
-    }
-    setTimeout(() => {
-      const codCard = document.getElementById("payment-cod-card");
-      if (codCard) {
-        codCard.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 150);
-  };
-
-  // Immediate check if payment was completed
-  const handleVerifyAwaitingPaymentNow = () => {
-    if (awaitingPaymentOrder?.orderId) {
-      verifyCashfreeOrder(awaitingPaymentOrder.orderId);
-    }
-  };
-
-  // Detect returning to checkout tab via browser back button (bfcache)
+  // Detect browser back-button return (bfcache) from full-screen payment fallback
   useEffect(() => {
-    const handlePageShow = (e: PageTransitionEvent) => {
-      const lastOrder = typeof window !== "undefined" ? localStorage.getItem("zupe_last_order_id") : null;
-      if (lastOrder && !orderComplete && !verifyingPayment) {
-        verifyCashfreeOrder(lastOrder);
+    const handlePageShow = () => {
+      const lastOrder =
+        typeof window !== "undefined" ? localStorage.getItem("zupe_last_order_id") : null;
+      if (
+        lastOrder &&
+        !orderComplete &&
+        !verifyingPayment &&
+        !activePaymentPopup &&
+        !orderConfirmedInSessionRef.current
+      ) {
+        verifyPaymentOrder(lastOrder);
       }
     };
     if (typeof window !== "undefined") {
       window.addEventListener("pageshow", handlePageShow);
       return () => window.removeEventListener("pageshow", handlePageShow);
     }
-  }, [orderComplete, verifyingPayment]);
+  }, [orderComplete, verifyingPayment, activePaymentPopup, verifyPaymentOrder]);
 
-  // Polling and popup window monitoring while customer is completing online payment
+  // Handle full-page gateway redirect callback (?cf_order_id=... / ?pydart_order_id=...)
   useEffect(() => {
-    if (!awaitingPaymentOrder) return;
-    const targetOrderId = awaitingPaymentOrder.orderId;
-
-    // Check if popup was closed or if payment finished
-    const checkInterval = setInterval(async () => {
-      // 1. If customer explicitly closed the payment popup window
-      if (paymentWindowRef.current && paymentWindowRef.current.closed) {
-        clearInterval(checkInterval);
-        paymentWindowRef.current = null;
-        try {
-          const res = await fetch(`/api/cashfree/verify-payment?orderId=${encodeURIComponent(targetOrderId)}`);
-          const data = await res.json();
-          if (data.success && (data.paid || data.status === "PAID" || data.status === "SUCCESS")) {
-            setAwaitingPaymentOrder(null);
-            verifyCashfreeOrder(targetOrderId);
-          } else {
-            // Customer exited payment window without paying!
-            setAwaitingPaymentOrder(null);
-            setCancelledPaymentOrderId(targetOrderId);
-            setShowPaymentCancelledModal(true);
-            setErrorMessage("Payment was not completed. You can retry online payment or switch to Cash on Delivery.");
-            fetch("/api/cashfree/cancel-order", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ orderId: targetOrderId, reason: "Customer closed payment window without paying" }),
-            }).catch(() => {});
-          }
-        } catch {
-          setAwaitingPaymentOrder(null);
-          setCancelledPaymentOrderId(targetOrderId);
-          setShowPaymentCancelledModal(true);
-        }
-        return;
-      }
-
-      // 2. Poll server to detect when payment rails confirm the payment
-      try {
-        const res = await fetch(`/api/cashfree/verify-payment?orderId=${encodeURIComponent(targetOrderId)}`);
-        const data = await res.json();
-        if (data.success && (data.paid || data.status === "PAID" || data.status === "SUCCESS")) {
-          clearInterval(checkInterval);
-          if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
-            try {
-              paymentWindowRef.current.close();
-            } catch {}
-            paymentWindowRef.current = null;
-          }
-          setAwaitingPaymentOrder(null);
-          verifyCashfreeOrder(targetOrderId);
-        }
-      } catch {}
-    }, 2000);
-
-    // On mobile / desktop window tab switch back to Turkiye Jam
-    const handleFocus = async () => {
-      try {
-        const res = await fetch(`/api/cashfree/verify-payment?orderId=${encodeURIComponent(targetOrderId)}`);
-        const data = await res.json();
-        if (data.success && (data.paid || data.status === "PAID" || data.status === "SUCCESS")) {
-          clearInterval(checkInterval);
-          if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
-            try {
-              paymentWindowRef.current.close();
-            } catch {}
-            paymentWindowRef.current = null;
-          }
-          setAwaitingPaymentOrder(null);
-          verifyCashfreeOrder(targetOrderId);
-        }
-      } catch {}
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => {
-      clearInterval(checkInterval);
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [awaitingPaymentOrder]);
-
-  // Check if returning from Cashfree / Settler redirect with ?cf_order_id= or ?order_id= or ?paid=true
-  useEffect(() => {
-    let targetOrder = searchParams.get("cf_order_id") || searchParams.get("order_id") || searchParams.get("invoice_id") || searchParams.get("invoiceId");
+    let targetOrder =
+      searchParams.get("cf_order_id") ||
+      searchParams.get("order_id") ||
+      searchParams.get("invoice_id") ||
+      searchParams.get("invoiceId");
     const isPaid = searchParams.get("paid") === "true";
     const statusParam = searchParams.get("status")?.toLowerCase();
-    const isExplicitlyCancelled = statusParam === "cancelled" || statusParam === "failed" || searchParams.get("cancelled") === "true";
+    const isCancelled =
+      statusParam === "cancelled" ||
+      statusParam === "failed" ||
+      searchParams.get("cancelled") === "true";
 
-    // If explicitly cancelled by gateway redirect
-    if (isExplicitlyCancelled) {
-      const cancelledId = targetOrder || "";
-      setCancelledPaymentOrderId(cancelledId);
+    if (isCancelled) {
       setShowPaymentCancelledModal(true);
-
-      if (cancelledId) {
+      if (targetOrder) {
         fetch("/api/cashfree/cancel-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: cancelledId, reason: "Gateway returned cancelled status" }),
+          body: JSON.stringify({ orderId: targetOrder, reason: "Gateway returned cancelled status" }),
         }).catch(() => {});
       }
       try {
-        if (typeof window !== "undefined") {
-          const cleanUrl = new URL(window.location.href);
-          cleanUrl.searchParams.delete("cf_order_id");
-          cleanUrl.searchParams.delete("order_id");
-          cleanUrl.searchParams.delete("paid");
-          cleanUrl.searchParams.delete("status");
-          cleanUrl.searchParams.delete("cancelled");
-          window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
-        }
+        const cleanUrl = new URL(window.location.href);
+        ["cf_order_id", "pydart_order_id", "order_id", "paid", "status", "cancelled"].forEach((k) =>
+          cleanUrl.searchParams.delete(k)
+        );
+        window.history.replaceState(
+          {},
+          "",
+          cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : "")
+        );
       } catch {}
       return;
     }
 
-    // If redirected with ?paid=true but order id in query was omitted, fallback to localStorage last order
     if (!targetOrder && isPaid && typeof window !== "undefined") {
       targetOrder = localStorage.getItem("zupe_last_order_id");
     }
 
-    if (targetOrder && !orderComplete && !verifyingPayment && !orderConfirmedInSessionRef.current && verifyingOrderIdRef.current !== targetOrder) {
+    if (
+      targetOrder &&
+      !orderComplete &&
+      !verifyingPayment &&
+      !orderConfirmedInSessionRef.current &&
+      verifyingOrderIdRef.current !== targetOrder
+    ) {
       verifyingOrderIdRef.current = targetOrder;
-      verifyCashfreeOrder(targetOrder);
+      verifyPaymentOrder(targetOrder);
     }
-  }, [searchParams]);
+  }, [searchParams, orderComplete, verifyingPayment, verifyPaymentOrder]);
 
-  // Urgency Timer (Digital Countdown: Hours, Mins, Secs)
-  const [timeLeft, setTimeLeft] = useState(6 * 3600 + 7 * 60 + 24); // 06:07:24
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 6 * 3600 + 7 * 60 + 24));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTimer = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  // Promo Code State
-  const [promoCode, setPromoCode] = useState("");
-  const [promoDiscount, setPromoDiscount] = useState(0);
-  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
-  const [promoError, setPromoError] = useState<string | null>(null);
-  const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
-  const [promoLoading, setPromoLoading] = useState(false);
-
-  const handleApplyPromo = async () => {
-    setPromoError(null);
-    setPromoSuccess(null);
-    const code = promoCode.trim().toUpperCase();
-    if (!code) {
-      setPromoError("Please enter a valid promo code");
-      return;
-    }
-
-    setPromoLoading(true);
-
-    try {
-      const res = await fetch("/api/promo-codes/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code,
-          subtotal,
-          items: cart.map((c) => ({
-            id: c.id,
-            name: c.name,
-            price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
-              ? Math.round(c.bundle_total / c.quantity)
-              : c.price,
-            quantity: c.quantity,
-          })),
-        }),
-      });
-
-      const data = await res.json();
-      if (data.valid && data.discount > 0) {
-        setPromoDiscount(data.discount);
-        setAppliedPromo(data.code || code);
-        setPromoSuccess(data.message || `🎉 Code ${data.code || code} applied! ₹${data.discount} discount added.`);
-        setPromoError(null);
-      } else {
-        setPromoDiscount(0);
-        setAppliedPromo(null);
-        setPromoError(data.error || "Invalid promo code.");
-        setPromoSuccess(null);
-      }
-    } catch {
-      // Fallback
-      if (code === "ZUPE10" || code === "WELCOME10" || code === "OFFER10") {
-        const disc = Math.min(100, Math.round(subtotal * 0.1));
-        setPromoDiscount(disc);
-        setAppliedPromo(code);
-        setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
-      } else if (code === "SAVE50") {
-        const disc = subtotal >= 399 ? 50 : 25;
-        setPromoDiscount(disc);
-        setAppliedPromo(code);
-        setPromoSuccess(`🎉 Code ${code} applied! ₹${disc} discount added.`);
-      } else {
-        setPromoError("Unable to validate promo code. Please check your connection and try again.");
-      }
-    } finally {
-      setPromoLoading(false);
-    }
-  };
-
-  const handleRemovePromo = () => {
-    setPromoDiscount(0);
-    setAppliedPromo(null);
-    setPromoCode("");
-    setPromoSuccess(null);
-    setPromoError(null);
-  };
-
-  // COD to Prepaid Switch Mode disabled (COD Only store)
-  const isCodSwitchMode = false;
-
-  const [switchQuery, setSwitchQuery] = useState(() => {
-    return (
-      searchParams.get("orderId") ||
-      searchParams.get("order_id") ||
-      searchParams.get("query") ||
-      searchParams.get("switch_order") ||
-      ""
-    );
-  });
-  const [switchOrder, setSwitchOrder] = useState<any | null>(null);
-  const [switchLoading, setSwitchLoading] = useState(false);
-  const [switchPaying, setSwitchPaying] = useState(false);
-  const [switchError, setSwitchError] = useState("");
-  const [switchSuccess, setSwitchSuccess] = useState(false);
-  const [switchSuccessOrderId, setSwitchSuccessOrderId] = useState("");
-  const [switchSuccessAmount, setSwitchSuccessAmount] = useState(0);
-
-  const lookupCodOrder = async (term: string) => {
-    const trimmed = term.trim();
-    if (!trimmed) {
-      setSwitchError("Please enter your Order ID or phone number.");
-      return;
-    }
-    setSwitchLoading(true);
-    setSwitchError("");
-    try {
-      const res = await fetch(`/api/orders/switch-to-prepaid?query=${encodeURIComponent(trimmed)}`);
-      const data = await res.json();
-      if (data.success && data.order) {
-        setSwitchOrder(data.order);
-      } else {
-        setSwitchError(data.error || "No pending Cash on Delivery order found. Please check your Order ID.");
-      }
-    } catch (err: any) {
-      setSwitchError("Network error. Unable to fetch order details.");
-    } finally {
-      setSwitchLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!isCodSwitchMode) return;
-    let initialTerm = switchQuery;
-    if (!initialTerm && typeof window !== "undefined") {
-      initialTerm =
-        localStorage.getItem("zupe_last_cod_order_id") ||
-        localStorage.getItem("zupe_last_cod_phone") ||
-        "";
-      if (initialTerm) {
-        setSwitchQuery(initialTerm);
-      }
-    }
-    if (initialTerm) {
-      lookupCodOrder(initialTerm);
-    }
-  }, [isCodSwitchMode]);
-
-  // 1-Click Cart Restoration via WhatsApp Recovery Link (?recover=token or ?token=token)
+  // 1-Click Cart Restoration via Abandoned Recovery Link (?recover=... or ?token=...)
   useEffect(() => {
     const recoverToken =
       searchParams.get("recover") ||
       searchParams.get("recovery") ||
       searchParams.get("rec_token") ||
       searchParams.get("token");
-
     if (!recoverToken) return;
 
-    let isMounted = true;
-    async function restoreCheckoutSession() {
+    let mounted = true;
+    (async () => {
       try {
-        const res = await fetch(`/api/checkout/abandoned?token=${encodeURIComponent(recoverToken as string)}`);
+        const res = await fetch(
+          `/api/checkout/abandoned?token=${encodeURIComponent(recoverToken)}`
+        );
         const data = await res.json();
-        if (isMounted && data.success && data.checkout) {
+        if (mounted && data.success && data.checkout) {
           const chk = data.checkout;
           if (chk.customer_name) setName(chk.customer_name);
           if (chk.customer_phone) setPhone(cleanPhoneDigits(chk.customer_phone));
@@ -864,7 +561,6 @@ function CheckoutContent() {
           if (chk.city) setCity(chk.city);
           if (chk.postal_code) setPostalCode(chk.postal_code);
 
-          // Restore items into cart
           if (Array.isArray(chk.items) && chk.items.length > 0) {
             chk.items.forEach((it: any) => {
               addToCart(
@@ -873,8 +569,8 @@ function CheckoutContent() {
                   name: it.name || it.product_name,
                   price: Number(it.price || it.unit_price || 0),
                   original_price: Number(it.original_price || it.mrp || 0),
-                  poster_image: it.poster_image || it.image || "/products/ripple-lamp.jpg",
-                  category: it.category || "General",
+                  poster_image: it.poster_image || it.image || "/tj/turkiye-jam-3-strips.png",
+                  category: it.category || "Vitality & Wellness",
                 },
                 Number(it.quantity || 1),
                 { overrideQuantity: true }
@@ -883,120 +579,18 @@ function CheckoutContent() {
           }
 
           setRecoveredBanner(
-            `🎉 Welcome back${chk.customer_name ? `, ${chk.customer_name.split(" ")[0]}` : ""}! Your cart and shipping details have been restored.`
+            `Welcome back${chk.customer_name ? `, ${chk.customer_name.split(" ")[0]}` : ""}. Your bag and delivery details have been restored.`
           );
         }
-      } catch (err) {
-        console.warn("Failed to restore abandoned checkout:", err);
-      }
-    }
+      } catch {}
+    })();
 
-    restoreCheckoutSession();
     return () => {
-      isMounted = false;
+      mounted = false;
     };
   }, [searchParams, addToCart]);
 
-  const handlePayForCodOrder = async () => {
-    if (!switchOrder) return;
-    setSwitchPaying(true);
-    setSwitchError("");
-
-    try {
-      const isScriptLoaded = await loadRazorpayScript();
-      if (!isScriptLoaded) {
-        setSwitchPaying(false);
-        setSwitchError("Could not load secure payment gateway. Please check your internet connection.");
-        return;
-      }
-
-      const res = await fetch("/api/orders/switch-to-prepaid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: switchOrder.id }),
-      });
-      const data = await res.json();
-
-      if (!data.success || !data.razorpay_order_id) {
-        setSwitchPaying(false);
-        setSwitchError(data.error || "Failed to initialize payment. Please try again.");
-        return;
-      }
-
-      const payableAmount = data.amount;
-
-      const options = {
-        key: data.key_id || RAZORPAY_KEY_ID,
-        amount: Math.round(payableAmount * 100),
-        currency: "INR",
-        name: "Turkiye Jam",
-        description: `Order ${switchOrder.display_id || switchOrder.id} - Switch to Prepaid (Save ₹${configuredCodFee})`,
-        image: "/turkiye-jam-logo.png",
-        order_id: data.razorpay_order_id,
-        prefill: {
-          name: switchOrder.customer_name || "",
-          email: switchOrder.customer_email || "",
-          contact: (switchOrder.customer_phone || "").replace(/\D/g, "").slice(-10),
-          method: "upi",
-        },
-        theme: {
-          color: "#cb0805",
-          backdrop_color: "rgba(17, 17, 17, 0.7)",
-        },
-        modal: {
-          ondismiss: function () {
-            setSwitchPaying(false);
-          },
-        },
-        handler: async function (response: any) {
-          try {
-            setSwitchPaying(true);
-            const verifyRes = await fetch("/api/razorpay/verify-payment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                order_payload: {
-                  is_cod_switch: true,
-                  existing_order_id: switchOrder.id,
-                  discounted_amount: payableAmount,
-                  customer_name: switchOrder.customer_name,
-                  customer_phone: switchOrder.customer_phone,
-                  items: switchOrder.items,
-                },
-              }),
-            });
-            const verifyData = await verifyRes.json();
-            setSwitchPaying(false);
-            if (verifyData.success) {
-              setSwitchSuccess(true);
-              setSwitchSuccessOrderId(switchOrder.id);
-              setSwitchSuccessAmount(payableAmount);
-            } else {
-              setSwitchError(verifyData.error || "Payment verification failed. Please contact support.");
-            }
-          } catch (vErr: any) {
-            setSwitchPaying(false);
-            setSwitchError("Network error while verifying payment.");
-          }
-        },
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on("payment.failed", function (failResp: any) {
-        setSwitchPaying(false);
-        setSwitchError(failResp?.error?.description || "Payment failed. Please try again.");
-      });
-      rzp.open();
-    } catch (err: any) {
-      setSwitchPaying(false);
-      setSwitchError(err.message || "An unexpected error occurred.");
-    }
-  };
-
-  // Pre-load product from URL if cart is empty (e.g. ?productId=... or ?slug=...)
+  // Direct URL product pre-load (?productId= / ?slug=)
   useEffect(() => {
     const paramId = searchParams.get("productId") || searchParams.get("id");
     const paramSlug = searchParams.get("funnel") || searchParams.get("slug");
@@ -1008,20 +602,20 @@ function CheckoutContent() {
         addToCart(match, 1, { overrideQuantity: true, replaceCart: true });
       }
     }
-    // Clean params from URL so browser back navigation and refreshes never duplicate
     try {
       if (typeof window !== "undefined" && (paramId || paramSlug)) {
         const cleanUrl = new URL(window.location.href);
-        cleanUrl.searchParams.delete("productId");
-        cleanUrl.searchParams.delete("id");
-        cleanUrl.searchParams.delete("funnel");
-        cleanUrl.searchParams.delete("slug");
-        window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
+        ["productId", "id", "funnel", "slug"].forEach((k) => cleanUrl.searchParams.delete(k));
+        window.history.replaceState(
+          {},
+          "",
+          cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : "")
+        );
       }
     } catch {}
   }, [searchParams, cart.length, addToCart]);
 
-  // Populate user data if logged in (phone and real name only - no default email)
+  // Hydrate user profile fields
   useEffect(() => {
     if (user) {
       if (user.name && (!name || name.startsWith("Customer "))) {
@@ -1033,7 +627,7 @@ function CheckoutContent() {
     }
   }, [user]);
 
-  // Hydrate saved addresses for logged in user (by email, phone, or userId)
+  // Hydrate saved addresses for logged-in user
   useEffect(() => {
     if (!user) return;
     const identifier = (user.email || user.phone || user.id || "").toLowerCase().trim();
@@ -1054,14 +648,21 @@ function CheckoutContent() {
               setName(defaultAddr.recipient_name);
             }
             if (defaultAddr.phone) setPhone(cleanPhoneDigits(defaultAddr.phone));
-            setAddress(cleanStreetAddress(defaultAddr.street, defaultAddr.city, defaultAddr.state, defaultAddr.postal_code));
+            setAddress(
+              cleanStreetAddress(
+                defaultAddr.street,
+                defaultAddr.city,
+                defaultAddr.state,
+                defaultAddr.postal_code
+              )
+            );
             setCity(defaultAddr.city || "");
             setState(defaultAddr.state || "");
             setPostalCode(defaultAddr.postal_code || "");
           }
         }
       }
-    } catch (e) {}
+    } catch {}
 
     const queryParams = new URLSearchParams();
     if (user.email) queryParams.set("email", user.email);
@@ -1076,7 +677,7 @@ function CheckoutContent() {
           setSavedAddresses(deduplicated);
           try {
             localStorage.setItem(cacheKey, JSON.stringify(deduplicated));
-          } catch (e) {}
+          } catch {}
 
           const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
           if (defaultAddr && (!address || !selectedAddressId)) {
@@ -1085,318 +686,142 @@ function CheckoutContent() {
               setName(defaultAddr.recipient_name);
             }
             if (defaultAddr.phone) setPhone(cleanPhoneDigits(defaultAddr.phone));
-            setAddress(cleanStreetAddress(defaultAddr.street, defaultAddr.city, defaultAddr.state, defaultAddr.postal_code));
+            setAddress(
+              cleanStreetAddress(
+                defaultAddr.street,
+                defaultAddr.city,
+                defaultAddr.state,
+                defaultAddr.postal_code
+              )
+            );
             setCity(defaultAddr.city || "");
             setState(defaultAddr.state || "");
             setPostalCode(defaultAddr.postal_code || "");
           }
         }
       })
-      .catch((err) => console.warn("Failed to load saved addresses in checkout:", err));
+      .catch(() => {});
   }, [user?.email, user?.id]);
 
-  // Auto-detect city & state when pincode is 6 digits
+  // Shiprocket customer address lookup when phone reaches 10 digits
+  const lookupCustomerDetails = useCallback(
+    async (rawPhoneInput: string) => {
+      const clean = cleanPhoneDigits(rawPhoneInput);
+      if (clean.length !== 10 || lastLookedUpPhoneRef.current === clean) return;
+      lastLookedUpPhoneRef.current = clean;
+
+      setIsLookingUpCustomer(true);
+      try {
+        const res = await fetch(`/api/checkout/customer-lookup?phone=${encodeURIComponent(clean)}`);
+        const data = await res.json();
+        if (data.success && data.found && data.customer) {
+          const c = data.customer;
+          if ((!name || name.startsWith("Customer ")) && c.name) setName(c.name);
+          if (!email && c.email) setEmail(c.email);
+          const cleanStreet = cleanStreetAddress(c.address, c.city, c.state, c.pincode);
+          if (!address && cleanStreet) setAddress(cleanStreet);
+          if (!city && c.city) setCity(c.city);
+          if (!state && c.state) setState(c.state);
+          if (!postalCode && c.pincode) {
+            setPostalCode(c.pincode);
+            setPincodeDetected(true);
+          }
+
+          if (cleanStreet) {
+            const autoAddr = {
+              id: `sr-${clean}`,
+              recipient_name: c.name || name || "Customer",
+              phone: clean,
+              street: cleanStreet,
+              city: c.city || city || "",
+              state: c.state || state || "",
+              postal_code: c.pincode || postalCode || "",
+              is_default: true,
+            };
+            setSavedAddresses((prev) => {
+              const exists = prev.some((a) => a.street === autoAddr.street || a.id === autoAddr.id);
+              return exists ? prev : [autoAddr, ...prev];
+            });
+            setSelectedAddressId(autoAddr.id);
+          }
+
+          setCustomerLookupBadge(`Saved address loaded for ${c.name || "your number"}`);
+        }
+      } catch {} finally {
+        setIsLookingUpCustomer(false);
+      }
+    },
+    [name, email, address, city, state, postalCode]
+  );
+
+  useEffect(() => {
+    const clean = cleanPhoneDigits(phone);
+    if (clean.length === 10) {
+      const timer = window.setTimeout(() => lookupCustomerDetails(clean), 350);
+      return () => window.clearTimeout(timer);
+    }
+  }, [phone, lookupCustomerDetails]);
+
+  // 6-digit Indian Pincode auto-fill
   useEffect(() => {
     const cleanPin = postalCode.replace(/\D/g, "");
-    if (cleanPin.length === 6) {
-      setPincodeLoading(true);
-      fetch(`https://api.postalpincode.in/pincode/${cleanPin}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setPincodeLoading(false);
-          if (Array.isArray(data) && data[0]?.Status === "Success" && data[0]?.PostOffice?.length > 0) {
-            const po = data[0].PostOffice[0];
-            if (po.District) setCity(po.District);
-            if (po.State) setState(po.State);
-            setPincodeDetected(true);
-            const offices = Array.from(new Set(data[0].PostOffice.map((p: any) => p.Name).filter(Boolean))) as string[];
-            if (offices.length > 0) {
-              setDetectedPostOffices(offices);
-            }
-          } else {
-            setPincodeDetected(false);
-          }
-        })
-        .catch(() => {
-          setPincodeLoading(false);
-          setPincodeDetected(false);
-        });
-    } else {
+    if (cleanPin.length !== 6) {
       setPincodeDetected(false);
+      return;
     }
+    setPincodeLoading(true);
+    fetch(`https://api.postalpincode.in/pincode/${cleanPin}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPincodeLoading(false);
+        if (Array.isArray(data) && data[0]?.Status === "Success" && data[0]?.PostOffice?.length > 0) {
+          const po = data[0].PostOffice[0];
+          if (po.District) setCity(po.District);
+          if (po.State) setState(po.State);
+          setPincodeDetected(true);
+          const offices = Array.from(
+            new Set(data[0].PostOffice.map((p: any) => p.Name).filter(Boolean))
+          ) as string[];
+          setDetectedPostOffices(offices);
+        } else {
+          setPincodeDetected(false);
+        }
+      })
+      .catch(() => {
+        setPincodeLoading(false);
+        setPincodeDetected(false);
+      });
   }, [postalCode]);
 
-  // Auto-clean contaminated or repeating address strings from previous sessions/cache
+  // Auto-clean repeated address suffixes
   useEffect(() => {
     if (address && address.length > 40) {
       const sanitized = cleanStreetAddress(address, city, state, postalCode);
-      if (sanitized !== address) {
-        setAddress(sanitized);
-      }
+      if (sanitized !== address) setAddress(sanitized);
     }
   }, [address, city, state, postalCode]);
 
-  const handleSelectSavedAddress = (addr: any) => {
-    setSelectedAddressId(addr.id);
-    setIsUsingNewAddress(false);
-    if (addr.recipient_name && !addr.recipient_name.startsWith("Customer ")) {
-      setName(addr.recipient_name);
-    }
-    if (addr.phone) setPhone(cleanPhoneDigits(addr.phone));
-    setAddress(cleanStreetAddress(addr.street, addr.city, addr.state, addr.postal_code));
-    setCity(addr.city || "");
-    setState(addr.state || "");
-    setPostalCode(addr.postal_code || "");
-  };
-
-  const handleUseNewAddress = () => {
-    setSelectedAddressId(null);
-    setIsUsingNewAddress(true);
-    setAddress("");
-    setCity("");
-    setState("");
-    setPostalCode("");
-  };
-
-  const handleFetchCurrentLocation = () => {
-    setLocationError(null);
-    setLocationSuccessMsg(null);
-    setLocationAccuracyNotice(null);
-    setDetectedPostOffices([]);
-
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser. Please enter your 6-digit Pincode to auto-fill your area.");
-      return;
-    }
-
-    setLocationLoading(true);
-
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-
-    // Process coordinates returned by browser
-    const processCoordinates = async (pos: GeolocationPosition) => {
-      try {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        const accuracy = pos.coords.accuracy || 0;
-
-        const res = await fetch(`/api/location/reverse-geocode?lat=${lat}&lng=${lng}&accuracy=${accuracy}`);
-        const data = await res.json();
-
-        if (res.ok && data.success) {
-          setIsUsingNewAddress(true);
-          setSelectedAddressId(null);
-
-          // Cleanly overwrite address with GPS-detected street/area (never concatenate with previous location)
-          const cleanStreet = (data.street || data.area || "").trim();
-          setAddress(cleanStreet || data.area || data.city || "");
-
-          if (data.city) setCity(data.city);
-          if (data.state) setState(data.state);
-
-          if (data.pincode && data.pincode.length === 6) {
-            setPostalCode(data.pincode);
-            setPincodeDetected(true);
-          }
-
-          if (Array.isArray(data.post_offices) && data.post_offices.length > 0) {
-            setDetectedPostOffices(data.post_offices);
-          }
-
-          // Accuracy Feedback
-          if (accuracy > 0 && accuracy <= 150) {
-            setLocationSuccessMsg(`🎯 High-Precision GPS (~${Math.round(accuracy)}m): ${data.area || data.city || "Location detected"}`);
-          } else if (accuracy > 0 && accuracy <= 500) {
-            setLocationSuccessMsg(`📍 Area Location (~${Math.round(accuracy)}m): ${data.area || data.city || "Location detected"}`);
-          } else if (accuracy > 500) {
-            setLocationAccuracyNotice(
-              `📶 Approximate Network Location (~${(accuracy / 1000).toFixed(1)} km) detected via Wi-Fi/ISP routing. Please verify your House No and Pincode.`
-            );
-          } else {
-            setLocationSuccessMsg(`Location detected: ${data.area || data.city || "Address filled"}`);
-          }
-
-          setTimeout(() => setLocationSuccessMsg(null), 8000);
-        } else {
-          setLocationError(data.error || "Unable to determine address from GPS coordinates. Please enter manually.");
-        }
-      } catch (err: any) {
-        setLocationError("Network error while looking up location details.");
-      } finally {
-        setLocationLoading(false);
-      }
-    };
-
-    // Multi-pass Geolocation Execution:
-    // Try high accuracy with 14s timeout first. If indoor satellite lock times out, seamlessly fallback to network location.
-    const geoOptionsHigh = {
-      enableHighAccuracy: true,
-      timeout: 14000,
-      maximumAge: 0,
-    };
-
-    const geoOptionsFast = {
-      enableHighAccuracy: false,
-      timeout: 7000,
-      maximumAge: 0,
-    };
-
-    navigator.geolocation.getCurrentPosition(
-      processCoordinates,
-      (err) => {
-        // If high accuracy times out (e.g. indoors on mobile or laptop), fallback to standard network location
-        if (err.code === err.TIMEOUT && isMobileDevice) {
-          navigator.geolocation.getCurrentPosition(
-            processCoordinates,
-            () => {
-              setLocationLoading(false);
-              setLocationError("GPS signal weak indoors. Please enter your 6-digit Pincode to auto-fill your area.");
-            },
-            geoOptionsFast
-          );
-        } else {
-          setLocationLoading(false);
-          if (err.code === err.PERMISSION_DENIED) {
-            setLocationError("Location permission denied. Please allow location access in your browser or type your 6-digit Pincode below.");
-          } else if (err.code === err.POSITION_UNAVAILABLE) {
-            setLocationError("Location signal unavailable. Please enter your 6-digit Pincode to auto-fill your area.");
-          } else if (err.code === err.TIMEOUT) {
-            setLocationError("Location request timed out. Please enter your 6-digit Pincode to auto-fill your area.");
-          } else {
-            setLocationError("Unable to fetch current location.");
-          }
-        }
-      },
-      geoOptionsHigh
-    );
-  };
-
-  const handleDeleteSavedAddress = async (e: React.MouseEvent, addrId: string) => {
-    e.stopPropagation();
-    if (!user?.email) return;
-    if (!confirm("Are you sure you want to delete this saved delivery address?")) return;
-
-    const remaining = savedAddresses.filter((a) => a.id !== addrId);
-    const cleaned = deduplicateAddresses(remaining);
-    setSavedAddresses(cleaned);
-
-    const cacheKey = `zp_user_addresses_${user.email.toLowerCase().trim()}`;
-    try {
-      localStorage.setItem(cacheKey, JSON.stringify(cleaned));
-    } catch (err) {}
-
-    if (selectedAddressId === addrId) {
-      if (cleaned.length > 0) {
-        handleSelectSavedAddress(cleaned[0]);
-      } else {
-        handleUseNewAddress();
-      }
-    }
-
-    try {
-      await fetch(
-        `/api/user/addresses?id=${encodeURIComponent(addrId)}&email=${encodeURIComponent(user.email)}`,
-        { method: "DELETE" }
-      );
-    } catch (err) {
-      console.warn("Failed to delete saved address:", err);
-    }
-  };
-
-  const isCod = paymentMethod === "cod";
-  const totalItemCount = cart.reduce((sum, it) => sum + it.quantity, 0);
-
-  // Buy More Save More calculations
-  const regularSubtotal = cart.reduce((sum, it) => {
-    const basePrice = it.original_price || it.price;
-    return sum + basePrice * it.quantity;
-  }, 0);
-
-  const bundleSavings = cart.reduce((sum, it) => {
-    if (it.bundle_tier && it.bundle_tier > 1) {
-      if (it.bundle_savings) return sum + it.bundle_savings;
-      const baseTotal = (it.original_price || it.price) * it.quantity;
-      const actualTotal = it.bundle_total || (it.price * it.quantity);
-      return sum + Math.max(0, baseTotal - actualTotal);
-    }
-    return sum;
-  }, 0);
-
-  // Pricing calculations: In Indian retail / Legal Metrology, product prices are ALL-INCLUSIVE
-  const effectiveSubtotal = Math.max(0, subtotal - promoDiscount);
-  // 18% GST is included inside product price: Tax Component = Price - (Price / 1.18)
-  const gstAmount = Math.round(effectiveSubtotal - (effectiveSubtotal / 1.18));
-  const totalDiscount = savings + bundleSavings + promoDiscount;
-
-  // Delivery Fee: Synchronized dynamically with Admin Settings (Free Shipping Min Order, Standard Fee, COD Fee)
-  const isFreeDelivery = effectiveSubtotal >= freeShippingThreshold;
-  const baseShippingFee = isFreeDelivery ? 0 : standardShippingFee;
-  const codFee = isCod ? configuredCodFee : 0;
-  const shippingFee = baseShippingFee + codFee;
-  const codAdvance = 0;
-
-  // Online Payment: Exact advertised price + standard shipping fee (if below threshold)
-  const onlineGrandTotal = effectiveSubtotal + baseShippingFee;
-
-  // Cash on Delivery: Advertised price + standard shipping fee + COD courier fee
-  const codGrandTotal = effectiveSubtotal + baseShippingFee + codFee;
-
-  const grandTotal = isCod ? codGrandTotal : onlineGrandTotal;
-  const payableNow = isCod ? configuredCodFee : onlineGrandTotal;
-  const codDoorstepBalance = Math.max(0, effectiveSubtotal + baseShippingFee);
-  const doorstepBalance = isCod ? codDoorstepBalance : 0;
-
-  // Total MRP for comparison pill
-  const totalMrp = cart.reduce((sum, it) => {
-    const itemMrp = it.mrp || it.original_price || Math.round(it.price * 1.35);
-    return sum + itemMrp * it.quantity;
-  }, 0);
-  const totalMrpSavings = Math.max(0, totalMrp - grandTotal);
-
-  // Upsell bump offer candidates (excluding what is already in cart)
-  const availableUpsells = useMemo(() => {
-    const cartIds = new Set(
-      cart.flatMap((c) => [
-        c.id,
-        (c as any).slug,
-        (c as any).product_id,
-        c.id?.replace(/^turkiye-jam-/, ""),
-        (c as any).slug?.replace(/^turkiye-jam-/, ""),
-      ]).filter(Boolean)
-    );
-    return BUMP_PRODUCTS.filter((b) => {
-      const bShortId = b.id.replace(/^turkiye-jam-/, "");
-      return !cartIds.has(b.id) && !cartIds.has(b.slug) && !cartIds.has(bShortId);
-    });
-  }, [cart]);
-
-  // Auto-track Abandoned Checkout when Phone is 10 digits
+  // Abandoned checkout auto-sync (debounced 1.5s)
   useEffect(() => {
-    if (orderComplete || isCodSwitchMode) return;
+    if (orderComplete) return;
     const clean = cleanPhoneDigits(phone);
     if (clean.length !== 10) return;
 
     try {
       localStorage.setItem("zupe_checkout_phone", clean);
       if (name.trim()) localStorage.setItem("zupe_checkout_name", name.trim());
-    } catch (e) {}
+    } catch {}
 
     if (cart.length === 0) {
-      // If customer removed all items from cart, clear their abandoned session
       fetch("/api/checkout/abandoned", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_phone: clean,
-          action: "clear_empty",
-        }),
+        body: JSON.stringify({ customer_phone: clean, action: "clear_empty" }),
       }).catch(() => {});
       return;
     }
 
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       let metaAttr: any = null;
       try {
         const rawAttr = localStorage.getItem("tj_meta_attribution");
@@ -1427,175 +852,227 @@ function CheckoutContent() {
       }).catch(() => {});
     }, 1500);
 
-    return () => clearTimeout(timer);
-  }, [phone, name, email, address, city, state, postalCode, cart, grandTotal, orderComplete, isCodSwitchMode]);
+    return () => window.clearTimeout(timer);
+  }, [phone, name, email, address, city, state, postalCode, cart, grandTotal, orderComplete]);
 
+  // Address selection & GPS handlers
+  const handleSelectSavedAddress = (addr: any) => {
+    setSelectedAddressId(addr.id);
+    setIsUsingNewAddress(false);
+    if (addr.recipient_name && !addr.recipient_name.startsWith("Customer ")) {
+      setName(addr.recipient_name);
+    }
+    if (addr.phone) setPhone(cleanPhoneDigits(addr.phone));
+    setAddress(cleanStreetAddress(addr.street, addr.city, addr.state, addr.postal_code));
+    setCity(addr.city || "");
+    setState(addr.state || "");
+    setPostalCode(addr.postal_code || "");
+  };
 
-  const syncAddressAfterOrder = async () => {
+  const handleUseNewAddress = () => {
+    setSelectedAddressId(null);
+    setIsUsingNewAddress(true);
+    setAddress("");
+    setCity("");
+    setState("");
+    setPostalCode("");
+  };
+
+  const handleDeleteSavedAddress = async (e: React.MouseEvent, addrId: string) => {
+    e.stopPropagation();
+    if (!user?.email) return;
+    if (!confirm("Delete this saved delivery address?")) return;
+
+    const cleaned = deduplicateAddresses(savedAddresses.filter((a) => a.id !== addrId));
+    setSavedAddresses(cleaned);
     try {
-      const targetEmail = (email.trim() || user?.email || "").toLowerCase().trim();
-      if (targetEmail && address.trim()) {
-        const userEmailNorm = targetEmail;
-        const cacheKey = `zp_user_addresses_${userEmailNorm}`;
+      localStorage.setItem(
+        `zp_user_addresses_${user.email.toLowerCase().trim()}`,
+        JSON.stringify(cleaned)
+      );
+    } catch {}
 
-        const targetNormKey = normalizeAddressKey(address, postalCode);
-        const existingMatch = savedAddresses.find(
-          (a: any) =>
-            a.id === selectedAddressId ||
-            normalizeAddressKey(a.street, a.postal_code || a.postalCode) === targetNormKey
+    if (selectedAddressId === addrId) {
+      if (cleaned.length > 0) handleSelectSavedAddress(cleaned[0]);
+      else handleUseNewAddress();
+    }
+
+    fetch(
+      `/api/user/addresses?id=${encodeURIComponent(addrId)}&email=${encodeURIComponent(user.email)}`,
+      { method: "DELETE" }
+    ).catch(() => {});
+  };
+
+  const handleFetchCurrentLocation = () => {
+    setLocationNotice(null);
+    setDetectedPostOffices([]);
+
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationNotice({
+        type: "error",
+        text: "Location is unavailable on this browser. Enter your 6-digit pincode to auto-fill city and state.",
+      });
+      return;
+    }
+
+    setLocationLoading(true);
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+
+    const processCoordinates = async (pos: GeolocationPosition) => {
+      try {
+        const { latitude, longitude, accuracy = 0 } = pos.coords;
+        const res = await fetch(
+          `/api/location/reverse-geocode?lat=${latitude}&lng=${longitude}&accuracy=${accuracy}`
         );
+        const data = await res.json();
 
-        if (existingMatch && !isUsingNewAddress) {
-          return;
+        if (res.ok && data.success) {
+          setIsUsingNewAddress(true);
+          setSelectedAddressId(null);
+          const cleanStreet = (data.street || data.area || "").trim();
+          setAddress(cleanStreet || data.area || data.city || "");
+          if (data.city) setCity(data.city);
+          if (data.state) setState(data.state);
+          if (data.pincode && data.pincode.length === 6) {
+            setPostalCode(data.pincode);
+            setPincodeDetected(true);
+          }
+          if (Array.isArray(data.post_offices)) {
+            setDetectedPostOffices(data.post_offices);
+          }
+
+          if (accuracy > 500) {
+            setLocationNotice({
+              type: "warning",
+              text: "Approximate network location detected. Verify your house number and pincode.",
+            });
+          } else {
+            setLocationNotice({
+              type: "success",
+              text: `Location filled for ${data.area || data.city || "your area"}.`,
+            });
+          }
+        } else {
+          setLocationNotice({
+            type: "error",
+            text: data.error || "Could not look up that location. Enter your address manually.",
+          });
         }
-
-        const sanitizedStreet = cleanStreetAddress(address, city, state, postalCode);
-        const newAddr = {
-          id: existingMatch ? existingMatch.id : `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          user_email: userEmailNorm,
-          user_id: user?.id,
-          recipient_name: name.trim(),
-          phone: phone.trim(),
-          street: sanitizedStreet,
-          city: city.trim(),
-          state: state.trim(),
-          postal_code: postalCode.trim(),
-          country: "India",
-          is_default: savedAddresses.length === 0,
-          tag: "Home",
-          created_at: new Date().toISOString(),
-        };
-
-        const otherAddresses = savedAddresses.filter((a: any) => a.id !== newAddr.id);
-        const updated = deduplicateAddresses([newAddr, ...otherAddresses]);
-        setSavedAddresses(updated);
-        try {
-          localStorage.setItem(cacheKey, JSON.stringify(updated));
-        } catch (e) {}
-
-        await fetch("/api/user/addresses", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newAddr),
+      } catch {
+        setLocationNotice({
+          type: "error",
+          text: "Network error looking up location. Enter your 6-digit pincode instead.",
         });
+      } finally {
+        setLocationLoading(false);
       }
-      if (user && phone.trim() && (!user?.phone || user.phone !== phone.trim())) {
-        await updateUserProfile({ phone: phone.trim() });
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      processCoordinates,
+      (err) => {
+        if (err.code === err.TIMEOUT && isMobileDevice) {
+          navigator.geolocation.getCurrentPosition(
+            processCoordinates,
+            () => {
+              setLocationLoading(false);
+              setLocationNotice({
+                type: "error",
+                text: "Weak GPS signal indoors. Enter your 6-digit pincode to auto-fill city and state.",
+              });
+            },
+            { enableHighAccuracy: false, timeout: 7000, maximumAge: 0 }
+          );
+        } else {
+          setLocationLoading(false);
+          setLocationNotice({
+            type: "error",
+            text:
+              err.code === err.PERMISSION_DENIED
+                ? "Location permission denied. Enter your 6-digit pincode below."
+                : "Could not detect location. Enter your 6-digit pincode below.",
+          });
+        }
+      },
+      { enableHighAccuracy: true, timeout: 14000, maximumAge: 0 }
+    );
+  };
+
+  // Promo code apply / remove
+  const handleApplyPromo = async () => {
+    setPromoError(null);
+    setPromoSuccess(null);
+    const code = promoCode.trim().toUpperCase();
+    if (!code) {
+      setPromoError("Enter a promo code to apply.");
+      return;
+    }
+
+    setPromoLoading(true);
+    try {
+      const res = await fetch("/api/promo-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          subtotal,
+          items: cart.map((c) => ({
+            id: c.id,
+            name: c.name,
+            price:
+              c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
+                ? Math.round(c.bundle_total / c.quantity)
+                : c.price,
+            quantity: c.quantity,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (data.valid && data.discount > 0) {
+        setPromoDiscount(data.discount);
+        setAppliedPromo(data.code || code);
+        setPromoSuccess(`Saved ₹${data.discount.toLocaleString("en-IN")}`);
+      } else {
+        setPromoDiscount(0);
+        setAppliedPromo(null);
+        setPromoError(data.error || "That promo code is not valid for this cart.");
       }
-    } catch (e) {
-      console.warn("Failed to sync address on frontend:", e);
+    } catch {
+      setPromoError("Could not verify promo code. Check your connection and try again.");
+    } finally {
+      setPromoLoading(false);
     }
   };
 
-  const handleContinueToPayment = (e?: React.FormEvent | React.MouseEvent) => {
+  const handleRemovePromo = () => {
+    setPromoDiscount(0);
+    setAppliedPromo(null);
+    setPromoCode("");
+    setPromoError(null);
+    setPromoSuccess(null);
+  };
+
+  // Focus helper for validation errors
+  const focusFieldWithError = (fieldId: string, msg: string) => {
+    setErrorMessage(msg);
+    const el = document.getElementById(fieldId);
+    if (el) {
+      el.focus();
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
+  // Submit checkout -> create order -> open in-page PyDart Pay Popup Modal
+  const handlePlaceOrder = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    // Require authentication before progressing to purchase
     if (!user) {
       const cleanContact = cleanPhoneDigits(phone);
       openAuthModal(
         "login",
-        "Sign in required: Please log in or verify with WhatsApp to complete your purchase 🛍️",
-        undefined,
-        (loggedInUser) => {
-          if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
-          if (loggedInUser?.name && !name) setName(loggedInUser.name);
-          setCheckoutStep("payment");
-        },
-        {
-          initialPhone: cleanContact || undefined,
-          autoSendOtp: cleanContact.length === 10,
-        }
-      );
-      return;
-    }
-
-    const cleanDigits = phone.replace(/\D/g, "");
-    if (!cleanDigits || cleanDigits.length < 10) {
-      setErrorMessage("Please enter a valid 10-digit mobile number.");
-      const el = document.getElementById("phone-input");
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-    if (!name.trim()) {
-      setErrorMessage("Please enter your full name.");
-      const el = document.getElementById("name-input");
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-    if (email.trim() && !email.includes("@")) {
-      setErrorMessage("Please enter a valid email address.");
-      const el = document.getElementById("email-input");
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-    if (!address.trim()) {
-      setErrorMessage("Please enter your complete delivery address.");
-      const el = document.getElementById("address-input");
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-    const cleanPin = postalCode.replace(/\D/g, "");
-    if (!cleanPin || cleanPin.length < 6) {
-      setErrorMessage("Please enter a valid 6-digit PIN code.");
-      const el = document.getElementById("pincode-input");
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-    if (!city.trim()) {
-      setErrorMessage("Please enter your city.");
-      const el = document.getElementById("city-input");
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-    if (!state.trim()) {
-      setErrorMessage("Please enter your state.");
-      const el = document.getElementById("state-input");
-      if (el) {
-        el.focus();
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return;
-    }
-
-    setErrorMessage("");
-    setCheckoutStep("payment");
-
-    setTimeout(() => {
-      const el = document.getElementById("payment-method-section");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }, 120);
-  };
-
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Require authentication before completing purchase
-    if (!user) {
-      const cleanContact = cleanPhoneDigits(phone);
-      openAuthModal(
-        "login",
-        "Sign in required: Please log in or verify with WhatsApp to complete your purchase 🛍️",
+        "Sign in with WhatsApp to complete your order",
         undefined,
         (loggedInUser) => {
           if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
@@ -1609,57 +1086,42 @@ function CheckoutContent() {
       return;
     }
 
-    if (checkoutStep !== "payment") {
-      handleContinueToPayment(e);
-      return;
-    }
-
-    if (!phone.trim() || phone.replace(/\D/g, "").length < 10) {
-      setErrorMessage("Please enter a valid 10-digit mobile number.");
-      return;
+    if (phone.replace(/\D/g, "").length < 10) {
+      return focusFieldWithError("phone-input", "Enter a valid 10-digit mobile number.");
     }
     if (!name.trim()) {
-      setErrorMessage("Please enter your full name.");
-      return;
+      return focusFieldWithError("name-input", "Enter your full name for delivery.");
     }
     if (email.trim() && !email.includes("@")) {
-      setErrorMessage("Please enter a valid email address.");
-      return;
+      return focusFieldWithError("email-input", "Enter a valid email address or leave it blank.");
     }
     if (!address.trim()) {
-      setErrorMessage("Please enter your complete delivery address.");
-      return;
+      return focusFieldWithError("address-input", "Enter your complete house/street address.");
     }
-    if (!postalCode.trim() || postalCode.replace(/\D/g, "").length < 6) {
-      setErrorMessage("Please enter a valid 6-digit PIN code.");
-      return;
+    if (postalCode.replace(/\D/g, "").length < 6) {
+      return focusFieldWithError("pincode-input", "Enter a valid 6-digit pincode.");
     }
     if (!city.trim()) {
-      setErrorMessage("Please enter your city.");
-      return;
+      return focusFieldWithError("city-input", "Enter your city.");
     }
     if (!state.trim()) {
-      setErrorMessage("Please enter your state.");
-      return;
+      return focusFieldWithError("state-input", "Enter your state.");
     }
 
     setErrorMessage("");
     setLoading(true);
 
-    // Pre-flight live stock check
-    const freshOos = await checkCartStock();
-    if (freshOos.length > 0 || hasOutOfStockItems) {
-      setLoading(false);
-      setErrorMessage("One or more items in your cart are currently out of stock. Please remove them to proceed.");
-      return;
-    }
-
-    // PAYMENT FLOW (Both Online Full & COD Advance route through Settler secure gateway)
     try {
-      const isCod = paymentMethod === "cod";
-      const chargeAmount = isCod ? configuredCodFee : onlineGrandTotal;
+      const freshOos = await checkCartStock();
+      if (freshOos.length > 0 || hasOutOfStockItems) {
+        setLoading(false);
+        setErrorMessage("Remove out-of-stock items from your bag before paying.");
+        return;
+      }
+
+      const chargeAmount = isCod ? effectiveCodAdvance : onlineGrandTotal;
       const totalOrderAmount = isCod ? codGrandTotal : onlineGrandTotal;
-      const balanceDueAmount = isCod ? doorstepBalance : 0;
+      const balanceDueAmount = isCod ? codDoorstepBalance : 0;
 
       const orderPayload = {
         amount: chargeAmount,
@@ -1677,17 +1139,19 @@ function CheckoutContent() {
         promo_code: appliedPromo || undefined,
         promo_discount: promoDiscount || undefined,
         gst_amount: gstAmount,
-        shipping_cost: baseShippingFee + (isCod ? configuredCodFee : 0),
-        user_id: user?.id,
+        shipping_cost: baseShippingFee + (isCod ? effectiveCodAdvance : 0),
+        user_id: user.id,
         items: cart.map((c) => ({
           product_id: c.id,
           name: c.name,
-          price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
-            ? Math.round(c.bundle_total / c.quantity)
-            : c.price,
-          unit_price: (c.bundle_tier && c.bundle_tier > 1 && c.bundle_total)
-            ? Math.round(c.bundle_total / c.quantity)
-            : c.price,
+          price:
+            c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
+              ? Math.round(c.bundle_total / c.quantity)
+              : c.price,
+          unit_price:
+            c.bundle_tier && c.bundle_tier > 1 && c.bundle_total
+              ? Math.round(c.bundle_total / c.quantity)
+              : c.price,
           quantity: c.quantity,
           image: c.poster_image,
           original_price: c.original_price || c.price,
@@ -1703,8 +1167,8 @@ function CheckoutContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderPayload),
       });
-
       const orderData = await res.json();
+
       if (res.status === 401 || orderData?.code === "AUTH_REQUIRED") {
         setLoading(false);
         try {
@@ -1713,7 +1177,7 @@ function CheckoutContent() {
         const cleanContact = cleanPhoneDigits(phone);
         openAuthModal(
           "login",
-          "Sign in required: Please verify with WhatsApp to place your order 🛍️",
+          "Sign in with WhatsApp to place your order",
           undefined,
           (loggedInUser) => {
             if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
@@ -1726,1500 +1190,515 @@ function CheckoutContent() {
         );
         return;
       }
-      if (!orderData.success || (!orderData.payUrl && !orderData.settlerPayUrl)) {
-        setErrorMessage(orderData.error || "Failed to initialize payment gateway. Please try again.");
+
+      const targetPayUrl = orderData.payUrl || orderData.settlerPayUrl;
+      if (!orderData.success || !targetPayUrl) {
+        setErrorMessage(orderData.error || "Could not start payment. Try again.");
         setLoading(false);
         return;
       }
 
-      const cfOrderId = orderData.orderId;
-      const targetPayUrl = orderData.settlerPayUrl || orderData.payUrl;
-
       try {
-        localStorage.setItem("zupe_last_order_id", cfOrderId);
+        localStorage.setItem("zupe_last_order_id", orderData.orderId);
         localStorage.setItem("zupe_last_phone", phone.trim());
       } catch {}
 
-      // Seamlessly navigate in the same tab directly to the payment gateway
-      window.location.href = targetPayUrl;
-      return;
-    } catch (err: any) {
-      console.error("Payment initiation error:", err);
-      setErrorMessage("Network error while connecting to payment gateway. Please retry.");
+      // Open the PyDart Pay Payment Popup directly over Turkiye Jam checkout
+      setLoading(false);
+      setActivePaymentPopup({
+        orderId: orderData.orderId,
+        pydartOrderId: orderData.pydartOrderId,
+        payUrl: targetPayUrl,
+        amount: Number(orderData.amount || chargeAmount),
+        isCod,
+        balanceDue: balanceDueAmount,
+      });
+    } catch {
+      setErrorMessage("Network error while opening payment. Try again.");
       setLoading(false);
     }
   };
 
-  // ========================================================
-  // COD TO PREPAID SWITCH VIEW (TRIGGERED FROM WHATSAPP / TRACKING)
-  // ========================================================
-  if (isCodSwitchMode) {
-    if (switchSuccess) {
-      return (
-        <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900 flex flex-col justify-between">
-          <header className="sticky top-0 z-40 bg-[#fbf7ee]/95 backdrop-blur-md border-b border-[#ebdcc7]/80 shadow-2xs">
-            <div className="max-w-4xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between gap-4">
-              <Link href="/" className="inline-block">
-                <Image
-                  src="/turkiye-jam-logo.svg"
-                  alt="Turkiye Jam"
-                  width={140}
-                  height={45}
-                  className="h-9 sm:h-11 w-auto object-contain"
-                  priority
-                />
-              </Link>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#731a26] text-white text-[11px] font-extrabold uppercase tracking-wider shadow-xs">
-                <Lock className="w-3 h-3 text-[#fed000]" />
-                <span>100% Discreet &amp; Verified</span>
-              </div>
-            </div>
-          </header>
-
-          <main className="max-w-xl mx-auto py-10 sm:py-14 px-4 text-center">
-            {/* Animated Hero Verification Emblem */}
-            <div className="relative mx-auto mb-6 w-20 h-20 sm:w-24 sm:h-24">
-              <div className="absolute inset-0 rounded-full bg-[#fed000]/25 animate-ping" />
-              <motion.div
-                initial={{ scale: 0, rotate: -15 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", damping: 15 }}
-                className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#731a26] to-[#48121f] text-[#fed000] flex items-center justify-center shadow-xl shadow-[#731a26]/25 border-2 border-[#fed000]"
-              >
-                <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
-              </motion.div>
-            </div>
-
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-3 shadow-xs border bg-[#fed000] text-black border-[#e5be00]">
-              <Sparkles className="w-3.5 h-3.5 text-black" />
-              <span>✓ Switched to Prepaid &amp; Saved ₹{configuredCodFee}</span>
-            </div>
-
-            <h1 className="font-tj-serif text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] tracking-tight mb-2">
-              Payment Successful!
-            </h1>
-
-            <p className="text-sm text-stone-600 mb-6 leading-relaxed max-w-md mx-auto font-sans">
-              Your order is now <strong>Prepaid &amp; Confirmed</strong>. You saved ₹{configuredCodFee} and your parcel has been prioritized for <strong>Express Discreet Dispatch</strong> with zero balance due at delivery.
-            </p>
-
-            <div className="p-6 sm:p-7 rounded-3xl bg-white/95 border border-stone-200/90 shadow-xl shadow-stone-900/5 mb-8 text-left space-y-3.5 text-xs text-stone-700">
-              <div className="flex justify-between items-center pb-3 border-b border-stone-100">
-                <span className="text-stone-500 font-medium">Order Number:</span>
-                <span className="font-mono font-extrabold text-stone-900 bg-stone-100 px-3 py-1 rounded-lg text-xs tracking-wider border border-stone-200">
-                  #{switchSuccessOrderId}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-stone-100">
-                <span className="text-stone-500 font-medium">Payment Mode:</span>
-                <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/80">
-                  Prepaid (Paid Online • Verified)
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-stone-100">
-                <span className="text-stone-500 font-medium">Prepaid Savings:</span>
-                <span className="font-extrabold text-emerald-700">-₹{configuredCodFee} (COD Fee Waived)</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-stone-100">
-                <span className="text-stone-500 font-medium">Shipping:</span>
-                <span className="font-extrabold text-[#731a26]">FREE Priority Express</span>
-              </div>
-              <div className="flex justify-between items-center pt-2">
-                <span className="font-bold text-stone-900 text-sm">Total Paid:</span>
-                <div className="text-right">
-                  <span className="font-tj-serif font-black text-emerald-700 text-xl sm:text-2xl block">
-                    ₹{switchSuccessAmount.toLocaleString()}
-                  </span>
-                  <span className="text-[10px] font-bold block text-stone-500 mt-0.5">
-                    Zero balance payable at doorstep
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <Link
-                href={`/order-tracking?query=${encodeURIComponent(switchSuccessOrderId)}`}
-                className="flex-1 py-4 px-6 rounded-2xl bg-[#731a26] hover:bg-[#5b1420] text-white font-extrabold text-sm shadow-lg shadow-[#731a26]/20 flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
-              >
-                <Truck className="w-4 h-4 text-[#fed000]" />
-                <span>Track Order Live</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/orders"
-                className="flex-1 py-4 px-6 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 font-bold text-sm shadow-xs flex items-center justify-center transition-all active:scale-[0.98]"
-              >
-                View My Orders
-              </Link>
-            </div>
-          </main>
-
-          <footer className="py-6 text-center text-xs text-stone-500 border-t border-[#ebdcc7]/60 bg-white/60">
-            © 2026 Turkiye Jam — Authentic Ottoman Epimedium Herbal Macun
-          </footer>
-        </div>
-      );
+  // Popup callbacks
+  const handlePopupDismissUnpaid = useCallback((orderId: string, reason?: string) => {
+    setActivePaymentPopup(null);
+    setShowPaymentCancelledModal(true);
+    try {
+      localStorage.removeItem("zupe_last_order_id");
+    } catch {}
+    if (orderId) {
+      fetch("/api/cashfree/cancel-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, reason: reason || "Customer closed payment popup" }),
+      }).catch(() => {});
     }
+  }, []);
 
-    return (
-      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
-        <header className="py-4 border-b border-gray-100 bg-white">
-          <div className="max-w-4xl mx-auto px-4 flex items-center justify-between">
-            <Link href="/" className="inline-block">
-              <Image
-                src="/turkiye-jam-logo.svg"
-                alt="Turkiye Jam"
-                width={140}
-                height={45}
-                className="h-10 w-auto object-contain"
-                priority
-              />
-            </Link>
-            <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-semibold bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
-              <ShieldCheck className="w-4 h-4" />
-              <span>100% Secure Checkout</span>
-            </div>
-          </div>
-        </header>
+  const handleSwitchToCodFromPopup = useCallback((orderId: string) => {
+    setActivePaymentPopup(null);
+    setShowPaymentCancelledModal(false);
+    setPaymentMethod("cod");
+    try {
+      localStorage.removeItem("zupe_last_order_id");
+    } catch {}
+    if (orderId) {
+      fetch("/api/cashfree/cancel-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, reason: "Customer switched to COD" }),
+      }).catch(() => {});
+    }
+    window.setTimeout(() => {
+      document
+        .getElementById("payment-cod-card")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 120);
+  }, []);
 
-        <main className="max-w-xl mx-auto py-8 px-4 w-full">
-          {/* Header Banner */}
-          <div className="bg-gradient-to-r from-[#cb0805] via-[#cb0805] to-amber-500 rounded-3xl p-6 text-white text-center shadow-lg shadow-[#cb0805]/20 mb-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white text-[#cb0805] uppercase tracking-wide mb-3 shadow-xs">
-              ⚡ Instant ₹{configuredCodFee} Discount Offer
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">
-              Switch to Prepaid &amp; Save ₹{configuredCodFee}!
-            </h1>
-            <p className="text-xs sm:text-sm text-orange-100 mt-2 max-w-md mx-auto leading-relaxed">
-              Pay online now via UPI, Google Pay, PhonePe, Cards, or Net Banking. Waive cash charges and get priority express dispatch.
-            </p>
-          </div>
+  // ========================================================
+  // STATE VIEWS: Verifying / Confirmed / Loading / Empty / Login Gate
+  // ========================================================
 
-          {switchError && (
-            <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold">{switchError}</p>
-                <p className="text-xs text-rose-600 mt-0.5">Please check your Order ID or phone number below.</p>
-              </div>
-            </div>
-          )}
-
-          {switchLoading && (
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm text-center">
-              <Loader2 className="w-8 h-8 text-[#cb0805] animate-spin mx-auto mb-3" />
-              <p className="text-sm font-semibold text-gray-700">Looking up your order details...</p>
-            </div>
-          )}
-
-          {!switchLoading && switchOrder ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-sm space-y-6">
-              {/* Order Info */}
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Order Reference</span>
-                  <span className="font-mono font-bold text-base text-gray-900">
-                    {switchOrder.display_id || switchOrder.id}
-                  </span>
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                  Current: Cash on Delivery
-                </span>
-              </div>
-
-              {/* Customer summary */}
-              <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 text-xs text-gray-600 space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Customer:</span>
-                  <span className="font-semibold text-gray-900">{switchOrder.customer_name}</span>
-                </div>
-                {switchOrder.customer_phone && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Phone:</span>
-                    <span className="font-mono text-gray-900">{switchOrder.customer_phone}</span>
-                  </div>
-                )}
-                {switchOrder.shipping_address && (
-                  <div className="flex justify-between items-start pt-1">
-                    <span className="text-gray-400">Delivery To:</span>
-                    <span className="text-right max-w-[240px] text-gray-800">{switchOrder.shipping_address}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Price Breakdown with Rs 49 discount */}
-              {(() => {
-                const codTotal = Number(switchOrder.total_amount) || 0;
-                const advancePaid = Number((switchOrder as any).advance_paid) || 10;
-                const doorstepDue = (switchOrder as any).doorstep_balance !== undefined
-                  ? Number((switchOrder as any).doorstep_balance)
-                  : Math.max(0, codTotal - advancePaid);
-                const finalPayable = (switchOrder as any).discounted_amount !== undefined
-                  ? Number((switchOrder as any).discounted_amount)
-                  : Math.max(1, doorstepDue - configuredCodFee);
-
-                return (
-                  <>
-                    <div className="space-y-2.5 pt-2 text-xs sm:text-sm">
-                      <div className="flex justify-between text-gray-600">
-                        <span>COD Total Order Value:</span>
-                        <span className="font-semibold text-gray-800">₹{codTotal.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-emerald-600 font-medium">
-                        <span>Advance Paid Online:</span>
-                        <span className="font-bold">₹{advancePaid} (Paid)</span>
-                      </div>
-                      <div className="flex justify-between text-gray-600">
-                        <span>Doorstep Balance Due (COD):</span>
-                        <span className="line-through text-gray-400 font-semibold">₹{doorstepDue.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-emerald-600 font-bold">
-                        <span className="flex items-center gap-1.5">
-                          <Sparkles className="w-4 h-4" />
-                          <span>Prepaid Switch Discount (Free Shipping):</span>
-                        </span>
-                        <span>-₹{configuredCodFee}</span>
-                      </div>
-                      <div className="pt-3 border-t border-gray-200 flex justify-between items-center text-base sm:text-lg">
-                        <span className="font-bold text-gray-900">Final Amount to Pay Online:</span>
-                        <div className="text-right">
-                          <span className="font-extrabold text-[#cb0805] text-xl">
-                            ₹{finalPayable.toLocaleString()}
-                          </span>
-                          <span className="block text-[10px] text-emerald-600 font-bold">You Save ₹{configuredCodFee} • ₹0 at Delivery</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Pay Now Button */}
-                    <button
-                      type="button"
-                      onClick={handlePayForCodOrder}
-                      disabled={switchPaying}
-                      className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#cb0805] via-[#cb0805] to-[#8c0503] hover:from-[#b90806] hover:to-[#8c0503] text-white font-extrabold text-base shadow-lg shadow-[#cb0805]/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 mt-4"
-                    >
-                      {switchPaying ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Launching Secure Payment...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-5 h-5" />
-                          <span>Pay ₹{finalPayable.toLocaleString()} Online Now →</span>
-                        </>
-                      )}
-                    </button>
-                  </>
-                );
-              })()}
-
-              {/* Security info */}
-              <div className="pt-2 text-center text-[11px] text-gray-400 space-y-1">
-                <p>🔒 256-bit Bank Grade SSL Encrypted • Powered by Razorpay</p>
-                <p>Supports UPI (GPay, PhonePe, Paytm), All Major Debit &amp; Credit Cards, Net Banking</p>
-              </div>
-
-              {/* Option to look up another order */}
-              <div className="pt-3 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSwitchOrder(null);
-                    setSwitchQuery("");
-                  }}
-                  className="text-xs text-gray-500 hover:text-gray-800 underline"
-                >
-                  Switch a different order
-                </button>
-              </div>
-            </div>
-          ) : !switchLoading ? (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/90 shadow-sm space-y-5">
-              <div className="text-center">
-                <ShoppingBag className="w-10 h-10 text-[#cb0805] mx-auto mb-2" />
-                <h3 className="font-bold text-gray-900 text-base">Find Your Cash on Delivery Order</h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  Enter your Order ID (e.g. ord_...) or 10-digit mobile number to claim your ₹{configuredCodFee} instant discount.
-                </p>
-              </div>
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  lookupCodOrder(switchQuery);
-                }}
-                className="space-y-3"
-              >
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                    Order ID or Mobile Number
-                  </label>
-                  <input
-                    type="text"
-                    value={switchQuery}
-                    onChange={(e) => setSwitchQuery(e.target.value)}
-                    placeholder="e.g. ord_177374... or 9876543210"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#cb0805]/20 focus:border-[#cb0805]"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={switchLoading || !switchQuery.trim()}
-                  className="w-full py-3.5 px-6 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-sm transition-all shadow-md shadow-[#cb0805]/25 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Find Order &amp; Claim ₹{configuredCodFee} Discount</span>
-                </button>
-              </form>
-
-              <div className="text-center pt-2">
-                <Link href="/" className="text-xs text-gray-500 hover:text-gray-800">
-                  ← Back to Store
-                </Link>
-              </div>
-            </div>
-          ) : null}
-        </main>
-
-        <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Turkiye Jam
-        </footer>
-      </div>
-    );
-  }
-
-  // Verifying Cashfree Payment View
   if (verifyingPayment) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
-        <header className="py-4 border-b border-gray-100 bg-white">
-          <div className="max-w-4xl mx-auto px-4 flex items-center justify-center">
-            <Link href="/" className="inline-block">
+      <div className="min-h-dvh bg-[#FBF8F3] text-[#1B1714] flex flex-col justify-between">
+        <header className="border-b border-stone-200/70 bg-[#FBF8F3]">
+          <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-center">
+            <Link href="/" className="inline-flex items-center">
               <Image
                 src="/turkiye-jam-logo.svg"
                 alt="Turkiye Jam"
-                width={140}
-                height={45}
-                className="h-10 w-auto object-contain"
+                width={132}
+                height={40}
+                className="h-8 w-auto object-contain"
                 priority
               />
             </Link>
           </div>
         </header>
-
-        <main className="max-w-md mx-auto py-20 px-4 text-center">
-          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+        <main className="max-w-sm mx-auto px-4 py-20 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-white border border-stone-200 flex items-center justify-center mx-auto mb-4 shadow-2xs">
+            <Loader2 className="w-6 h-6 text-[#6E1625] animate-spin" />
           </div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-3 border border-emerald-200">
-            🔒 Bank Grade Escrow Verification
-          </span>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Confirming Your Payment...
-          </h2>
-          <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-            Please wait while we verify your transaction securely with Cashfree and banking rails. Do not refresh or close this tab.
-          </p>
-        </main>
-
-        <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Turkiye Jam • 256-Bit Encrypted
-        </footer>
-      </div>
-    );
-  }
-
-  // Order Confirmed View
-  if (orderComplete) {
-    const isCod = confirmedPaymentId === "Cash on Delivery" || confirmedPaymentId?.includes("Cash on Delivery");
-    const displayTotal = confirmedTotal || grandTotal;
-    const advancePaid = confirmedAdvancePaid || (isCod ? configuredCodFee : displayTotal);
-    const balanceDue = isCod ? (confirmedBalanceDue && confirmedBalanceDue < displayTotal ? confirmedBalanceDue : Math.max(0, displayTotal - advancePaid)) : 0;
-
-    return (
-      <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900 flex flex-col justify-between">
-        {/* Brand Header */}
-        <header className="sticky top-0 z-40 bg-[#fbf7ee]/95 backdrop-blur-md border-b border-[#ebdcc7]/80 shadow-2xs">
-          <div className="max-w-4xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between gap-4">
-            <Link href="/" className="inline-block">
-              <Image
-                src="/turkiye-jam-logo.svg"
-                alt="Turkiye Jam"
-                width={140}
-                height={45}
-                className="h-9 sm:h-11 w-auto object-contain"
-                priority
-              />
-            </Link>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#731a26] text-white text-[11px] font-extrabold uppercase tracking-wider shadow-xs">
-              <Lock className="w-3 h-3 text-[#fed000]" />
-              <span>100% Discreet &amp; Verified</span>
-            </div>
-          </div>
-        </header>
-
-        <main className="max-w-xl mx-auto py-10 sm:py-14 px-4 text-center">
-          {/* Animated Hero Verification Emblem */}
-          <div className="relative mx-auto mb-6 w-20 h-20 sm:w-24 sm:h-24">
-            <div className="absolute inset-0 rounded-full bg-[#fed000]/25 animate-ping" />
-            <motion.div
-              initial={{ scale: 0, rotate: -15 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", damping: 15 }}
-              className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-[#731a26] to-[#48121f] text-[#fed000] flex items-center justify-center shadow-xl shadow-[#731a26]/25 border-2 border-[#fed000]"
-            >
-              <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
-            </motion.div>
-          </div>
-
-          {/* Saffron Gold Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-3 shadow-xs border bg-[#fed000] text-black border-[#e5be00]">
-            <Sparkles className="w-3.5 h-3.5 text-black" />
-            <span>
-              {isCod
-                ? `Cash on Delivery Confirmed • ₹${advancePaid} Courier Advance Received`
-                : "✓ Payment Verified • Priority Express Dispatch"}
-            </span>
-          </div>
-
-          {/* Editorial Serif Heading */}
-          <h1 className="font-tj-serif text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] tracking-tight mb-2">
-            {isCod
-              ? `Order Confirmed, ${name ? name.split(" ")[0] : "Shopper"}!`
-              : `Payment Successful, ${name ? name.split(" ")[0] : "Shopper"}!`}
+          <h1 className="font-tj-serif text-2xl font-bold text-[#1B1714]">
+            Confirming your payment
           </h1>
-
-          <p className="text-sm text-stone-600 mb-6 leading-relaxed max-w-md mx-auto font-sans">
-            {isCod ? (
-              <>
-                Your Cash on Delivery order is booked and verified! Your courier advance of ₹{advancePaid.toLocaleString()} has been received online. Our logistics team is now packing your order in our signature discrete box. Please keep ₹{balanceDue.toLocaleString()} ready in cash or UPI at delivery.
-              </>
-            ) : (
-              <>
-                Your online payment was successfully processed. Your order is prepaid and moved to Priority Express Dispatch with 100% Free Shipping.
-              </>
-            )}
+          <p className="text-sm text-[#655B53] mt-2 leading-relaxed">
+            Verifying your transaction with PyDart Pay. Keep this tab open for a moment.
           </p>
-
-          {email.trim() && (
-            <div className="mb-6 inline-flex items-center gap-2 text-xs text-stone-700 bg-white/90 border border-[#ebdcc7] py-2 px-4 rounded-xl shadow-2xs">
-              <Mail className="w-3.5 h-3.5 text-[#731a26]" />
-              <span>
-                Order confirmation &amp; live invoice sent to <strong className="font-semibold text-stone-900">{email.trim()}</strong>
-              </span>
-            </div>
-          )}
-
-          {/* 100% Discreet Packaging Guarantee Card */}
-          <div className="p-4 sm:p-4.5 rounded-2xl bg-white/90 border border-[#ebdcc7] shadow-xs mb-6 text-left flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#fbf7ee] border border-[#ebdcc7] flex items-center justify-center text-[#731a26] shrink-0 mt-0.5 shadow-2xs">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-bold text-xs text-stone-900 uppercase tracking-wide">100% Discreet Packaging</span>
-                <span className="text-[10px] bg-[#b9e5e9] text-stone-900 font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Unbranded Box</span>
-              </div>
-              <p className="text-[11px] text-stone-600 leading-relaxed">
-                Shipped in a plain, heavy-duty tamper-evident cardboard carton with bubble cushion. No product name, wellness reference, or brand hint appears on the outer shipping label.
-              </p>
-            </div>
-          </div>
-
-          {/* Order Summary & Financial Card */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-white/95 border border-stone-200/90 shadow-xl shadow-stone-900/5 mb-8 text-left space-y-3.5 text-xs text-stone-700">
-            {/* Order ID with Copy Button */}
-            <div className="flex justify-between items-center pb-3 border-b border-stone-100">
-              <span className="text-stone-500 font-medium">Order Number:</span>
-              <div className="flex items-center gap-2">
-                <span className="font-mono font-extrabold text-stone-900 bg-stone-100 px-3 py-1 rounded-lg text-xs tracking-wider border border-stone-200">
-                  #{confirmedOrderId}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof navigator !== "undefined" && navigator.clipboard) {
-                      navigator.clipboard.writeText(confirmedOrderId);
-                      setCopiedConfirmedId(true);
-                      setTimeout(() => setCopiedConfirmedId(false), 2000);
-                    }
-                  }}
-                  className="p-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 transition cursor-pointer"
-                  title="Copy Order ID"
-                >
-                  {copiedConfirmedId ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Payment Mode */}
-            <div className="flex justify-between items-center py-2 border-b border-stone-100">
-              <span className="text-stone-500 font-medium">Payment Method:</span>
-              <span className="font-bold text-stone-900">
-                {isCod
-                  ? `Cash on Delivery (₹${advancePaid} Advance Paid Online)`
-                  : "Online Prepaid (PyDart Pay Verified)"}
-              </span>
-            </div>
-
-            {/* Estimated Delivery */}
-            <div className="flex justify-between items-center py-2 border-b border-stone-100">
-              <span className="text-stone-500 font-medium">Estimated Delivery:</span>
-              <span className="font-bold text-emerald-700 flex items-center gap-1.5">
-                <Truck className="w-3.5 h-3.5" />
-                <span>{isCod ? "3 - 5 Business Days" : "2 - 4 Business Days (Priority Express)"}</span>
-              </span>
-            </div>
-
-            {/* Delivery Address */}
-            <div className="flex justify-between items-start py-2 border-b border-stone-100">
-              <span className="text-stone-500 font-medium shrink-0">Delivery Address:</span>
-              <span className="font-semibold text-stone-900 text-right max-w-[260px] leading-relaxed">
-                {address ? `${address}, ` : ""}{city} {postalCode ? `- ${postalCode}` : ""}
-              </span>
-            </div>
-
-            {/* Purchased Items List (if available) */}
-            {confirmedItems && confirmedItems.length > 0 && (
-              <div className="py-2.5 border-b border-stone-100 space-y-2">
-                <span className="text-stone-500 font-medium block mb-1.5">Package Contents:</span>
-                {confirmedItems.map((item: any, idx: number) => (
-                  <div key={idx} className="flex items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      {item.image || item.poster_image ? (
-                        <div className="w-8 h-8 rounded-lg bg-stone-100 border border-stone-200 overflow-hidden shrink-0 relative">
-                          <Image
-                            src={item.image || item.poster_image}
-                            alt={item.name}
-                            fill
-                            className="object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-400 shrink-0">
-                          <Package className="w-4 h-4" />
-                        </div>
-                      )}
-                      <div className="truncate">
-                        <div className="font-semibold text-stone-900 truncate">{item.name}</div>
-                        <div className="text-[10px] text-stone-500">Qty: {item.quantity}</div>
-                      </div>
-                    </div>
-                    <div className="font-mono font-bold text-stone-900 shrink-0">
-                      ₹{((Number(item.price || item.unit_price) || 0) * (item.quantity || 1)).toLocaleString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Financial Breakdown */}
-            {isCod ? (
-              <>
-                <div className="flex justify-between items-center py-1.5 border-b border-stone-100">
-                  <span className="text-stone-500 font-medium">Courier Advance Paid:</span>
-                  <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/80">
-                    ₹{advancePaid.toLocaleString()} (Paid Online)
-                  </span>
-                </div>
-                <div className="flex justify-between items-center pt-2">
-                  <span className="font-bold text-stone-900 text-sm">Payable to Courier at Delivery:</span>
-                  <div className="text-right">
-                    <span className="font-tj-serif font-black text-[#731a26] text-xl sm:text-2xl block">
-                      ₹{balanceDue.toLocaleString()}
-                    </span>
-                    <span className="text-[10px] font-bold block text-stone-500 mt-0.5">
-                      Pay cash or UPI to courier agent at doorstep
-                    </span>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex justify-between items-center pt-2">
-                <span className="font-bold text-stone-900 text-sm">Total Paid:</span>
-                <div className="text-right">
-                  <span className="font-tj-serif font-black text-emerald-700 text-xl sm:text-2xl block">
-                    ₹{displayTotal.toLocaleString()}
-                  </span>
-                  <span className="text-[10px] font-bold block text-stone-500 mt-0.5">
-                    100% Paid online • Zero balance at doorstep
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <Link
-              href={`/order-tracking?query=${encodeURIComponent(confirmedOrderId)}`}
-              className="flex-1 py-4 px-6 rounded-2xl bg-[#731a26] hover:bg-[#5b1420] text-white font-extrabold text-sm shadow-lg shadow-[#731a26]/20 flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
-            >
-              <Truck className="w-4 h-4 text-[#fed000]" />
-              <span>Track Order Live</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  try {
-                    sessionStorage.removeItem("zupe_confirmed_order");
-                  } catch {}
-                }
-                orderConfirmedInSessionRef.current = false;
-                setOrderComplete(false);
-                router.push("/");
-              }}
-              className="flex-1 py-4 px-6 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-800 font-bold text-sm shadow-xs flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
-            >
-              Continue Shopping
-            </button>
-          </div>
         </main>
-
-        <footer className="py-6 text-center text-xs text-stone-500 border-t border-[#ebdcc7]/60 bg-white/60">
-          © 2026 Turkiye Jam — Authentic Ottoman Epimedium Herbal Macun
-        </footer>
-      </div>
-    );
-  }
-
-  // Hydration Loading State
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen tj-diamonds-cream flex flex-col items-center justify-center p-4">
-        <div className="w-12 h-12 rounded-2xl bg-white/90 border border-[#ebdcc7] flex items-center justify-center shadow-sm mb-4">
-          <Loader2 className="w-6 h-6 text-[#731a26] animate-spin" />
-        </div>
-        <p className="text-xs font-bold text-stone-700">Loading your cart &amp; delivery details...</p>
-      </div>
-    );
-  }
-
-  // Cart Empty State
-  if (cart.length === 0) {
-    return (
-      <div className="min-h-screen bg-[#F8F9FA] flex flex-col justify-between">
-        <header className="py-4 border-b border-gray-100 bg-white">
-          <div className="max-w-5xl mx-auto px-4 flex items-center justify-center">
-            <Link href="/" className="inline-block">
-              <Image
-                src="/turkiye-jam-logo.svg"
-                alt="Turkiye Jam"
-                width={140}
-                height={45}
-                className="h-10 w-auto object-contain"
-                priority
-              />
-            </Link>
-          </div>
-        </header>
-
-        <main className="max-w-md mx-auto py-24 px-4 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-50 flex items-center justify-center text-[#cb0805]">
-            <ShoppingBag className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold font-display text-gray-900 mb-2">Your Bag is Empty</h2>
-          <p className="text-sm text-gray-500 mb-6">You don&apos;t have any products ready for checkout yet.</p>
-          <Link
-            href="/#shop"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#5b1420] hover:bg-[#8e1c2e] text-white font-semibold text-sm shadow-xs transition-colors"
-          >
-            Pick Your Pack
-          </Link>
-        </main>
-
-        <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
+        <footer className="py-6 text-center text-xs text-[#8C8177] border-t border-stone-200/60">
           © 2026 Turkiye Jam
         </footer>
       </div>
     );
   }
 
-  // Auth Loading State (Wait for session sync so there is no layout flash)
-  if (authLoading) {
+  if (orderComplete) {
+    const confirmedIsCod =
+      confirmedPaymentId === "Cash on Delivery" ||
+      confirmedPaymentId?.includes("Cash on Delivery");
+    const displayTotal = confirmedTotal || grandTotal;
+    const advancePaid = confirmedAdvancePaid || (confirmedIsCod ? effectiveCodAdvance : displayTotal);
+    const balanceDue = confirmedIsCod
+      ? confirmedBalanceDue && confirmedBalanceDue < displayTotal
+        ? confirmedBalanceDue
+        : Math.max(0, displayTotal - advancePaid)
+      : 0;
+
     return (
-      <div className="min-h-screen tj-diamonds-cream flex flex-col items-center justify-center p-4">
-        <Loader2 className="w-9 h-9 animate-spin text-[#cb0805] mb-3" />
-        <p className="text-sm text-stone-700 font-semibold tracking-wide">
-          Securing your checkout session...
-        </p>
+      <OrderConfirmationView
+        orderId={confirmedOrderId}
+        customerName={name}
+        customerEmail={email}
+        address={address}
+        city={city}
+        postalCode={postalCode}
+        isCod={confirmedIsCod}
+        displayTotal={displayTotal}
+        advancePaid={advancePaid}
+        balanceDue={balanceDue}
+        items={confirmedItems}
+        onContinueShopping={() => {
+          try {
+            sessionStorage.removeItem("zupe_confirmed_order");
+          } catch {}
+          orderConfirmedInSessionRef.current = false;
+          setOrderComplete(false);
+          router.push("/");
+        }}
+      />
+    );
+  }
+
+  if (!isInitialized || authLoading) {
+    return (
+      <div className="min-h-dvh bg-[#FBF8F3] flex flex-col items-center justify-center p-4">
+        <Loader2 className="w-7 h-7 text-[#6E1625] animate-spin mb-3" />
+        <p className="text-sm text-[#655B53]">Loading checkout…</p>
       </div>
     );
   }
 
-  // Mandatory Authentication Gate: Show checkout page ONLY after login
-  if (!user) {
-    const savedPhone = typeof window !== "undefined"
-      ? (localStorage.getItem("zupe_checkout_phone") || localStorage.getItem("zupe_last_phone") || "")
-      : "";
-
+  if (cart.length === 0) {
     return (
-      <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900 flex flex-col justify-between">
-        {/* Top Minimal Header */}
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-2xs">
-          <div className="max-w-5xl mx-auto px-4 h-16 sm:h-18 flex items-center justify-between gap-4">
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors group py-2"
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5 text-gray-600" />
-              <span className="hidden sm:inline">Continue Shopping</span>
-              <span className="sm:hidden text-[11px]">Store</span>
-            </Link>
-
-            <Link href="/" className="inline-block transition-transform hover:opacity-95">
+      <div className="min-h-dvh bg-[#FBF8F3] text-[#1B1714] flex flex-col justify-between">
+        <header className="border-b border-stone-200/70 bg-[#FBF8F3]">
+          <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-center">
+            <Link href="/" className="inline-flex items-center">
               <Image
                 src="/turkiye-jam-logo.svg"
                 alt="Turkiye Jam"
-                width={140}
+                width={132}
                 height={40}
-                className="h-8 sm:h-9 w-auto object-contain"
+                className="h-8 w-auto object-contain"
                 priority
               />
             </Link>
-
-            <div className="flex items-center gap-2 text-right">
-              <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
-                <ShieldCheck className="w-4 h-4 stroke-[2.2]" />
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-[11px] font-bold text-gray-900 leading-tight">100% Secure Checkout</p>
-                <p className="text-[10px] text-gray-400 leading-tight">256-Bit SSL Encrypted</p>
-              </div>
-            </div>
           </div>
         </header>
-
-        {/* Centered Auth Card with Order Preview Badge */}
-        <main className="max-w-md mx-auto w-full py-8 sm:py-12 px-4 flex flex-col items-center">
-          {cart.length > 0 && (
-            <div className="w-full mb-5 p-3 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-rose-50 text-[#cb0805] flex items-center justify-center">
-                  <ShoppingBag className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-gray-900">
-                    {totalItemCount} {totalItemCount === 1 ? "Item" : "Items"} Reserved in Bag
-                  </p>
-                  <p className="text-[11px] text-emerald-700 font-semibold">
-                    Payable: ₹{onlineGrandTotal.toLocaleString("en-IN")} • Free Express Delivery
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Reserved
-              </span>
-            </div>
-          )}
-
-          <div className="w-full">
-            <AuthCard
-              isModal={false}
-              initialMode="login"
-              initialPhone={savedPhone || undefined}
-              autoSendOtp={Boolean(savedPhone && savedPhone.length === 10)}
-              notice="Please sign in with WhatsApp to access checkout & saved addresses 🛍️"
-              onSuccess={(loggedInUser) => {
-                if (loggedInUser?.phone) {
-                  setPhone(cleanPhoneDigits(loggedInUser.phone));
-                }
-                if (loggedInUser?.name && (!name || name.startsWith("Customer "))) {
-                  setName(loggedInUser.name);
-                }
-              }}
-            />
+        <main className="max-w-sm mx-auto py-24 px-4 text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-[#6E1625]">
+            <ShoppingBag className="w-6 h-6" />
           </div>
+          <h1 className="font-tj-serif text-2xl font-bold text-[#1B1714]">Your bag is empty</h1>
+          <p className="text-sm text-[#655B53] mt-2 mb-6">
+            Add a Turkiye Jam pack to proceed to checkout.
+          </p>
+          <Link
+            href="/#shop"
+            className="inline-flex items-center justify-center min-h-[48px] px-6 rounded-xl bg-[#6E1625] hover:bg-[#54101C] text-white text-sm font-medium transition-colors"
+          >
+            Choose your pack
+          </Link>
         </main>
-
-        <footer className="py-6 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
-          © 2026 Turkiye Jam • 100% Secure &amp; Verified
+        <footer className="py-6 text-center text-xs text-[#8C8177] border-t border-stone-200/60">
+          © 2026 Turkiye Jam
         </footer>
       </div>
     );
   }
 
+  // Mandatory Authentication Gate
+  if (!user) {
+    const savedPhone =
+      typeof window !== "undefined"
+        ? localStorage.getItem("zupe_checkout_phone") || localStorage.getItem("zupe_last_phone") || ""
+        : "";
+
+    return (
+      <div className="min-h-dvh bg-[#FBF8F3] text-[#1B1714] antialiased flex flex-col justify-between">
+        <header className="sticky top-0 z-30 bg-[#FBF8F3]/95 backdrop-blur-sm border-b border-stone-200/70">
+          <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 min-h-[44px] text-sm text-[#655B53] hover:text-[#1B1714] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Store</span>
+            </Link>
+            <Link href="/" className="inline-flex items-center">
+              <Image
+                src="/turkiye-jam-logo.svg"
+                alt="Turkiye Jam"
+                width={132}
+                height={40}
+                className="h-8 w-auto object-contain"
+                priority
+              />
+            </Link>
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#655B53]">
+              <Lock className="w-3.5 h-3.5 text-[#116A4B]" />
+              <span className="hidden sm:inline">Encrypted checkout</span>
+            </span>
+          </div>
+        </header>
+
+        <main className="max-w-md mx-auto w-full py-10 px-4 space-y-4">
+          <div className="px-4 py-3 rounded-2xl bg-white border border-stone-200/80 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-[#FBF8F3] border border-stone-200/80 flex items-center justify-center text-[#6E1625] shrink-0">
+                <ShoppingBag className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[#1B1714] truncate">
+                  {totalItemCount} {totalItemCount === 1 ? "item" : "items"} in your bag
+                </p>
+                <p className="text-xs text-[#655B53] tabular-nums">
+                  ₹{onlineGrandTotal.toLocaleString("en-IN")} · {isFreeDelivery ? "Free express delivery" : `₹${baseShippingFee} delivery`}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <AuthCard
+            isModal={false}
+            initialMode="login"
+            initialPhone={savedPhone || undefined}
+            autoSendOtp={Boolean(savedPhone && savedPhone.length === 10)}
+            notice="Sign in with WhatsApp to continue to delivery & payment"
+            onSuccess={(loggedInUser) => {
+              if (loggedInUser?.phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
+              if (loggedInUser?.name && (!name || name.startsWith("Customer "))) {
+                setName(loggedInUser.name);
+              }
+            }}
+          />
+        </main>
+
+        <footer className="py-6 text-center text-xs text-[#8C8177] border-t border-stone-200/60">
+          © 2026 Turkiye Jam
+        </footer>
+      </div>
+    );
+  }
+
+  // Primary Pay Button (reused cleanly on desktop sticky summary & mobile sticky dock)
+  const payButtonLabel = hasOutOfStockItems
+    ? "Remove out-of-stock items"
+    : isCod
+    ? `Pay ₹${effectiveCodAdvance.toLocaleString("en-IN")} advance`
+    : `Pay ₹${onlineGrandTotal.toLocaleString("en-IN")}`;
+
+  const renderPrimaryPayButton = (buttonId?: string, compactMobile = false) => (
+    <button
+      id={buttonId}
+      type={buttonId ? "submit" : "button"}
+      onClick={buttonId ? undefined : () => handlePlaceOrder()}
+      disabled={loading || hasOutOfStockItems}
+      className={`${
+        compactMobile ? "px-6 min-h-[48px]" : "w-full min-h-[52px] px-6"
+      } rounded-xl bg-[#6E1625] hover:bg-[#54101C] text-white text-sm sm:text-base font-medium shadow-sm transition-transform duration-150 active:scale-[0.97] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-55 disabled:cursor-not-allowed tabular-nums`}
+    >
+      {showPaySpinner ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Opening payment…</span>
+        </>
+      ) : (
+        <>
+          <Lock className="w-4 h-4 opacity-90 shrink-0" />
+          <span>{payButtonLabel}</span>
+          {!hasOutOfStockItems && <ArrowRight className="w-4 h-4 shrink-0" />}
+        </>
+      )}
+    </button>
+  );
+
+  // ========================================================
+  // MAIN SINGLE-PAGE CHECKOUT
+  // ========================================================
   return (
-    <div className="min-h-screen tj-diamonds-cream text-stone-900 antialiased selection:bg-[#fed000] selection:text-stone-900">
-      {/* 1. TOP CLEAN MINIMAL HEADER */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-2xs">
-        <div className="max-w-5xl mx-auto px-4 h-16 sm:h-18 flex items-center justify-between gap-4">
-          {/* Back to Store */}
+    <div className="min-h-dvh bg-[#FBF8F3] text-[#1B1714] antialiased flex flex-col justify-between">
+      {/* 1. Minimal Quiet Header */}
+      <header className="sticky top-0 z-30 bg-[#FBF8F3]/95 backdrop-blur-sm border-b border-stone-200/70">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors group py-2"
+            className="inline-flex items-center gap-1.5 min-h-[44px] text-sm text-[#655B53] hover:text-[#1B1714] transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5 text-gray-600" />
-            <span className="hidden sm:inline">Continue Shopping</span>
-            <span className="sm:hidden text-[11px]">Store</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Back to store</span>
+            <span className="sm:hidden">Store</span>
           </Link>
 
-          {/* Centered Logo */}
-          <Link href="/" className="inline-block transition-transform hover:opacity-95">
+          <Link href="/" className="inline-flex items-center">
             <Image
               src="/turkiye-jam-logo.svg"
               alt="Turkiye Jam"
-              width={140}
+              width={132}
               height={40}
-              className="h-8 sm:h-9 w-auto object-contain"
+              className="h-8 w-auto object-contain"
               priority
             />
           </Link>
 
-          {/* Secure Checkout Trust Badge */}
-          <div className="flex items-center gap-2 text-right">
-            <div className="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
-              <ShieldCheck className="w-4 h-4 stroke-[2.2]" />
-            </div>
-            <div className="hidden sm:block text-left">
-              <p className="text-[11px] font-bold text-gray-900 leading-tight">100% Secure Checkout</p>
-              <p className="text-[10px] text-gray-400 leading-tight">256-Bit SSL Encrypted</p>
-            </div>
-          </div>
+          <span className="inline-flex items-center gap-1.5 text-xs text-[#655B53]">
+            <Lock className="w-3.5 h-3.5 text-[#116A4B]" />
+            <span className="hidden sm:inline">Encrypted checkout</span>
+          </span>
         </div>
       </header>
 
-      {/* 3. MAIN CHECKOUT GRID */}
-      <main className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
+      {/* 2. Main Two-Column Checkout */}
+      <main className="max-w-5xl w-full mx-auto px-4 py-6 sm:py-10 pb-32 lg:pb-14">
+        {/* Heading + Signed-In Account Line */}
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="font-tj-serif text-2xl sm:text-3xl font-bold text-[#1B1714] tracking-tight">
+              Checkout
+            </h1>
+            <p className="text-xs sm:text-sm text-[#655B53] mt-1">
+              Signed in as <span className="font-medium text-[#1B1714]">{user.name || user.phone}</span>
+              {" · "}
+              <button
+                type="button"
+                onClick={() => openAuthModal("login", "Switch WhatsApp account")}
+                className="underline underline-offset-2 hover:text-[#1B1714] cursor-pointer"
+              >
+                Switch account
+              </button>
+            </p>
+          </div>
+        </div>
+
+        {/* Restored Cart Banner */}
         {recoveredBanner && (
-          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm flex items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              <div>
-                <p className="font-bold text-emerald-950">{recoveredBanner}</p>
-                <p className="text-[11px] text-emerald-700 mt-0.5">
-                  Your cart items and saved delivery information are ready. Complete your order below.
-                </p>
-              </div>
-            </div>
+          <div className="mb-5 px-4 py-3 rounded-xl bg-[#ECF7F2] border border-[#CBE8DA] text-[#116A4B] text-sm flex items-center justify-between gap-3">
+            <span>{recoveredBanner}</span>
             <button
               type="button"
               onClick={() => setRecoveredBanner(null)}
-              className="text-emerald-700 hover:text-emerald-900 font-bold text-xs p-1"
+              aria-label="Dismiss notice"
+              className="p-1.5 rounded-lg hover:bg-[#116A4B]/10 cursor-pointer shrink-0"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
+        {/* Inline Error Banner */}
         {errorMessage && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
-            <p className="font-medium">{errorMessage}</p>
+          <div
+            role="alert"
+            className="mb-5 px-4 py-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start gap-2.5"
+          >
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <span>{errorMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handlePlaceOrder} className={`grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 ${checkoutStep === "payment" ? "pb-28 sm:pb-0" : ""}`}>
-          {/* LEFT COLUMN: URGENCY BANNER + STEP 1 + STEP 2 */}
-          <div className="lg:col-span-7 space-y-6 sm:space-y-7">
-            {/* Verified WhatsApp Customer Status Banner */}
-            {user && (
-              <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between gap-3 shadow-2xs">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-emerald-950 truncate">
-                      Signed in as {user.name || user.phone}
-                    </p>
-                    <p className="text-[11px] text-emerald-700 truncate">
-                      WhatsApp Verified • 1-Click Checkout Active
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => openAuthModal("login", "Switch or re-verify WhatsApp account")}
-                  className="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 underline shrink-0 cursor-pointer"
-                >
-                  Switch
-                </button>
-              </div>
-            )}
-
-            {/* Urgency Countdown Banner (Matches Reference Photo 3) */}
-            <div className="p-3 sm:p-4 rounded-2xl bg-[#FFF9F3] border border-[#FFE7D1] flex items-center justify-between gap-2 sm:gap-3 shadow-2xs">
-              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#fee2e2] text-[#cb0805] flex items-center justify-center shrink-0">
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#cb0805]" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-extrabold text-[11px] sm:text-sm text-gray-900 leading-tight truncate">
-                    Limited-Time Offer
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 truncate mt-0.5">
-                    Your special deal ends in
-                  </p>
-                </div>
-              </div>
-
-              {/* 3 Dark Digital Countdown Blocks */}
-              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#111827] text-white font-mono font-black text-xs sm:text-sm px-1.5 sm:px-2 py-1 rounded-md min-w-[26px] sm:min-w-[34px] text-center shadow-xs">
-                    {Math.floor(timeLeft / 3600).toString().padStart(2, "0")}
-                  </div>
-                  <span className="text-[8.5px] sm:text-[9px] text-gray-400 font-semibold mt-0.5">Hours</span>
-                </div>
-                <span className="font-extrabold text-gray-900 pb-2.5 text-xs sm:text-sm">:</span>
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#111827] text-white font-mono font-black text-xs sm:text-sm px-1.5 sm:px-2 py-1 rounded-md min-w-[26px] sm:min-w-[34px] text-center shadow-xs">
-                    {Math.floor((timeLeft % 3600) / 60).toString().padStart(2, "0")}
-                  </div>
-                  <span className="text-[8.5px] sm:text-[9px] text-gray-400 font-semibold mt-0.5">Mins</span>
-                </div>
-                <span className="font-extrabold text-gray-900 pb-2.5 text-xs sm:text-sm">:</span>
-                <div className="flex flex-col items-center">
-                  <div className="bg-[#111827] text-white font-mono font-black text-xs sm:text-sm px-1.5 sm:px-2 py-1 rounded-md min-w-[26px] sm:min-w-[34px] text-center shadow-xs">
-                    {(timeLeft % 60).toString().padStart(2, "0")}
-                  </div>
-                  <span className="text-[8.5px] sm:text-[9px] text-gray-400 font-semibold mt-0.5">Secs</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Collapsible Mobile Order Summary Bar (Matches Reference Design) */}
-            <div className="block lg:hidden rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
-                className="w-full p-3.5 flex items-center justify-between gap-3 text-left bg-gray-50/70 hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-rose-100/70 border border-rose-200/50 flex items-center justify-center text-[#cb0805] shrink-0">
-                    <ShoppingBag className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-gray-900">
-                      <span>Order summary</span>
-                      {isMobileSummaryOpen ? (
-                        <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
-                      ) : (
-                        <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
-                      )}
-                    </div>
-                    <p className="text-[11px] text-gray-500">
-                      {totalItemCount} {totalItemCount === 1 ? "item" : "items"} in your order
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  {totalMrp > grandTotal && (
-                    <span className="line-through text-xs text-gray-400 block">
-                      ₹{totalMrp.toLocaleString()}
-                    </span>
-                  )}
-                  <div className="flex items-center justify-end gap-1.5">
-                    <span className="inline-block text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded">
-                      {isFreeDelivery ? "FREE Delivery" : `+₹${baseShippingFee} Delivery`}
-                    </span>
-                    <span className="text-sm font-extrabold text-gray-950">
-                      ₹{grandTotal.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </button>
-
-              <AnimatePresence>
-                {isMobileSummaryOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="border-t border-gray-100 p-4 space-y-3.5 bg-white"
-                  >
-                    {cart.map((item) => {
-                      const itemTotal = (item.bundle_tier && item.bundle_tier > 1 && item.bundle_total)
-                        ? item.bundle_total
-                        : item.price * item.quantity;
-                      const itemBaseUnit = item.original_price || item.price;
-                      const itemRegularTotal = itemBaseUnit * item.quantity;
-                      const isBundle = Boolean(item.bundle_tier && item.bundle_tier > 1);
-                      const itemMrp = item.mrp || Math.round(itemBaseUnit * 1.25);
-                      const itemSaving = isBundle
-                        ? Math.max(0, itemRegularTotal - itemTotal)
-                        : Math.max(0, (itemMrp - item.price) * item.quantity);
-
-                      return (
-                        <div key={item.id} className="flex items-center gap-3">
-                          <div className="relative w-14 h-14 rounded-xl bg-gray-50 border border-gray-200 shrink-0 overflow-hidden">
-                            <Image src={item.poster_image} alt={item.name} fill className="object-cover" />
-                            <div className="absolute top-0 right-0 w-4 h-4 rounded-bl-lg bg-gray-900 text-white text-[9px] font-bold flex items-center justify-center">
-                              {item.quantity}
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-gray-900 truncate">{item.name}</p>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <span className="text-[11px] text-gray-500">Qty: {item.quantity} × ₹{item.price.toLocaleString()}</span>
-                              {isBundle ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-[#FF5722] text-[10px] font-bold">
-                                  <span>✨</span>
-                                  <span>{item.offer_label || `Saved ₹${itemSaving.toLocaleString()}`}</span>
-                                </span>
-                              ) : itemSaving > 0 ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-[#cb0805] text-[10px] font-bold">
-                                  <Tag className="w-2.5 h-2.5" />
-                                  <span>You&apos;re saving ₹{itemSaving.toLocaleString()}</span>
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {/* Quantity Stepper Control */}
-                            <div className="flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-lg p-0.5">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (item.quantity > 1) {
-                                    updateQuantity(item.id, item.quantity - 1);
-                                  } else {
-                                    removeFromCart(item.id);
-                                  }
-                                }}
-                                className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
-                                title={item.quantity > 1 ? "Remove 1 item" : "Remove item"}
-                                aria-label={`Reduce quantity of ${item.name}`}
-                              >
-                                <Minus className="w-3 h-3" />
-                              </button>
-                              <span className="px-1 text-xs font-bold text-gray-900 min-w-[14px] text-center">
-                                {item.quantity}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-emerald-600 transition-colors cursor-pointer"
-                                title="Add 1 more"
-                                aria-label={`Increase quantity of ${item.name}`}
-                              >
-                                <Plus className="w-3 h-3" />
-                              </button>
-                            </div>
-
-                            <div className="text-right">
-                              {isBundle && itemRegularTotal > itemTotal && (
-                                <span className="text-[10px] text-gray-400 line-through block">
-                                  ₹{itemRegularTotal.toLocaleString()}
-                                </span>
-                              )}
-                              <span className="text-xs font-extrabold text-gray-900 block">
-                                ₹{itemTotal.toLocaleString()}
-                              </span>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => removeFromCart(item.id)}
-                              title="Remove item"
-                              className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                              aria-label={`Remove ${item.name} from cart`}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Promo Code Input Row (Matches Reference Photo 3) */}
-                    <div className="pt-2 border-t border-gray-100 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
-                          <Tag className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            value={promoCode}
-                            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                            placeholder="Promo code"
-                            className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-900 placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#cb0805] bg-white"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleApplyPromo}
-                          disabled={promoLoading}
-                          className="px-4 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
-                        >
-                          {promoLoading ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <>
-                              <span>Apply</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      {promoSuccess && (
-                        <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center justify-between">
-                          <span>{promoSuccess}</span>
-                          <button
-                            type="button"
-                            onClick={handleRemovePromo}
-                            className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      )}
-
-                      {promoError && (
-                        <p className="text-xs text-red-600 font-medium pl-1">
-                          {promoError}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Full Financial Breakdown in Mobile Order Summary */}
-                    <div className="pt-3 border-t border-gray-100 space-y-2 text-xs">
-                      <div className="flex justify-between text-gray-600">
-                        <span>Item Subtotal ({totalItemCount} {totalItemCount === 1 ? "item" : "items"})</span>
-                        <span className="font-semibold text-gray-900">
-                          ₹{(bundleSavings > 0 ? regularSubtotal : subtotal).toLocaleString()}
-                        </span>
-                      </div>
-
-                      {bundleSavings > 0 && (
-                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                          <span className="flex items-center gap-1 font-bold">
-                            <span>✨</span>
-                            <span>Buy More Save More Savings</span>
-                          </span>
-                          <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
-                        </div>
-                      )}
-
-                      {promoDiscount > 0 && (
-                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                          <span className="flex items-center gap-1 font-bold">
-                            <Tag className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Promo Discount ({appliedPromo})</span>
-                          </span>
-                          <span className="font-extrabold">-₹{promoDiscount.toLocaleString()}</span>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between text-gray-600">
-                        <span className="flex items-center gap-1.5">
-                          Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
-                        </span>
-                        {isFreeDelivery ? (
-                          <span className="font-bold text-emerald-700">
-                            FREE {standardShippingFee > 0 ? `(Saved ₹${standardShippingFee})` : ""}
-                          </span>
-                        ) : (
-                          <span className="font-semibold text-gray-900">
-                            ₹{baseShippingFee.toLocaleString("en-IN")}
-                          </span>
-                        )}
-                      </div>
-
-                      {isCod && (
-                        <div className="flex justify-between text-gray-600">
-                          <span>Courier &amp; COD Handling Fee</span>
-                          <span className="font-semibold text-gray-900">+₹{configuredCodFee}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Total Payable Box */}
-                    {paymentMethod === "online" ? (
-                      <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-bold text-gray-900">Total Payable (Online)</p>
-                          <p className="text-[10px] text-stone-600 font-medium">
-                            {isFreeDelivery
-                              ? "Free Express Delivery included"
-                              : `Includes ₹${baseShippingFee} Standard Shipping`}
-                          </p>
-                        </div>
-                        <span className="text-base sm:text-lg font-black text-gray-950">
-                          ₹{onlineGrandTotal.toLocaleString()}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/90 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-bold text-gray-900">Total COD Order Value</p>
-                            <p className="text-[10px] text-stone-600 font-medium">Includes ₹{configuredCodFee} Delivery Fee</p>
-                          </div>
-                          <span className="text-base font-black text-gray-950">
-                            ₹{codGrandTotal.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="pt-1.5 border-t border-amber-200/60 flex items-center justify-between text-[11px]">
-                          <span className="text-stone-700 font-medium">Advance to Pay Online Now:</span>
-                          <span className="font-extrabold text-[#780016]">₹{configuredCodFee}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-stone-700 font-medium">Balance Payable on Delivery:</span>
-                          <span className="font-extrabold text-stone-900">₹{codDoorstepBalance.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* STEP 1: CONTACT DETAILS (Matches Reference Photo 3) */}
-            <div className="space-y-3.5">
+        <form onSubmit={handlePlaceOrder} noValidate className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+          {/* Mobile Collapsible Order Summary Accordion */}
+          <div className="lg:hidden rounded-2xl bg-white border border-stone-200/80 overflow-hidden shadow-[0_1px_2px_rgba(27,23,20,0.04)]">
+            <button
+              type="button"
+              onClick={() => setIsMobileSummaryOpen((v) => !v)}
+              aria-expanded={isMobileSummaryOpen}
+              className="w-full min-h-[56px] px-4 py-3 flex items-center justify-between gap-3 text-left cursor-pointer"
+            >
               <div className="flex items-center gap-2.5">
-                <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                  1
+                <ShoppingBag className="w-4 h-4 text-[#6E1625] shrink-0" />
+                <span className="text-sm font-medium text-[#1B1714]">
+                  Order summary ({totalItemCount})
                 </span>
-                <h2 className="text-lg sm:text-xl font-bold font-display text-gray-900">
-                  Contact details
+                {isMobileSummaryOpen ? (
+                  <ChevronUp className="w-4 h-4 text-[#8C8177]" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-[#8C8177]" />
+                )}
+              </div>
+              <span className="text-base font-semibold text-[#1B1714] tabular-nums">
+                ₹{grandTotal.toLocaleString("en-IN")}
+              </span>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {isMobileSummaryOpen && (
+                <motion.div
+                  initial={prefersReducedMotion ? false : { height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: EASE_OUT }}
+                  className="overflow-hidden border-t border-stone-100"
+                >
+                  <div className="p-4">
+                    <OrderSummaryCard
+                      cart={cart}
+                      outOfStockItemIds={outOfStockItemIds}
+                      totalItemCount={totalItemCount}
+                      subtotal={subtotal}
+                      regularSubtotal={regularSubtotal}
+                      bundleSavings={bundleSavings}
+                      promoCode={promoCode}
+                      onPromoCodeChange={setPromoCode}
+                      onApplyPromo={handleApplyPromo}
+                      onRemovePromo={handleRemovePromo}
+                      appliedPromo={appliedPromo}
+                      promoDiscount={promoDiscount}
+                      promoLoading={promoLoading}
+                      promoError={promoError}
+                      promoSuccess={promoSuccess}
+                      isFreeDelivery={isFreeDelivery}
+                      baseShippingFee={baseShippingFee}
+                      standardShippingFee={standardShippingFee}
+                      paymentMethod={paymentMethod}
+                      codAdvanceAmount={effectiveCodAdvance}
+                      onlineGrandTotal={onlineGrandTotal}
+                      codGrandTotal={codGrandTotal}
+                      codDoorstepBalance={codDoorstepBalance}
+                      onUpdateQuantity={updateQuantity}
+                      onRemoveItem={removeFromCart}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* LEFT COLUMN (7 cols): Delivery Details + Payment Method */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Section 1: Contact & Delivery */}
+            <section className="bg-white rounded-2xl border border-stone-200/80 shadow-[0_1px_2px_rgba(27,23,20,0.04)] p-5 sm:p-6 space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-base font-semibold text-[#1B1714]">
+                  Delivery details
                 </h2>
-              </div>
-
-              <p className="text-xs text-gray-500 flex items-center gap-1.5 pl-8.5 -mt-1.5 font-medium">
-                <Lock className="w-3 h-3 text-gray-400" />
-                <span>Secure checkout · Track your order anytime</span>
-              </p>
-
-              <div className="space-y-2.5 pt-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  MOBILE NUMBER *
-                </label>
-                <div className="flex rounded-xl border border-gray-200 overflow-hidden focus-within:border-[#cb0805] focus-within:ring-1 focus-within:ring-[#cb0805] transition-all bg-white shadow-2xs">
-                  {/* Flag & Country Code Selector Pill */}
-                  <div className="px-3 bg-gray-50 border-r border-gray-200 text-gray-800 font-semibold text-xs flex items-center gap-1.5 select-none shrink-0">
-                    <svg className="w-4 h-3 rounded-xs shrink-0 shadow-2xs border border-gray-200/50" viewBox="0 0 640 480">
-                      <path fill="#FF9933" d="M0 0h640v160H0z"/>
-                      <path fill="#FFFFFF" d="M0 160h640v160H0z"/>
-                      <path fill="#128807" d="M0 320h640v160H0z"/>
-                      <circle cx="320" cy="240" r="38" fill="none" stroke="#000088" strokeWidth="6"/>
-                      <circle cx="320" cy="240" r="8" fill="#000088"/>
-                    </svg>
-                    <span>+91</span>
-                    <ChevronDown className="w-3 h-3 text-gray-400" />
-                  </div>
-                  <input
-                    id="phone-input"
-                    type="tel"
-                    required
-                    maxLength={10}
-                    value={phone}
-                    onChange={(e) => setPhone(cleanPhoneDigits(e.target.value))}
-                    onBlur={(e) => {
-                      const val = cleanPhoneDigits(e.target.value);
-                      if (val.length === 10) lookupCustomerDetails(val);
-                    }}
-                    placeholder="97412 28540"
-                    className="w-full px-4 py-3 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none tracking-wide"
-                  />
-                </div>
-
-                {/* Looking up customer indicator */}
-                {isLookingUpCustomer && (
-                  <div className="flex items-center gap-1.5 text-xs text-[#cb0805] font-semibold pt-0.5 animate-in fade-in duration-150">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#cb0805]" />
-                    <span>Checking Shiprocket for saved address...</span>
-                  </div>
-                )}
-
-                {/* Found customer address banner */}
-                {customerLookupBadge && !isLookingUpCustomer && (
-                  <div className="flex items-center justify-between gap-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold animate-in fade-in duration-200 shadow-2xs">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>{customerLookupBadge}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setCustomerLookupBadge(null)}
-                      className="text-xs text-emerald-700 hover:text-emerald-900 font-bold p-0.5 cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-
-                {/* WhatsApp Notification Card (Matches Reference Photo 3) */}
-                <div className="p-3 rounded-xl bg-[#FFF8F0] border border-[#FFE7D1] flex items-start gap-2.5 shadow-2xs">
-                  <div className="w-5 h-5 rounded-full bg-[#25D366]/15 text-[#25D366] flex items-center justify-center shrink-0 mt-0.5">
-                    <svg className="w-3.5 h-3.5 fill-[#25D366]" viewBox="0 0 24 24">
-                      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.299.144.347.491 1.2.534 1.287.043.087.072.188.014.303-.058.116-.087.188-.173.289l-.26.302c-.087.087-.179.18-.077.355.101.174.449.741.964 1.201.662.591 1.221.774 1.394.861.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.144.39-.086s1.011.477 1.184.564.289.13.332.202c.044.073.044.419-.1.824z" />
-                    </svg>
-                  </div>
-                  <p className="text-xs text-gray-700 leading-relaxed">
-                    We&apos;ll send your <span className="font-bold text-[#cb0805]">order confirmation</span> and <span className="font-bold text-[#cb0805]">delivery updates</span> to this number.
-                  </p>
-                </div>
-
-                <p className="text-[11px] text-gray-400 flex items-center gap-1.5 pl-1">
-                  <Lock className="w-3 h-3 text-gray-400 shrink-0" />
-                  <span>Your number is used only for your order updates.</span>
-                </p>
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-            {/* STEP 2: DELIVERY DETAILS (Matches Reference Photo 3) */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-2.5">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                    2
-                  </span>
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-bold font-display text-gray-900 leading-tight">
-                      Delivery details
-                    </h2>
-                    <p className="text-[11px] text-gray-400 font-medium">
-                      Enter your delivery address
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  {/* Auto-Fetch Current Location Button (Pill Design) */}
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleFetchCurrentLocation}
                     disabled={locationLoading}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#cb0805] bg-rose-50/90 hover:bg-rose-100 border border-[#cb0805]/30 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
-                    title="Auto-fetch address using GPS current location"
+                    className="min-h-[38px] px-3 rounded-lg bg-[#FBF8F3] hover:bg-[#F3EDE5] border border-stone-200/80 text-xs font-medium text-[#6E1625] inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-55"
                   >
                     {locationLoading ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#cb0805]" />
-                        <span>Detecting Location...</span>
-                      </>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <>
-                        <LocateFixed className="w-3.5 h-3.5 text-[#cb0805]" />
-                        <span>Use current location</span>
-                      </>
+                      <LocateFixed className="w-3.5 h-3.5" />
                     )}
+                    <span>{locationLoading ? "Locating…" : "Use GPS"}</span>
                   </button>
-
                   {savedAddresses.length > 0 && (
                     <button
                       type="button"
                       onClick={handleUseNewAddress}
-                      className="text-xs font-bold text-[#cb0805] hover:underline flex items-center gap-1 cursor-pointer"
+                      className="min-h-[38px] px-2.5 text-xs font-medium text-[#655B53] hover:text-[#1B1714] inline-flex items-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>{isUsingNewAddress ? "Entering New Address" : "Use New Address"}</span>
+                      <span>New address</span>
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* Location Status Feedback Banner */}
-              {locationSuccessMsg && (
-                <div className="flex items-center justify-between gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold animate-in fade-in duration-200">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{locationSuccessMsg}</span>
-                  </div>
+              {/* GPS Feedback */}
+              {locationNotice && (
+                <div
+                  className={`px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-between gap-2 border ${
+                    locationNotice.type === "success"
+                      ? "bg-[#ECF7F2] border-[#CBE8DA] text-[#116A4B]"
+                      : locationNotice.type === "warning"
+                      ? "bg-amber-50 border-amber-200 text-amber-900"
+                      : "bg-rose-50 border-rose-200 text-rose-800"
+                  }`}
+                >
+                  <span>{locationNotice.text}</span>
                   <button
                     type="button"
-                    onClick={() => setLocationSuccessMsg(null)}
-                    className="text-xs text-emerald-700 hover:text-emerald-900 font-bold p-0.5 cursor-pointer"
+                    onClick={() => setLocationNotice(null)}
+                    aria-label="Dismiss location notice"
+                    className="p-1 cursor-pointer shrink-0"
                   >
-                    ✕
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}
 
-              {/* Approximate Location Notice (Laptop / Wi-Fi Alert) */}
-              {locationAccuracyNotice && (
-                <div className="flex items-start justify-between gap-2.5 p-3.5 bg-amber-50 border border-amber-200/80 rounded-xl text-amber-900 text-xs leading-relaxed animate-in fade-in duration-200">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-amber-900">Approximate Network Location</p>
-                      <p className="text-amber-800 text-[11px] mt-0.5">{locationAccuracyNotice}</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLocationAccuracyNotice(null)}
-                    className="text-amber-700 hover:text-amber-900 text-xs font-bold p-0.5 cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-
-              {locationError && (
-                <div className="flex items-center justify-between gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-medium animate-in fade-in duration-200">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-                    <span>{locationError}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLocationError(null)}
-                    className="text-xs text-rose-700 hover:text-rose-900 font-bold p-0.5 cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-
-              {/* India Post Detected Localities Chips */}
-              {detectedPostOffices.length > 0 && (
-                <div className="p-3 bg-rose-50/70 border border-rose-200/80 rounded-xl space-y-1.5 animate-in fade-in duration-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-gray-800 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-[#cb0805]" />
-                      Select your locality / post office in {postalCode || city}:
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setDetectedPostOffices([])}
-                      className="text-[10px] text-gray-400 hover:text-gray-600 font-semibold cursor-pointer"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 pt-0.5">
-                    {detectedPostOffices.slice(0, 6).map((poName) => (
-                      <button
-                        key={poName}
-                        type="button"
-                        onClick={() => {
-                          if (!address.toLowerCase().includes(poName.toLowerCase())) {
-                            setAddress((prev) => (prev ? `${prev}, ${poName}` : poName));
-                          }
-                        }}
-                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-rose-200 text-gray-800 hover:border-[#cb0805] hover:text-[#cb0805] transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
-                      >
-                        <span>+ {poName}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Saved Delivery Addresses Selection Cards */}
+              {/* Saved Addresses */}
               {savedAddresses.length > 0 && !isUsingNewAddress && (
-                <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200/80 space-y-2.5">
-                  <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#cb0805]" />
-                    Saved Addresses ({savedAddresses.length})
-                  </p>
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-[#655B53]">Saved addresses</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {savedAddresses.map((addr) => {
                       const isSelected = selectedAddressId === addr.id;
@@ -3227,24 +1706,35 @@ function CheckoutContent() {
                         <div
                           key={addr.id}
                           onClick={() => handleSelectSavedAddress(addr)}
-                          className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleSelectSavedAddress(addr);
+                            }
+                          }}
+                          className={`p-3 rounded-xl border text-left cursor-pointer transition-colors ${
                             isSelected
-                              ? "border-[#cb0805] bg-rose-50/50 ring-1 ring-[#cb0805]"
-                              : "border-gray-200 bg-white hover:border-gray-300"
+                              ? "border-[#6E1625] bg-[#FDF6F7]"
+                              : "border-stone-200 bg-[#FBF8F3]/60 hover:border-stone-300"
                           }`}
                         >
-                          <div className="flex items-start justify-between gap-1 mb-1">
-                            <span className="font-bold text-xs text-gray-900">{addr.recipient_name}</span>
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <span className="text-xs font-semibold text-[#1B1714] truncate">
+                              {addr.recipient_name}
+                            </span>
                             <button
                               type="button"
                               onClick={(e) => handleDeleteSavedAddress(e, addr.id)}
-                              className="text-gray-400 hover:text-red-500 p-0.5 cursor-pointer"
+                              aria-label={`Delete address for ${addr.recipient_name}`}
+                              className="p-1 -m-1 text-[#8C8177] hover:text-rose-700 cursor-pointer shrink-0"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                          <p className="text-[11px] text-gray-600 line-clamp-2">
-                            {addr.street}, {addr.city} - {addr.postal_code}
+                          <p className="text-xs text-[#655B53] line-clamp-2 leading-relaxed">
+                            {addr.street}, {addr.city} — {addr.postal_code}
                           </p>
                         </div>
                       );
@@ -3253,1284 +1743,460 @@ function CheckoutContent() {
                 </div>
               )}
 
-              {/* Full Name */}
-              <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  Full name *
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              {/* Contact Row: Mobile + Full Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="phone-input" className="block text-xs font-medium text-[#655B53]">
+                    Mobile number (WhatsApp updates)
+                  </label>
+                  <div className="flex rounded-xl border border-stone-200 bg-white overflow-hidden focus-within:border-[#1B1714] transition-colors">
+                    <span className="px-3 bg-[#FBF8F3] border-r border-stone-200 text-sm font-medium text-[#655B53] flex items-center select-none shrink-0">
+                      +91
+                    </span>
+                    <input
+                      id="phone-input"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      required
+                      maxLength={10}
+                      value={phone}
+                      onChange={(e) => setPhone(cleanPhoneDigits(e.target.value))}
+                      onBlur={(e) => {
+                        const val = cleanPhoneDigits(e.target.value);
+                        if (val.length === 10) lookupCustomerDetails(val);
+                      }}
+                      placeholder="10-digit mobile"
+                      className="w-full min-h-[44px] px-3 py-2.5 text-base sm:text-sm text-[#1B1714] placeholder:text-[#8C8177] focus:outline-none tabular-nums"
+                    />
+                  </div>
+                  {isLookingUpCustomer && (
+                    <p className="text-[11px] text-[#655B53] flex items-center gap-1.5">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>Checking saved delivery details…</span>
+                    </p>
+                  )}
+                  {customerLookupBadge && !isLookingUpCustomer && (
+                    <p className="text-[11px] text-[#116A4B] flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>{customerLookupBadge}</span>
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="name-input" className="block text-xs font-medium text-[#655B53]">
+                    Full name
+                  </label>
                   <input
                     id="name-input"
                     type="text"
+                    autoComplete="name"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Rahul Sharma"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
+                    placeholder="Recipient full name"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-base sm:text-sm text-[#1B1714] placeholder:text-[#8C8177] focus:outline-none focus:border-[#1B1714] transition-colors"
                   />
                 </div>
-                {name.trim().length >= 2 && (
-                  <p className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 pl-1 pt-0.5">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                    <span>Looks good!</span>
-                  </p>
+              </div>
+
+              {/* Street Address */}
+              <div className="space-y-1.5">
+                <label htmlFor="address-input" className="block text-xs font-medium text-[#655B53]">
+                  House, street &amp; landmark
+                </label>
+                <textarea
+                  id="address-input"
+                  autoComplete="street-address"
+                  required
+                  maxLength={200}
+                  rows={2}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="House / flat no., road, area, nearby landmark"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-base sm:text-sm text-[#1B1714] placeholder:text-[#8C8177] focus:outline-none focus:border-[#1B1714] transition-colors resize-none leading-relaxed"
+                />
+                {detectedPostOffices.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[11px] text-[#8C8177]">Area:</span>
+                    {detectedPostOffices.slice(0, 5).map((po) => (
+                      <button
+                        key={po}
+                        type="button"
+                        onClick={() => {
+                          if (!address.toLowerCase().includes(po.toLowerCase())) {
+                            setAddress((prev) => (prev ? `${prev}, ${po}` : po));
+                          }
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-[#FBF8F3] hover:bg-[#F3EDE5] border border-stone-200 text-xs text-[#1B1714] transition-colors cursor-pointer"
+                      >
+                        + {po}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
 
-              {/* Email Address */}
-              <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  Email address <span className="text-gray-400 font-normal lowercase">(optional)</span>
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    id="email-input"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
-                  />
-                </div>
-                <p className="text-[11px] text-gray-400 pl-1">
-                  Get order updates, offers and deals.
-                </p>
-              </div>
-
-              {/* WhatsApp & Email Marketing Consent Checkbox */}
-              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-gray-600 leading-snug select-none pt-0.5">
-                <input
-                  type="checkbox"
-                  checked={marketingConsent}
-                  onChange={(e) => setMarketingConsent(e.target.checked)}
-                  className="mt-0.5 rounded border-gray-300 text-[#cb0805] focus:ring-[#cb0805] w-4 h-4 cursor-pointer"
-                />
-                <span>
-                  Keep me in the loop — shipping updates on WhatsApp and the occasional deal by email. You can opt out anytime.
-                </span>
-              </label>
-
-              {/* Complete Address */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                    Complete address *
-                  </label>
-                  <span className="text-[11px] text-gray-400">
-                    {address.length} / 200
-                  </span>
-                </div>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
-                  <textarea
-                    id="address-input"
-                    required
-                    maxLength={200}
-                    rows={3}
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="House number, street, area, landmark (e.g. Near bus stand)"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white resize-none shadow-2xs leading-relaxed"
-                  />
-                </div>
-              </div>
-
-              {/* 2-Column: Pincode (Auto-detects area) & City */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                      Pincode *
+              {/* Pincode + City + State */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-1">
+                    <label htmlFor="pincode-input" className="text-xs font-medium text-[#655B53]">
+                      Pincode
                     </label>
-                    {pincodeLoading && (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#cb0805]" />
-                    )}
-                    {pincodeDetected && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold flex items-center gap-1 shrink-0">
+                    {pincodeLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#6E1625]" />
+                    ) : pincodeDetected ? (
+                      <span className="text-[11px] font-medium text-[#116A4B] inline-flex items-center gap-0.5">
                         <Check className="w-3 h-3" /> Serviceable
                       </span>
-                    )}
+                    ) : null}
                   </div>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      id="pincode-input"
-                      type="text"
-                      required
-                      maxLength={6}
-                      value={postalCode}
-                      onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="682001"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
-                    />
-                  </div>
-                  <p className="text-[11px] text-gray-400 pl-1">
-                    We&apos;ll check delivery availability for this area.
-                  </p>
+                  <input
+                    id="pincode-input"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                    required
+                    maxLength={6}
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="682001"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-base sm:text-sm text-[#1B1714] placeholder:text-[#8C8177] focus:outline-none focus:border-[#1B1714] transition-colors tabular-nums"
+                  />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                    City *
+                <div className="space-y-1.5">
+                  <label htmlFor="city-input" className="block text-xs font-medium text-[#655B53]">
+                    City
                   </label>
-                  <div className="relative">
-                    <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      id="city-input"
-                      type="text"
-                      required
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="Kochi"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
-                    />
-                  </div>
+                  <input
+                    id="city-input"
+                    type="text"
+                    autoComplete="address-level2"
+                    required
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Kochi"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-base sm:text-sm text-[#1B1714] placeholder:text-[#8C8177] focus:outline-none focus:border-[#1B1714] transition-colors"
+                  />
                 </div>
-              </div>
 
-              {/* State */}
-              <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-gray-700 tracking-wider uppercase">
-                  State *
-                </label>
-                <div className="relative">
-                  <Building2 className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <div className="space-y-1.5">
+                  <label htmlFor="state-input" className="block text-xs font-medium text-[#655B53]">
+                    State
+                  </label>
                   <input
                     id="state-input"
                     type="text"
+                    autoComplete="address-level1"
                     required
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    placeholder="State (e.g. Maharashtra)"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:border-[#cb0805] focus:ring-1 focus:ring-[#cb0805] transition-all bg-white shadow-2xs"
+                    placeholder="Kerala"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-base sm:text-sm text-[#1B1714] placeholder:text-[#8C8177] focus:outline-none focus:border-[#1B1714] transition-colors"
                   />
                 </div>
               </div>
 
-              {/* 3 Mini Trust Badges (Matches Reference Photo 3) */}
-              <div className="grid grid-cols-3 gap-2 pt-2 text-center text-xs text-gray-500 font-medium">
-                <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span className="text-[11px] font-bold text-gray-800">Easy Return</span>
-                  <span className="text-[10px] text-gray-400">Hassle-free</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <Truck className="w-4 h-4 text-[#cb0805]" />
-                  <span className="text-[11px] font-bold text-gray-800">Fast Delivery</span>
-                  <span className="text-[10px] text-gray-400">Across India</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                  <Phone className="w-4 h-4 text-blue-600" />
-                  <span className="text-[11px] font-bold text-gray-800">24/7 Support</span>
-                  <span className="text-[10px] text-gray-400">We&apos;re here</span>
-                </div>
+              {/* Optional Email */}
+              <div className="space-y-1.5">
+                <label htmlFor="email-input" className="block text-xs font-medium text-[#655B53]">
+                  Email for receipt <span className="text-[#8C8177] font-normal">(optional)</span>
+                </label>
+                <input
+                  id="email-input"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@domain.com"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-base sm:text-sm text-[#1B1714] placeholder:text-[#8C8177] focus:outline-none focus:border-[#1B1714] transition-colors"
+                />
+              </div>
+            </section>
+
+            {/* Section 2: Payment Method */}
+            <section
+              id="payment-method-section"
+              className="bg-white rounded-2xl border border-stone-200/80 shadow-[0_1px_2px_rgba(27,23,20,0.04)] p-5 sm:p-6 space-y-4"
+            >
+              <div>
+                <h2 className="text-base font-semibold text-[#1B1714]">Payment method</h2>
+                <p className="text-xs text-[#655B53] mt-0.5">
+                  Opens the PyDart Pay checkout popup right here — UPI, cards, and NetBanking.
+                </p>
               </div>
 
-              {/* STEP 2 BOTTOM: CONTINUE TO PAYMENT BUTTON (Visible before payment step) */}
-              {checkoutStep === "details" && (
-                <div className="pt-2 space-y-3">
-                  <button
-                    type="button"
-                    onClick={handleContinueToPayment}
-                    className="w-full py-4 px-6 rounded-2xl bg-[#097939] hover:bg-[#076630] text-white font-bold text-base shadow-lg shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
-                  >
-                    <span>Continue to Payment</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-                  <p className="text-center text-xs text-gray-500 font-medium">
-                    Pick how you want to pay on the next step
-                  </p>
-
-                  {/* Trust Badges below Continue button (Matches Reference Photo 3) */}
-                  <div className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-1">
-                      <ShieldCheck className="w-4 h-4 text-gray-600" />
-                      <span className="text-[10px] font-bold text-gray-700">PCI DSS Certified</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-1">
-                      <Lock className="w-4 h-4 text-gray-600" />
-                      <span className="text-[10px] font-bold text-gray-700">Secure Payments</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-1">
-                      <Truck className="w-4 h-4 text-gray-600" />
-                      <span className="text-[10px] font-bold text-gray-700">Assured Delivery</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 flex flex-col items-center gap-1">
-                      <CheckCircle2 className="w-4 h-4 text-gray-600" />
-                      <span className="text-[10px] font-bold text-gray-700">Verified Seller</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 3: PAYMENT METHOD (Revealed when Continue to Payment is clicked) */}
-              {checkoutStep === "payment" && (
-                <div id="payment-method-section" className="pt-3 space-y-4 animate-in fade-in duration-300">
-                  {/* Confirmed Delivery Details Summary Strip with Edit Button */}
-                  <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-200/80 flex items-center justify-between text-xs">
-                    <div className="min-w-0 pr-2">
-                      <p className="font-bold text-gray-900 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span className="truncate">Deliver to: {name} ({phone})</span>
-                      </p>
-                      <p className="text-gray-500 text-[11px] mt-0.5 truncate">
-                        {address}, {city}, {state} - {postalCode}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCheckoutStep("details");
-                        const el = document.getElementById("name-input");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-                      }}
-                      className="text-[#cb0805] hover:text-[#a80604] font-bold text-xs hover:underline cursor-pointer shrink-0 ml-2"
-                    >
-                      Edit Address
-                    </button>
-                  </div>
-
-                  {/* Section 3 Header */}
-                  <div className="flex items-center justify-between pb-1">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-[#111111] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                        3
-                      </span>
-                      <div>
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-                          Payment Option
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          Choose Online Payment for Free Delivery or Cash on Delivery
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-right text-gray-500">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <div>
-                        <p className="text-[11px] font-bold text-gray-800 leading-tight">100% Secure</p>
-                        <p className="text-[10px] text-gray-400 leading-tight">256-Bit TLS Encryption</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Payment Method Cards */}
-                  <div className="space-y-3">
-                    {/* CARD 1: Online Payment (Cashfree) */}
-                    <div
-                      id="payment-online-card"
-                      onClick={() => setPaymentMethod("online")}
-                      className={`relative p-4 sm:p-5 pt-6 rounded-2xl border-2 cursor-pointer transition-all ${
-                        paymentMethod === "online"
-                          ? "border-emerald-600 bg-emerald-50/20 shadow-sm ring-1 ring-emerald-600/30"
-                          : "border-gray-200 bg-white hover:border-gray-300"
-                      }`}
-                    >
-                      {/* RECOMMENDED BADGE */}
-                      <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs flex items-center gap-1">
-                        ★ RECOMMENDED {isFreeDelivery ? "• FREE EXPRESS DELIVERY" : "• SECURE PREPAID"} {configuredCodFee >= 10 ? `(SAVE ₹${configuredCodFee} COD FEE)` : ""}
-                      </span>
-
-                      {/* Top Row: Radio + Icon + Title */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white ${
-                              paymentMethod === "online" ? "border-emerald-600" : "border-gray-300"
-                            }`}
-                          >
-                            {paymentMethod === "online" && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-                            )}
-                          </div>
-
-                          <div className="w-10 h-10 rounded-xl bg-emerald-100/60 border border-emerald-200/50 flex items-center justify-center text-emerald-700 shrink-0">
-                            <CreditCard className="w-5 h-5" />
-                          </div>
-
-                          <div>
-                            <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                              Online Payment (UPI, Cards, NetBanking)
-                            </h4>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              Google Pay, PhonePe, Paytm, BHIM, Cards &amp; Net Banking
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Delivery Details Strip */}
-                      <div className="mt-3.5 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/60 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5 text-emerald-900 font-bold">
-                          <Truck className="w-3.5 h-3.5 text-emerald-700" />
-                          <span className="tracking-wide uppercase text-[10px]">PRIORITY DISPATCH</span>
-                        </div>
-                        <span className="text-[11px] font-bold text-emerald-800">
-                          {isFreeDelivery
-                            ? "FREE Express Delivery • 2–4 Days"
-                            : `Standard Express Delivery: ₹${baseShippingFee} • 2–4 Days`}
-                        </span>
-                      </div>
-
-                      {/* Payable Online Row */}
-                      <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-gray-100">
-                        <div>
-                          <p className="text-[11px] text-gray-500 font-medium">Amount Payable Now</p>
-                          <p className="text-lg sm:text-xl font-black text-gray-950">
-                            ₹{onlineGrandTotal.toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="px-3 py-1.5 rounded-xl bg-emerald-100/80 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1">
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          <span>Instant Confirmation</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* CARD 2: Cash on Delivery (Partial COD - Advance ₹{configuredCodFee}) */}
-                    <div
-                      id="payment-cod-card"
-                      onClick={() => setPaymentMethod("cod")}
-                      className={`relative p-4 sm:p-5 pt-6 rounded-2xl border-2 cursor-pointer transition-all ${
-                        paymentMethod === "cod"
-                          ? "border-[#780016] bg-[#FFFBF8] shadow-sm ring-1 ring-[#780016]/20"
-                          : "border-gray-200 bg-white hover:border-gray-300"
-                      }`}
-                    >
-                      {/* BADGE */}
-                      <span className="absolute -top-3 left-4 px-3 py-0.5 rounded-full bg-stone-800 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs flex items-center gap-1">
-                        PARTIAL COD • PAY ₹{configuredCodFee} ADVANCE ONLINE
-                      </span>
-
-                      {/* Top Row: Radio + Icon + Title */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white ${
-                              paymentMethod === "cod" ? "border-[#780016]" : "border-gray-300"
-                            }`}
-                          >
-                            {paymentMethod === "cod" && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-[#780016]" />
-                            )}
-                          </div>
-
-                          <div className="w-10 h-10 rounded-xl bg-rose-100/60 border border-rose-200/50 flex items-center justify-center text-[#780016] shrink-0">
-                            <ShoppingBag className="w-5 h-5" />
-                          </div>
-
-                          <div>
-                            <h4 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
-                              Cash on Delivery (Pay ₹{configuredCodFee} Advance Online)
-                            </h4>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              Pay ₹{configuredCodFee} courier fee now • Pay remaining ₹{codDoorstepBalance.toLocaleString()} at doorstep
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Delivery Details Strip */}
-                      <div className="mt-3.5 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/60 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5 text-amber-900 font-bold">
-                          <Truck className="w-3.5 h-3.5 text-[#780016]" />
-                          <span className="tracking-wide uppercase text-[10px]">COURIER DISPATCH</span>
-                        </div>
-                        <span className="text-[11px] font-semibold text-stone-700">
-                          +₹{configuredCodFee} Courier Advance • 3–5 Business Days
-                        </span>
-                      </div>
-
-                      {/* Split Amount Breakdown Grid */}
-                      <div className="grid grid-cols-2 gap-2 pt-3.5 mt-3.5 border-t border-gray-100">
-                        <div className="p-2.5 rounded-xl bg-rose-50/60 border border-rose-200/70">
-                          <p className="text-[10px] text-rose-800 font-semibold uppercase tracking-wider">Pay Online Now</p>
-                          <p className="text-base sm:text-lg font-black text-[#780016]">₹{configuredCodFee}</p>
-                          <p className="text-[10px] text-rose-600/80">Courier Advance (UPI/Card)</p>
-                        </div>
-                        <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/70">
-                          <p className="text-[10px] text-amber-900 font-semibold uppercase tracking-wider">Pay at Doorstep</p>
-                          <p className="text-base sm:text-lg font-black text-gray-950">₹{codDoorstepBalance.toLocaleString()}</p>
-                          <p className="text-[10px] text-stone-500">Cash or UPI upon delivery</p>
-                        </div>
-                      </div>
-
-                      {/* Explanation Note */}
-                      <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200 flex items-start gap-2 mt-3">
-                        <ShieldCheck className="w-3.5 h-3.5 text-stone-600 shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-stone-700 leading-snug">
-                          To confirm your order and prevent fake bookings, please pay the <strong>₹{configuredCodFee} courier delivery advance online</strong> via UPI or Card. The remaining balance of <strong>₹{codDoorstepBalance.toLocaleString()}</strong> will be collected in cash or UPI by the delivery agent at your door.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* MOBILE ORDER SUMMARY (Placed right before Pay Button) */}
-                  <div className="block lg:hidden rounded-2xl border border-gray-200 bg-white p-4 space-y-4 shadow-xs mt-4">
-                    {/* Header */}
-                    <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                      <h3 className="text-base font-bold text-gray-900">Order Summary</h3>
-                      <span className="text-xs text-gray-500 font-medium">
-                        {totalItemCount} {totalItemCount === 1 ? "item" : "items"} in your cart
-                      </span>
-                    </div>
-
-                    {/* Cart Products List */}
-                    <div className="space-y-3">
-                      {cart.map((item) => {
-                        const itemTotal = (item.bundle_tier && item.bundle_tier > 1 && item.bundle_total)
-                          ? item.bundle_total
-                          : item.price * item.quantity;
-                        const itemBaseUnit = item.original_price || item.price;
-                        const itemRegularTotal = itemBaseUnit * item.quantity;
-                        const isBundle = Boolean(item.bundle_tier && item.bundle_tier > 1);
-
-                        return (
-                          <div key={item.id} className="flex items-center gap-3">
-                            <div className="relative w-14 h-14 rounded-xl bg-gray-50 border border-gray-200 shrink-0 overflow-hidden">
-                              <Image src={item.poster_image} alt={item.name} fill className="object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                Qty: {item.quantity} × ₹{item.price.toLocaleString()}
-                              </p>
-                              {isBundle && (
-                                <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-50 text-[#FF5722] border border-rose-200">
-                                  <span>✨</span>
-                                  <span>{item.offer_label || `Buy ${item.quantity} Save More`}</span>
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              {/* Quantity Stepper Control */}
-                              <div className="flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-lg p-0.5">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (item.quantity > 1) {
-                                      updateQuantity(item.id, item.quantity - 1);
-                                    } else {
-                                      removeFromCart(item.id);
-                                    }
-                                  }}
-                                  className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
-                                  title={item.quantity > 1 ? "Remove 1 item" : "Remove item"}
-                                  aria-label={`Reduce quantity of ${item.name}`}
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-                                <span className="px-1 text-xs font-bold text-gray-900 min-w-[14px] text-center">
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                  className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-emerald-600 transition-colors cursor-pointer"
-                                  title="Add 1 more"
-                                  aria-label={`Increase quantity of ${item.name}`}
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
-
-                              <div className="text-right">
-                                {isBundle && itemRegularTotal > itemTotal && (
-                                  <span className="text-[10px] text-gray-400 line-through block">
-                                    ₹{itemRegularTotal.toLocaleString()}
-                                  </span>
-                                )}
-                                <span className="text-sm font-bold text-gray-900 block">
-                                  ₹{itemTotal.toLocaleString()}
-                                </span>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => removeFromCart(item.id)}
-                                title="Remove item"
-                                className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                                aria-label={`Remove ${item.name} from cart`}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Breakdown Rows */}
-                    <div className="pt-2 border-t border-gray-100 space-y-2 text-xs">
-                      <div className="flex justify-between text-gray-600">
-                        <span>Item Total</span>
-                        <span className="font-semibold text-gray-900">
-                          ₹{(bundleSavings > 0 ? regularSubtotal : subtotal).toLocaleString()}
-                        </span>
-                      </div>
-                      {bundleSavings > 0 && (
-                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                          <span className="flex items-center gap-1 font-bold">
-                            <span>✨</span>
-                            <span>Buy More Save More Savings</span>
-                          </span>
-                          <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {promoDiscount > 0 && (
-                        <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                          <span className="flex items-center gap-1 font-bold">
-                            <Tag className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Promo Discount ({appliedPromo})</span>
-                          </span>
-                          <span className="font-extrabold">-₹{promoDiscount.toLocaleString()}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between text-gray-600">
-                        <span className="flex items-center gap-1.5">
-                          Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
-                        </span>
-                        {isFreeDelivery ? (
-                          <span className="font-bold text-emerald-700">
-                            FREE {standardShippingFee > 0 ? `(Saved ₹${standardShippingFee})` : ""}
-                          </span>
-                        ) : (
-                          <span className="font-semibold text-gray-900">
-                            ₹{baseShippingFee.toLocaleString("en-IN")}
-                          </span>
+              <div role="radiogroup" aria-label="Payment method" className="space-y-3">
+                {/* Option 1: Pay Online */}
+                <button
+                  id="payment-online-card"
+                  type="button"
+                  role="radio"
+                  aria-checked={paymentMethod === "online"}
+                  onClick={() => setPaymentMethod("online")}
+                  className={`w-full text-left p-4 rounded-xl border transition-colors cursor-pointer ${
+                    paymentMethod === "online"
+                      ? "border-[#6E1625] bg-[#FDF6F7]"
+                      : "border-stone-200 bg-white hover:border-stone-300"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white ${
+                          paymentMethod === "online" ? "border-[#6E1625]" : "border-stone-300"
+                        }`}
+                      >
+                        {paymentMethod === "online" && (
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#6E1625]" />
                         )}
-                      </div>
-                      {isCod && (
-                        <div className="flex justify-between text-gray-600">
-                          <span>Courier &amp; COD Handling Fee</span>
-                          <span className="font-semibold text-gray-900">+₹{configuredCodFee}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Total Payable Box */}
-                    {paymentMethod === "online" ? (
-                      <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">Total Payable (Online)</p>
-                          <p className="text-[11px] text-stone-600 font-medium">
-                            {isFreeDelivery
-                              ? "Free Express Delivery included"
-                              : `Includes ₹${baseShippingFee} Standard Shipping`}
-                          </p>
-                        </div>
-                        <span className="text-xl font-black text-gray-950">
-                          ₹{onlineGrandTotal.toLocaleString()}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/90 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-bold text-gray-900">Total COD Order Value</p>
-                            <p className="text-[11px] text-stone-600 font-medium">Includes ₹{configuredCodFee} Delivery Fee</p>
-                          </div>
-                          <span className="text-lg font-black text-gray-950">
-                            ₹{codGrandTotal.toLocaleString()}
+                      </span>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-semibold text-[#1B1714]">
+                            Pay online (UPI, Cards, NetBanking)
+                          </span>
+                          <span className="text-[11px] font-medium text-[#116A4B] bg-[#ECF7F2] px-2 py-0.5 rounded-md">
+                            {isFreeDelivery ? "Free express delivery" : "Fastest dispatch"}
                           </span>
                         </div>
-                        <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-xs">
-                          <span className="text-stone-700 font-medium">Advance to Pay Online Now:</span>
-                          <span className="font-extrabold text-[#780016]">₹{configuredCodFee}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-stone-700 font-medium">Balance Payable on Delivery:</span>
-                          <span className="font-extrabold text-stone-900">₹{codDoorstepBalance.toLocaleString()}</span>
-                        </div>
+                        <p className="text-xs text-[#655B53] mt-1">
+                          Google Pay, PhonePe, Paytm, BHIM, debit &amp; credit cards. 2–4 business days.
+                        </p>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Payment Info Pill */}
-                    <div className={`p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-                      paymentMethod === "online"
-                        ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
-                        : "bg-amber-50/90 text-amber-900 border border-amber-200"
-                    }`}>
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white ${
-                        paymentMethod === "online" ? "bg-emerald-600" : "bg-amber-600"
-                      }`}>
-                        ✓
-                      </div>
-                      <span>
-                        {paymentMethod === "online"
-                          ? "Online Payment • 256-Bit Bank Grade Escrow by Cashfree"
-                          : `Partial COD • Pay ₹${configuredCodFee} Advance Online + Balance at Doorstep`}
+                    <span className="text-base font-semibold text-[#1B1714] tabular-nums shrink-0">
+                      ₹{onlineGrandTotal.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Option 2: Cash on Delivery (Partial COD Advance) */}
+                <button
+                  id="payment-cod-card"
+                  type="button"
+                  role="radio"
+                  aria-checked={paymentMethod === "cod"}
+                  onClick={() => setPaymentMethod("cod")}
+                  className={`w-full text-left p-4 rounded-xl border transition-colors cursor-pointer ${
+                    paymentMethod === "cod"
+                      ? "border-[#6E1625] bg-[#FDF6F7]"
+                      : "border-stone-200 bg-white hover:border-stone-300"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 bg-white ${
+                          paymentMethod === "cod" ? "border-[#6E1625]" : "border-stone-300"
+                        }`}
+                      >
+                        {paymentMethod === "cod" && (
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#6E1625]" />
+                        )}
                       </span>
+                      <div>
+                        <span className="text-sm font-semibold text-[#1B1714] block">
+                          Cash on Delivery
+                        </span>
+                        <p className="text-xs text-[#655B53] mt-1">
+                          Pay ₹{effectiveCodAdvance.toLocaleString("en-IN")} courier advance online now to confirm, then ₹{codDoorstepBalance.toLocaleString("en-IN")} at your doorstep.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right tabular-nums shrink-0">
+                      <span className="text-base font-semibold text-[#6E1625] block">
+                        ₹{effectiveCodAdvance.toLocaleString("en-IN")}
+                      </span>
+                      <span className="text-[11px] text-[#8C8177] block">now</span>
                     </div>
                   </div>
 
-                  {/* ACTION BUTTON — hidden on mobile during payment step (shown in sticky footer bar instead) */}
-                  <div className="pt-2 hidden sm:block">
-                    <button
-                      id="checkout-submit-btn"
-                      type="submit"
-                      disabled={loading || hasOutOfStockItems}
-                      className={`w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                        loading || hasOutOfStockItems
-                          ? "bg-gray-400 cursor-not-allowed opacity-80"
-                          : paymentMethod === "online"
-                          ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25 active:scale-[0.99]"
-                          : "bg-[#780016] hover:bg-[#5a0011] shadow-[#780016]/25 active:scale-[0.99]"
-                      }`}
-                    >
-                      {loading ? (
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>{paymentMethod === "online" ? "Opening Secure Payment..." : `Opening Payment for ₹${configuredCodFee} Advance...`}</span>
-                        </div>
-                      ) : hasOutOfStockItems ? (
-                        <span>⚠️ Remove Out of Stock Items to Continue</span>
-                      ) : paymentMethod === "online" ? (
-                        <>
-                          <Lock className="w-5 h-5" />
-                          <span>Pay Online Now • ₹{onlineGrandTotal.toLocaleString()}</span>
-                          <ArrowRight className="w-5 h-5" />
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag className="w-5 h-5" />
-                          <span>Pay ₹{configuredCodFee} Advance to Confirm COD Order</span>
-                          <ArrowRight className="w-5 h-5" />
-                        </>
-                      )}
-                    </button>
-                    <p className="text-center text-[11px] text-gray-500 mt-2">
-                      {paymentMethod === "online"
-                        ? `100% Secure • ${isFreeDelivery ? `FREE Express Delivery ${configuredCodFee >= 10 ? `(Saved ₹${configuredCodFee})` : ""}` : `Standard Shipping (₹${baseShippingFee})`} • 256-bit Bank Grade Escrow by Cashfree`
-                        : `Pay ₹${configuredCodFee} courier advance now via UPI/Cards • Remaining ₹${codDoorstepBalance.toLocaleString()} payable at delivery`}
-                    </p>
-                  </div>
-
-                  {/* Trust Badges below Submit Button */}
-                  <div className="pt-3 grid grid-cols-3 gap-1.5 sm:gap-3 text-center">
-                    <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
-                      <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-[#780016] shrink-0 mb-1 mx-auto">
-                        <ShoppingBag className="w-3.5 h-3.5" />
+                  {paymentMethod === "cod" && (
+                    <div className="mt-3.5 pt-3 border-t border-stone-200/70 grid grid-cols-2 gap-2.5 text-xs tabular-nums">
+                      <div className="p-2.5 rounded-lg bg-white border border-stone-200/70">
+                        <span className="text-[#8C8177] block">Online advance</span>
+                        <span className="font-semibold text-[#6E1625] text-sm">
+                          ₹{effectiveCodAdvance.toLocaleString("en-IN")}
+                        </span>
                       </div>
-                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">100% COD</p>
-                      <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Pay on Delivery</p>
-                    </div>
-
-                    <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
-                      <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-emerald-600 shrink-0 mb-1 mx-auto">
-                        <ShieldCheck className="w-3.5 h-3.5" />
+                      <div className="p-2.5 rounded-lg bg-white border border-stone-200/70">
+                        <span className="text-[#8C8177] block">Cash / UPI on delivery</span>
+                        <span className="font-semibold text-[#1B1714] text-sm">
+                          ₹{codDoorstepBalance.toLocaleString("en-IN")}
+                        </span>
                       </div>
-                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">Discreet Box</p>
-                      <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">Plain Packaging</p>
                     </div>
-
-                    <div className="flex flex-col items-center p-2 rounded-xl bg-gray-50/70 border border-gray-100 shadow-2xs">
-                      <div className="w-7 h-7 rounded-full bg-white shadow-2xs border border-gray-100 flex items-center justify-center text-blue-600 shrink-0 mb-1 mx-auto">
-                        <Truck className="w-3.5 h-3.5" />
-                      </div>
-                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 leading-tight">Express Courier</p>
-                      <p className="text-[8.5px] sm:text-[10px] text-gray-400 leading-tight mt-0.5">3–5 Days</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Policy Redirection Links & Copyright (Matches Reference) */}
-              <div className="pt-4 border-t border-gray-100 mt-2 space-y-2 text-center">
-                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-gray-500 font-medium">
-                  <Link
-                    href="/return"
-                    target="_blank"
-                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
-                  >
-                    Return &amp; Refund Policy
-                  </Link>
-                  <span className="text-gray-300">|</span>
-                  <Link
-                    href="/shipping-and-delivery"
-                    target="_blank"
-                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
-                  >
-                    Shipping &amp; Delivery
-                  </Link>
-                  <span className="text-gray-300">|</span>
-                  <Link
-                    href="/privacy"
-                    target="_blank"
-                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
-                  >
-                    Privacy Policy
-                  </Link>
-                  <span className="text-gray-300">|</span>
-                  <Link
-                    href="/terms-and-conditions"
-                    target="_blank"
-                    className="hover:text-gray-900 transition-colors underline-offset-2 hover:underline"
-                  >
-                    Terms &amp; Conditions
-                  </Link>
-                </div>
-                <p className="text-xs text-gray-400">© 2026 Turkiye Jam</p>
+                  )}
+                </button>
               </div>
-            </div>
+            </section>
           </div>
 
-          {/* RIGHT COLUMN: DESKTOP ORDER SUMMARY */}
-          <div className="hidden lg:block lg:col-span-5">
-            <div className="sticky top-6 p-6 rounded-2xl bg-white border border-gray-100 shadow-xs space-y-5">
-              <h3 className="font-bold font-display text-lg text-gray-900">
-                Order Summary
-              </h3>
-
-              {/* Cart Items List */}
-              <div className="space-y-3.5">
-                {cart.map((item) => {
-                  const itemTotal = (item.bundle_tier && item.bundle_tier > 1 && item.bundle_total)
-                    ? item.bundle_total
-                    : item.price * item.quantity;
-                  const itemBaseUnit = item.original_price || item.price;
-                  const itemRegularTotal = itemBaseUnit * item.quantity;
-                  const isBundle = Boolean(item.bundle_tier && item.bundle_tier > 1);
-                  const itemMrp = item.mrp || Math.round(itemBaseUnit * 1.25);
-
-                  return (
-                    <div key={item.id} className="flex items-center gap-3">
-                      <div className="relative w-16 h-16 rounded-xl bg-gray-50 border border-gray-200 shrink-0">
-                        <Image
-                          src={item.poster_image}
-                          alt={item.name}
-                          fill
-                          className="object-cover rounded-xl"
-                        />
-                        {/* Black circle quantity badge on top-right */}
-                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#111111] text-white text-[10px] font-bold flex items-center justify-center">
-                          {item.quantity}
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-xs text-gray-900 truncate">
-                          {item.name}
-                        </p>
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5 flex-wrap">
-                          {isBundle ? (
-                            <>
-                              <span className="line-through text-gray-400">
-                                ₹{itemBaseUnit.toLocaleString()}
-                              </span>
-                              <span className="font-bold text-gray-900">
-                                ₹{item.price.toLocaleString()} × {item.quantity}
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              {itemMrp > item.price && (
-                                <span className="line-through text-gray-400">
-                                  ₹{itemMrp.toLocaleString()}
-                                </span>
-                              )}
-                              <span>₹{item.price.toLocaleString()} × {item.quantity}</span>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Buy More Save More Badge */}
-                        {isBundle && (
-                          <div className="mt-1">
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-extrabold bg-gradient-to-r from-orange-50 to-amber-50 text-[#FF5722] border border-rose-200 shadow-2xs">
-                              <span>✨</span>
-                              <span>{item.offer_label || `Buy ${item.quantity} Save More`}</span>
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2.5 shrink-0">
-                        {/* Quantity Stepper Control: Allows removing 1 item when 2 or more selected */}
-                        <div className="flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded-lg p-0.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (item.quantity > 1) {
-                                updateQuantity(item.id, item.quantity - 1);
-                              } else {
-                                removeFromCart(item.id);
-                              }
-                            }}
-                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
-                            title={item.quantity > 1 ? "Remove 1 item" : "Remove item"}
-                            aria-label={`Reduce quantity of ${item.name}`}
-                          >
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <span className="px-1 text-xs font-bold text-gray-900 min-w-[14px] text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-white text-gray-600 hover:text-emerald-600 transition-colors cursor-pointer"
-                            title="Add 1 more"
-                            aria-label={`Increase quantity of ${item.name}`}
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-
-                        <div className="text-right">
-                          {isBundle && itemRegularTotal > itemTotal && (
-                            <span className="text-[11px] text-gray-400 line-through block">
-                              ₹{itemRegularTotal.toLocaleString()}
-                            </span>
-                          )}
-                          <span className="font-bold text-sm text-gray-900 block">
-                            ₹{itemTotal.toLocaleString()}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeFromCart(item.id)}
-                          title="Remove item"
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                          aria-label={`Remove ${item.name} from cart`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Promo Code Input Row (Desktop Sidebar) */}
-              <div className="pt-2 border-t border-gray-100 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <Tag className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                      placeholder="Promo code"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold uppercase tracking-wider text-gray-900 placeholder:normal-case placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:border-[#cb0805] bg-white"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleApplyPromo}
-                    disabled={promoLoading}
-                    className="px-4 py-2.5 rounded-xl bg-[#cb0805] hover:bg-[#a80604] text-white font-bold text-xs shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0 disabled:opacity-60"
-                  >
-                    {promoLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <>
-                        <span>Apply</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {promoSuccess && (
-                  <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center justify-between">
-                    <span>{promoSuccess}</span>
-                    <button
-                      type="button"
-                      onClick={handleRemovePromo}
-                      className="text-emerald-700 hover:text-emerald-900 font-bold ml-2 cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-
-                {promoError && (
-                  <p className="text-xs text-red-600 font-medium pl-1">
-                    {promoError}
-                  </p>
-                )}
-              </div>
-
-              <hr className="border-gray-100" />
-
-              {/* Breakdown: Subtotal, Savings, Promo, 18% GST, Delivery Fee */}
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between text-gray-600">
-                  <span>Item Subtotal ({totalItemCount} {totalItemCount === 1 ? "item" : "items"})</span>
-                  <span className="font-semibold text-gray-900">
-                    ₹{(bundleSavings > 0 ? regularSubtotal : subtotal).toLocaleString()}
-                  </span>
-                </div>
-                {bundleSavings > 0 && (
-                  <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                    <span className="flex items-center gap-1 font-bold">
-                      <span>✨</span>
-                      <span>Buy More Save More Savings</span>
-                    </span>
-                    <span className="font-extrabold">-₹{bundleSavings.toLocaleString()}</span>
-                  </div>
-                )}
-                {promoDiscount > 0 && (
-                  <div className="flex justify-between text-emerald-700 font-semibold">
-                    <span className="flex items-center gap-1">
-                      <Tag className="w-3 h-3 text-emerald-600" />
-                      Promo Discount ({appliedPromo})
-                    </span>
-                    <span>-₹{promoDiscount.toLocaleString()}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-gray-600">
-                  <span className="flex items-center gap-1.5">
-                    Delivery Charge <Truck className="w-3.5 h-3.5 text-gray-400" />
-                  </span>
-                  {isFreeDelivery ? (
-                    <span className="font-bold text-emerald-700">
-                      FREE {standardShippingFee > 0 ? `(Saved ₹${standardShippingFee})` : ""}
-                    </span>
-                  ) : (
-                    <span className="font-semibold text-gray-900">
-                      ₹{baseShippingFee.toLocaleString("en-IN")}
-                    </span>
-                  )}
-                </div>
-                {isCod && (
-                  <div className="flex justify-between text-gray-600">
-                    <span>Courier &amp; COD Handling Fee</span>
-                    <span className="font-semibold text-gray-900">+₹{configuredCodFee}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Total Payable Box */}
-              {paymentMethod === "online" ? (
-                <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-100/90 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">Total Payable (Online)</p>
-                    <p className="text-[11px] text-stone-600 font-medium">
-                      {isFreeDelivery
-                        ? "Free Express Delivery included"
-                        : `Includes ₹${baseShippingFee} Standard Shipping`}
-                    </p>
-                  </div>
-                  <span className="text-xl font-black text-gray-950">
-                    ₹{onlineGrandTotal.toLocaleString()}
-                  </span>
-                </div>
-              ) : (
-                <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/90 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">Total COD Order Value</p>
-                      <p className="text-[11px] text-stone-600 font-medium">Includes ₹{configuredCodFee} Delivery Fee</p>
-                    </div>
-                    <span className="text-lg font-black text-gray-950">
-                      ₹{codGrandTotal.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-xs">
-                    <span className="text-stone-700 font-medium">Advance to Pay Online Now:</span>
-                    <span className="font-extrabold text-[#780016]">₹{configuredCodFee}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-stone-700 font-medium">Balance Payable on Delivery:</span>
-                    <span className="font-extrabold text-stone-900">₹{codDoorstepBalance.toLocaleString()}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Info Pill */}
-              <div className={`p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-                paymentMethod === "online"
-                  ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
-                  : "bg-amber-50/90 text-amber-900 border border-amber-200"
-              }`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white ${
-                  paymentMethod === "online" ? "bg-emerald-600" : "bg-amber-600"
-                }`}>
-                  ✓
-                </div>
-                <span>
-                  {paymentMethod === "online"
-                    ? "Online Payment • 256-Bit Bank Grade Escrow by Cashfree"
-                    : `Partial COD • Pay ₹${configuredCodFee} Advance Online + Balance at Doorstep`}
+          {/* RIGHT COLUMN (5 cols): Sticky Desktop Order Summary + Primary Pay Button */}
+          <aside className="hidden lg:block lg:col-span-5 lg:sticky lg:top-24">
+            <div className="bg-white rounded-2xl border border-stone-200/80 shadow-[0_1px_2px_rgba(27,23,20,0.04)] p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-[#1B1714]">Order summary</h2>
+                <span className="text-xs text-[#8C8177]">
+                  {totalItemCount} {totalItemCount === 1 ? "item" : "items"}
                 </span>
               </div>
 
-              {/* YOU MIGHT ALSO LIKE (Bump Offers) */}
-              {availableUpsells.length > 0 && (
-                <div className="pt-4 border-t border-gray-100 space-y-3">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-700 uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-[#cb0805]" />
-                    <span>You Might Also Like</span>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {availableUpsells.slice(0, 2).map((item) => (
-                      <div
-                        key={item.id}
-                        className="p-2.5 rounded-xl border border-gray-100 bg-gray-50/70 flex items-center justify-between gap-2.5 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="relative w-12 h-12 rounded-lg bg-white border border-gray-200 shrink-0 overflow-hidden">
-                            <Image
-                              src={item.poster_image}
-                              alt={item.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-gray-900 truncate max-w-[150px]">
-                              {item.name}
-                            </p>
-                            <div className="flex items-center gap-1 text-[11px] mt-0.5">
-                              <span className="font-bold text-gray-900">₹{item.price}</span>
-                              <span className="line-through text-gray-400 text-[10px]">
-                                ₹{item.mrp}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => addToCart(item, 1)}
-                          className="px-3 py-1.5 rounded-lg bg-black text-white text-xs font-bold hover:bg-[#cb0805] transition-colors shrink-0 flex items-center gap-1 cursor-pointer"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Add</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <OrderSummaryCard
+                cart={cart}
+                outOfStockItemIds={outOfStockItemIds}
+                totalItemCount={totalItemCount}
+                subtotal={subtotal}
+                regularSubtotal={regularSubtotal}
+                bundleSavings={bundleSavings}
+                promoCode={promoCode}
+                onPromoCodeChange={setPromoCode}
+                onApplyPromo={handleApplyPromo}
+                onRemovePromo={handleRemovePromo}
+                appliedPromo={appliedPromo}
+                promoDiscount={promoDiscount}
+                promoLoading={promoLoading}
+                promoError={promoError}
+                promoSuccess={promoSuccess}
+                isFreeDelivery={isFreeDelivery}
+                baseShippingFee={baseShippingFee}
+                standardShippingFee={standardShippingFee}
+                paymentMethod={paymentMethod}
+                codAdvanceAmount={effectiveCodAdvance}
+                onlineGrandTotal={onlineGrandTotal}
+                codGrandTotal={codGrandTotal}
+                codDoorstepBalance={codDoorstepBalance}
+                onUpdateQuantity={updateQuantity}
+                onRemoveItem={removeFromCart}
+                desktopActionSlot={renderPrimaryPayButton("checkout-submit-btn")}
+              />
             </div>
-          </div>
+          </aside>
         </form>
       </main>
 
-      {/* Online Payment In-Progress Modal (Keeps Checkout Active and Never Traps User) */}
-      <AnimatePresence>
-        {awaitingPaymentOrder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden text-slate-900"
-            >
-              <div className="p-6 pb-4 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-[#731a26]/10 border border-[#731a26]/20 flex items-center justify-center text-[#731a26] mx-auto mb-3.5 shadow-xs">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#731a26]" />
-                </div>
-                <h3 className="font-tj-serif text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-                  Complete Your Payment
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
-                  A secure payment window has been opened for{" "}
-                  <strong className="text-gray-900 font-extrabold">₹{awaitingPaymentOrder.amount.toLocaleString()}</strong>.
-                  Please complete payment via UPI, GPay, PhonePe, Card, or NetBanking.
-                </p>
-
-                <div className="mt-4 p-3 rounded-xl bg-stone-50 border border-stone-200/80 text-left flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 text-stone-700 font-medium">
-                    <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>256-bit Bank Grade Rails</span>
-                  </div>
-                  <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
-                    Waiting for rails...
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6 pt-2 space-y-2.5">
-                <button
-                  type="button"
-                  onClick={handleVerifyAwaitingPaymentNow}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-emerald-700/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-                  <span>I Have Completed Payment</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleCancelAwaitingPayment}
-                  className="w-full py-3 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4 text-rose-600" />
-                  <span>Cancel Payment &amp; Return to Checkout</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSwitchToCodFromAwaiting}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <Truck className="w-4 h-4 text-gray-700" />
-                  <span>Switch to Cash on Delivery (COD)</span>
-                </button>
-
-                {/* If popup was accidentally closed, allow re-opening */}
-                <div className="pt-1 text-center">
-                  <a
-                    href={awaitingPaymentOrder.payUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-[#731a26] hover:underline font-semibold"
-                  >
-                    Didn&apos;t see the window? Click here to reopen payment
-                  </a>
-                </div>
-              </div>
-            </motion.div>
+      {/* Mobile Sticky Bottom Payment Bar (always thumb-accessible) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-stone-200/90 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-12px_rgba(27,23,20,0.14)]">
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+          <div className="tabular-nums">
+            <span className="text-[11px] text-[#655B53] block">
+              {isCod ? "Pay online now" : "Total payable"}
+            </span>
+            <span className="text-lg font-semibold text-[#1B1714]">
+              ₹{payableNow.toLocaleString("en-IN")}
+            </span>
           </div>
-        )}
-      </AnimatePresence>
+          {renderPrimaryPayButton(undefined, true)}
+        </div>
+      </div>
 
-      {/* Payment Cancelled / Incomplete Modal Dialog */}
+      {/* IN-PAGE PYDART PAY PAYMENT POPUP MODAL */}
+      <PaymentPopupModal
+        paymentOrder={activePaymentPopup}
+        onPaymentConfirmed={(confirmedId) => verifyPaymentOrder(confirmedId)}
+        onDismissUnpaid={handlePopupDismissUnpaid}
+        onSwitchToCod={handleSwitchToCodFromPopup}
+      />
+
+      {/* Calm Payment Incomplete Recovery Dialog */}
       <AnimatePresence>
         {showPaymentCancelledModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Payment not completed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.18, ease: EASE_OUT }}
+            onClick={() => setShowPaymentCancelledModal(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#120E0C]/55 backdrop-blur-[3px]"
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden text-slate-900"
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 8 }}
+              transition={{ duration: 0.2, ease: EASE_OUT }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-white rounded-2xl border border-stone-200 shadow-2xl p-6 space-y-5"
             >
-              <button
-                type="button"
-                onClick={() => setShowPaymentCancelledModal(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="p-6 pb-3 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-600 mx-auto mb-3.5 shadow-xs">
-                  <AlertCircle className="w-8 h-8" />
-                </div>
-                <h3 className="font-tj-serif text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-                  Payment Incomplete
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
-                  Your online payment was cancelled or could not be verified by banking rails. <strong className="text-gray-900 font-bold">No money was deducted</strong> from your bank account.
-                </p>
-
-                <div className="mt-4 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/80 text-left flex items-center justify-between">
-                  <div>
-                    <span className="text-[11px] text-gray-500 font-medium block">Order Amount:</span>
-                    <span className="text-base sm:text-lg font-black text-gray-900 block">
-                      ₹{grandTotal.toLocaleString()}
-                    </span>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+                    <AlertCircle className="w-5 h-5" />
                   </div>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200 px-2.5 py-1 rounded-full">
-                    <Truck className="w-3.5 h-3.5 text-emerald-700" />
-                    Free Delivery
-                  </span>
+                  <div>
+                    <h3 className="text-base font-semibold text-[#1B1714]">
+                      Payment not completed
+                    </h3>
+                    <p className="text-xs text-[#655B53] mt-0.5">
+                      No amount was charged to your account.
+                    </p>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPaymentCancelledModal(false)}
+                  aria-label="Close"
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-[#8C8177] hover:text-[#1B1714] hover:bg-stone-100 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              <div className="p-6 pt-2 space-y-2.5">
+              <div className="space-y-2.5">
                 <button
                   type="button"
-                  onClick={handleSwitchToCodFromCancelledModal}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#780016] to-[#a30b24] hover:from-[#5e0011] hover:to-[#8c081e] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-[#780016]/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
+                  onClick={() => {
+                    setShowPaymentCancelledModal(false);
+                    handlePlaceOrder();
+                  }}
+                  className="w-full min-h-[46px] px-4 rounded-xl bg-[#6E1625] hover:bg-[#54101C] text-white text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
-                  <Truck className="w-4 h-4 text-[#fed000]" />
-                  <span>Switch to Cash on Delivery (COD)</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <CreditCard className="w-4 h-4" />
+                  <span>Try payment again</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleRetryOnlinePayment}
-                  className="w-full py-3 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <CreditCard className="w-4 h-4 text-gray-700" />
-                  <span>Try Online Payment Again</span>
-                </button>
-
-                <div className="pt-1">
+                {paymentMethod !== "cod" && (
                   <button
                     type="button"
-                    onClick={() => setShowPaymentCancelledModal(false)}
-                    className="w-full py-2.5 px-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-xs transition-colors cursor-pointer text-center"
+                    onClick={() => {
+                      setShowPaymentCancelledModal(false);
+                      setPaymentMethod("cod");
+                      window.setTimeout(() => {
+                        document
+                          .getElementById("payment-cod-card")
+                          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }, 100);
+                    }}
+                    className="w-full min-h-[46px] px-4 rounded-xl bg-[#FBF8F3] hover:bg-[#F3EDE5] border border-stone-200 text-[#1B1714] text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
-                    Review / Edit Cart
+                    <Truck className="w-4 h-4 text-[#6E1625]" />
+                    <span>Switch to Cash on Delivery (₹{effectiveCodAdvance} advance)</span>
                   </button>
-                </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setShowPaymentCancelledModal(false)}
+                  className="w-full min-h-[42px] px-4 rounded-xl text-xs font-medium text-[#655B53] hover:text-[#1B1714] cursor-pointer"
+                >
+                  Edit delivery details
+                </button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── MOBILE STICKY PAY BUTTON (both online and COD advance) ── */}
-      {checkoutStep === "payment" && (
-        <div
-          className={`sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] ${
-            paymentMethod === "online" ? "border-emerald-100" : "border-rose-100"
-          }`}
-        >
-          <button
-            type="button"
-            disabled={loading || hasOutOfStockItems}
-            onClick={() => {
-              const btn = document.getElementById("checkout-submit-btn") as HTMLButtonElement | null;
-              if (btn) btn.click();
-            }}
-            className={`w-full py-4 px-6 rounded-2xl text-white font-bold text-base shadow-lg flex items-center justify-center gap-2 transition-all ${
-              loading || hasOutOfStockItems
-                ? "bg-gray-400 cursor-not-allowed opacity-80"
-                : paymentMethod === "online"
-                ? "bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] shadow-emerald-600/25 cursor-pointer"
-                : "bg-[#780016] hover:bg-[#5a0011] active:scale-[0.99] shadow-[#780016]/25 cursor-pointer"
-            }`}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>
-                  {paymentMethod === "online"
-                    ? "Opening Secure Payment..."
-                    : `Opening Payment for ₹${configuredCodFee} Advance...`}
-                </span>
-              </>
-            ) : hasOutOfStockItems ? (
-              <span>⚠️ Remove Out of Stock Items</span>
-            ) : paymentMethod === "online" ? (
-              <>
-                <Lock className="w-5 h-5" />
-                <span>Pay Online Now • ₹{onlineGrandTotal.toLocaleString()}</span>
-                <ArrowRight className="w-5 h-5" />
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="w-5 h-5" />
-                <span>Pay ₹{configuredCodFee} Advance to Confirm COD</span>
-                <ArrowRight className="w-5 h-5" />
-              </>
-            )}
-          </button>
-          <p className="text-center text-[10px] text-gray-500 mt-1.5">
-            {paymentMethod === "online"
-              ? "100% Secure • 256-bit Bank Grade Escrow by Cashfree"
-              : `Pay ₹${configuredCodFee} courier advance now • Balance ₹${codDoorstepBalance.toLocaleString()} payable at delivery`}
-          </p>
-        </div>
-      )}
-
-      {/* Clean Bottom Footer */}
-      <footer className="py-8 text-center text-xs text-gray-400 border-t border-gray-100 bg-white mt-12">
+      {/* Quiet Footer */}
+      <footer className="hidden lg:block py-6 text-center text-xs text-[#8C8177] border-t border-stone-200/60">
         © 2026 Turkiye Jam
       </footer>
     </div>
@@ -4541,10 +2207,10 @@ export default function CheckoutPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="min-h-dvh bg-[#FBF8F3] flex items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-3 border-[#cb0805] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-xs font-semibold text-gray-500">Loading checkout...</p>
+            <Loader2 className="w-7 h-7 text-[#6E1625] animate-spin mx-auto mb-3" />
+            <p className="text-sm text-[#655B53]">Loading checkout…</p>
           </div>
         </div>
       }
