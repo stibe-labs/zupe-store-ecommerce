@@ -608,6 +608,7 @@ export async function getERPOrders(filters?: {
   courier_partner?: string;
   search?: string;
   whatsapp_status?: string;
+  timeframe?: string;
 }): Promise<ERPOrder[]> {
   try {
     let sql = `SELECT orders.*, 
@@ -617,6 +618,53 @@ export async function getERPOrders(filters?: {
                LEFT JOIN users ON orders.user_id = users.id 
                WHERE 1=1`;
     const params: any[] = [];
+
+    if (filters?.timeframe && filters.timeframe !== "all") {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      const d = now.getDate();
+      let startIso = "";
+      let endIso = "";
+
+      if (filters.timeframe === "today") {
+        startIso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}T00:00:00`;
+        endIso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}T23:59:59`;
+      } else if (filters.timeframe === "yesterday") {
+        const yest = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const yy = yest.getFullYear();
+        const ym = yest.getMonth();
+        const yd = yest.getDate();
+        startIso = `${yy}-${String(ym + 1).padStart(2, "0")}-${String(yd).padStart(2, "0")}T00:00:00`;
+        endIso = `${yy}-${String(ym + 1).padStart(2, "0")}-${String(yd).padStart(2, "0")}T23:59:59`;
+      } else if (filters.timeframe === "weekly" || filters.timeframe === "week" || filters.timeframe === "last_7_days") {
+        const weekStart = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+        const wy = weekStart.getFullYear();
+        const wm = weekStart.getMonth();
+        const wd = weekStart.getDate();
+        startIso = `${wy}-${String(wm + 1).padStart(2, "0")}-${String(wd).padStart(2, "0")}T00:00:00`;
+        endIso = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}T23:59:59`;
+      } else if (filters.timeframe === "monthly" || filters.timeframe === "this_month") {
+        const lastDay = new Date(y, m + 1, 0).getDate();
+        startIso = `${y}-${String(m + 1).padStart(2, "0")}-01T00:00:00`;
+        endIso = `${y}-${String(m + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}T23:59:59`;
+      } else if (filters.timeframe === "last_month") {
+        const prevMonth = new Date(y, m - 1, 1);
+        const py = prevMonth.getFullYear();
+        const pm = prevMonth.getMonth();
+        const lastDayPrev = new Date(py, pm + 1, 0).getDate();
+        startIso = `${py}-${String(pm + 1).padStart(2, "0")}-01T00:00:00`;
+        endIso = `${py}-${String(pm + 1).padStart(2, "0")}-${String(lastDayPrev).padStart(2, "0")}T23:59:59`;
+      } else if (filters.timeframe === "yearly" || filters.timeframe === "this_year") {
+        startIso = `${y}-01-01T00:00:00`;
+        endIso = `${y}-12-31T23:59:59`;
+      }
+
+      if (startIso && endIso) {
+        sql += " AND orders.created_at >= ? AND orders.created_at <= ?";
+        params.push(startIso, endIso);
+      }
+    }
 
     if (filters?.whatsapp_status && filters.whatsapp_status !== "all") {
       sql += " AND orders.whatsapp_confirm_status = ?";
@@ -1324,15 +1372,26 @@ export async function getDashboardKPIs(
     if (timeframe === "today") {
       startMs = new Date(y, m, d, 0, 0, 0, 0).getTime();
       endMs = new Date(y, m, d, 23, 59, 59, 999).getTime();
-    } else if (timeframe === "weekly") {
+    } else if (timeframe === "yesterday") {
+      const yest = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      startMs = new Date(yest.getFullYear(), yest.getMonth(), yest.getDate(), 0, 0, 0, 0).getTime();
+      endMs = new Date(yest.getFullYear(), yest.getMonth(), yest.getDate(), 23, 59, 59, 999).getTime();
+    } else if (timeframe === "weekly" || timeframe === "week" || timeframe === "last_7_days") {
       const weekStart = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
       startMs = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate(), 0, 0, 0, 0).getTime();
       endMs = new Date(y, m, d, 23, 59, 59, 999).getTime();
-    } else if (timeframe === "monthly") {
+    } else if (timeframe === "monthly" || timeframe === "this_month") {
       startMs = new Date(y, m, 1, 0, 0, 0, 0).getTime();
       const lastDay = new Date(y, m + 1, 0).getDate();
       endMs = new Date(y, m, lastDay, 23, 59, 59, 999).getTime();
-    } else if (timeframe === "yearly") {
+    } else if (timeframe === "last_month") {
+      const prevMonth = new Date(y, m - 1, 1);
+      const py = prevMonth.getFullYear();
+      const pm = prevMonth.getMonth();
+      startMs = new Date(py, pm, 1, 0, 0, 0, 0).getTime();
+      const lastDayPrev = new Date(py, pm + 1, 0).getDate();
+      endMs = new Date(py, pm, lastDayPrev, 23, 59, 59, 999).getTime();
+    } else if (timeframe === "yearly" || timeframe === "this_year") {
       startMs = new Date(y, 0, 1, 0, 0, 0, 0).getTime();
       endMs = new Date(y, 11, 31, 23, 59, 59, 999).getTime();
     }
@@ -1467,14 +1526,23 @@ export async function getDashboardKPIs(
       });
     }
   } else {
-    // "monthly" or "custom"
+    // "monthly", "last_month", "all", or "custom"
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const targetDate = timeframe === "last_month" ? new Date(now.getFullYear(), now.getMonth() - 1, 1) : now;
+    const ty = targetDate.getFullYear();
+    const tm = targetDate.getMonth();
+    const monthShort = monthNames[tm];
+    const padM = String(tm + 1).padStart(2, "0");
+    const lastDay = new Date(ty, tm + 1, 0).getDate();
+
     const intervals = [
-      { label: "Oct 01 - 05", filter: (d: string) => d >= "2026-10-01" && d <= "2026-10-05" },
-      { label: "Oct 06 - 10", filter: (d: string) => d >= "2026-10-06" && d <= "2026-10-10" },
-      { label: "Oct 11 - 15", filter: (d: string) => d >= "2026-10-11" && d <= "2026-10-15" },
-      { label: "Oct 16 - 20", filter: (d: string) => d >= "2026-10-16" && d <= "2026-10-20" },
-      { label: "Oct 21 - 25", filter: (d: string) => d >= "2026-10-21" && d <= "2026-10-25" },
-      { label: "Oct 26 - 31", filter: (d: string) => d >= "2026-10-26" && d <= "2026-10-31" },
+      { label: `${monthShort} 01 - 05`, filter: (d: string) => d >= `${ty}-${padM}-01` && d <= `${ty}-${padM}-05` },
+      { label: `${monthShort} 06 - 10`, filter: (d: string) => d >= `${ty}-${padM}-06` && d <= `${ty}-${padM}-10` },
+      { label: `${monthShort} 11 - 15`, filter: (d: string) => d >= `${ty}-${padM}-11` && d <= `${ty}-${padM}-15` },
+      { label: `${monthShort} 16 - 20`, filter: (d: string) => d >= `${ty}-${padM}-16` && d <= `${ty}-${padM}-20` },
+      { label: `${monthShort} 21 - 25`, filter: (d: string) => d >= `${ty}-${padM}-21` && d <= `${ty}-${padM}-25` },
+      { label: `${monthShort} 26 - ${lastDay}`, filter: (d: string) => d >= `${ty}-${padM}-26` && d <= `${ty}-${padM}-${lastDay}` },
     ];
     for (const intv of intervals) {
       const intvOrders = orders.filter((o) => {

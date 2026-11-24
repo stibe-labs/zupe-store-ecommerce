@@ -96,9 +96,66 @@ interface ChartPoint {
   margin: number;
 }
 
+type TimeframeOption =
+  | "today"
+  | "yesterday"
+  | "weekly"
+  | "monthly"
+  | "last_month"
+  | "yearly"
+  | "all"
+  | "custom";
+
+const timeframeToLabel = (tf: string): string => {
+  switch (tf) {
+    case "today":
+      return "Today";
+    case "yesterday":
+      return "Yesterday";
+    case "weekly":
+      return "This Week";
+    case "monthly":
+      return "This Month";
+    case "last_month":
+      return "Last Month";
+    case "yearly":
+      return "This Year";
+    case "all":
+      return "All Time";
+    case "custom":
+      return "Custom Range";
+    default:
+      return "This Month";
+  }
+};
+
+const labelToTimeframe = (lbl: string): TimeframeOption => {
+  switch (lbl) {
+    case "Today":
+      return "today";
+    case "Yesterday":
+      return "yesterday";
+    case "This Week":
+    case "Last 7 Days":
+      return "weekly";
+    case "This Month":
+      return "monthly";
+    case "Last Month":
+      return "last_month";
+    case "This Year":
+      return "yearly";
+    case "All Time":
+      return "all";
+    case "Custom Range":
+      return "custom";
+    default:
+      return "monthly";
+  }
+};
+
 export default function AdminDashboardPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [timeframe, setTimeframe] = useState<"today" | "weekly" | "monthly" | "yearly" | "custom">("monthly");
+  const [timeframe, setTimeframe] = useState<TimeframeOption>("monthly");
   const [customStartDate, setCustomStartDate] = useState(
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
   );
@@ -248,6 +305,11 @@ export default function AdminDashboardPage() {
           onOpenMobile={() => setMobileSidebarOpen(true)}
           onRefresh={loadDashboardData}
           isRefreshing={isRefreshing}
+          selectedRange={timeframeToLabel(timeframe)}
+          onRangeChange={(range) => {
+            const nextTf = labelToTimeframe(range);
+            setTimeframe(nextTf);
+          }}
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
@@ -312,6 +374,7 @@ export default function AdminDashboardPage() {
                 { id: "weekly", label: "This Week" },
                 { id: "monthly", label: "This Month" },
                 { id: "yearly", label: "This Year" },
+                { id: "all", label: "All Time" },
                 { id: "custom", label: "Custom Range" },
               ].map((p) => (
                 <button

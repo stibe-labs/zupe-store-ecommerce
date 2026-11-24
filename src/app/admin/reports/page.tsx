@@ -887,7 +887,26 @@ export default function AdminReportsPage() {
       />
 
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        <AdminHeader onOpenMobile={() => setMobileSidebarOpen(true)} />
+        <AdminHeader
+          onOpenMobile={() => setMobileSidebarOpen(true)}
+          selectedRange={
+            timeFilter === "today"
+              ? "Today"
+              : timeFilter === "week"
+              ? "This Week"
+              : timeFilter === "monthly"
+              ? "This Month"
+              : "Custom Range"
+          }
+          onRangeChange={(range) => {
+            if (range === "Today") setTimeFilter("today");
+            else if (range === "This Week" || range === "Last 7 Days") setTimeFilter("week");
+            else if (range === "This Month") setTimeFilter("monthly");
+            else setTimeFilter("custom");
+          }}
+          onRefresh={() => fetchReports(true)}
+          isRefreshing={refreshing}
+        />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
           {/* Top Title & Actions Bar */}

@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
     const courier_partner = searchParams.get("courier_partner") || undefined;
     const search = searchParams.get("search") || undefined;
     const whatsapp_status = searchParams.get("whatsapp_status") || undefined;
+    const timeframe = searchParams.get("timeframe") || undefined;
 
     const orders = await getERPOrders({
       delivery_status,
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
       courier_partner,
       search,
       whatsapp_status,
+      timeframe,
     });
 
     return NextResponse.json({ success: true, orders });

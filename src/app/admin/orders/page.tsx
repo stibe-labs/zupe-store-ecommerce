@@ -43,19 +43,61 @@ function AdminOrdersContent() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [courierFilter, setCourierFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<ERPOrder | null>(null);
+
+  const dateFilterToLabel = (df: string): string => {
+    switch (df) {
+      case "today":
+        return "Today";
+      case "yesterday":
+        return "Yesterday";
+      case "weekly":
+        return "This Week";
+      case "monthly":
+        return "This Month";
+      case "last_month":
+        return "Last Month";
+      case "yearly":
+        return "This Year";
+      default:
+        return "All Time";
+    }
+  };
+
+  const labelToDateFilter = (lbl: string): string => {
+    switch (lbl) {
+      case "Today":
+        return "today";
+      case "Yesterday":
+        return "yesterday";
+      case "This Week":
+      case "Last 7 Days":
+        return "weekly";
+      case "This Month":
+        return "monthly";
+      case "Last Month":
+        return "last_month";
+      case "This Year":
+        return "yearly";
+      default:
+        return "all";
+    }
+  };
 
   const isFiltered =
     search.trim() !== "" ||
     statusFilter !== "all" ||
     paymentFilter !== "all" ||
-    courierFilter !== "all";
+    courierFilter !== "all" ||
+    dateFilter !== "all";
 
   const handleResetFilters = () => {
     setSearch("");
     setStatusFilter("all");
     setPaymentFilter("all");
     setCourierFilter("all");
+    setDateFilter("all");
   };
 
   // Edit order modal form state
@@ -476,6 +518,7 @@ function AdminOrdersContent() {
       if (statusFilter !== "all") url.searchParams.set("delivery_status", statusFilter);
       if (paymentFilter !== "all") url.searchParams.set("payment_method", paymentFilter);
       if (courierFilter !== "all") url.searchParams.set("courier_partner", courierFilter);
+      if (dateFilter !== "all") url.searchParams.set("timeframe", dateFilter);
       if (search.trim()) url.searchParams.set("search", search.trim());
 
       const res = await fetch(url.toString(), { cache: "no-store" });
@@ -500,7 +543,7 @@ function AdminOrdersContent() {
       clearInterval(interval);
       window.removeEventListener("focus", onFocus);
     };
-  }, [statusFilter, paymentFilter, courierFilter, search]);
+  }, [statusFilter, paymentFilter, courierFilter, search, dateFilter]);
 
   const handleExportCSV = () => {
     const headers = [
@@ -564,6 +607,8 @@ function AdminOrdersContent() {
           onOpenMobile={() => setMobileSidebarOpen(true)}
           onRefresh={fetchOrders}
           isRefreshing={isRefreshing}
+          selectedRange={dateFilterToLabel(dateFilter)}
+          onRangeChange={(range) => setDateFilter(labelToDateFilter(range))}
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">

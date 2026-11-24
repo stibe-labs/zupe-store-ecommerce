@@ -253,7 +253,7 @@ export default function AdminSettingsPage() {
       />
 
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        <AdminHeader onOpenMobile={() => setMobileSidebarOpen(true)} />
+        <AdminHeader onOpenMobile={() => setMobileSidebarOpen(true)} hideDateFilter />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

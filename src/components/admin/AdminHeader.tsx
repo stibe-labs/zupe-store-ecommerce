@@ -19,6 +19,10 @@ import {
   Truck,
   Sun,
   Moon,
+  Clock,
+  Package,
+  ShoppingCart,
+  MessageSquare,
 } from "lucide-react";
 import { useAdminTheme } from "@/context/AdminThemeContext";
 
@@ -26,36 +30,118 @@ interface AdminHeaderProps {
   onOpenMobile?: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  selectedRange?: string;
+  onRangeChange?: (range: string) => void;
+  hideDateFilter?: boolean;
 }
 
 interface AdminAlert {
   id: string;
+  type: "order" | "whatsapp" | "ndr" | "rto" | "stock" | "cart";
   title: string;
   description: string;
   time: string;
+  timestamp: number;
   href: string;
-  icon: any;
+  badge: string;
+  iconType: "ShoppingBag" | "Clock" | "AlertTriangle" | "RotateCcw" | "Package" | "ShoppingCart";
   iconColor: string;
+  priority: "high" | "medium" | "normal";
 }
 
 export default function AdminHeader({
   onOpenMobile,
   onRefresh,
   isRefreshing = false,
+  selectedRange,
+  onRangeChange,
+  hideDateFilter = false,
 }: AdminHeaderProps) {
   const router = useRouter();
   const { theme, toggleTheme } = useAdminTheme();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRange, setSelectedRange] = useState("This Month");
+  const [internalRange, setInternalRange] = useState("This Month");
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
   const [showAdminUserDropdown, setShowAdminUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const [alerts, setAlerts] = useState<AdminAlert[]>([]);
+  const [loadingAlerts, setLoadingAlerts] = useState(false);
+
+  const activeRange = selectedRange || internalRange;
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const rangeRef = useRef<HTMLDivElement>(null);
+
+  // Fetch real-time alerts from ERP API
+  const fetchAlerts = async () => {
+    try {
+      setLoadingAlerts(true);
+      const res = await fetch(`/api/admin/alerts?_t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.alerts)) {
+          let dismissedIds: string[] = [];
+          try {
+            dismissedIds = JSON.parse(localStorage.getItem("admin_dismissed_alerts") || "[]");
+          } catch {
+            dismissedIds = [];
+          }
+          const active = data.alerts.filter((a: AdminAlert) => !dismissedIds.includes(a.id));
+          setAlerts(active);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to fetch admin alerts:", err);
+    } finally {
+      setLoadingAlerts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (isRefreshing) {
+      fetchAlerts();
+    }
+  }, [isRefreshing]);
+
+  const handleClearAllAlerts = () => {
+    const ids = alerts.map((a) => a.id);
+    let dismissedIds: string[] = [];
+    try {
+      dismissedIds = JSON.parse(localStorage.getItem("admin_dismissed_alerts") || "[]");
+    } catch {
+      dismissedIds = [];
+    }
+    const merged = Array.from(new Set([...dismissedIds, ...ids]));
+    localStorage.setItem("admin_dismissed_alerts", JSON.stringify(merged));
+    setAlerts([]);
+  };
+
+  const renderAlertIcon = (iconType: string) => {
+    switch (iconType) {
+      case "ShoppingBag":
+        return <ShoppingBag className="w-4 h-4" />;
+      case "Clock":
+        return <Clock className="w-4 h-4" />;
+      case "AlertTriangle":
+        return <AlertTriangle className="w-4 h-4" />;
+      case "RotateCcw":
+        return <RotateCcw className="w-4 h-4" />;
+      case "Package":
+        return <Package className="w-4 h-4" />;
+      case "ShoppingCart":
+        return <ShoppingCart className="w-4 h-4" />;
+      default:
+        return <Bell className="w-4 h-4" />;
+    }
+  };
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -84,10 +170,12 @@ export default function AdminHeader({
   const dateOptions = [
     "Today",
     "Yesterday",
-    "Last 7 Days",
+    "This Week",
     "This Month",
     "Last Month",
+    "This Year",
     "All Time",
+    "Custom Range",
   ];
 
   return (
@@ -171,48 +259,53 @@ export default function AdminHeader({
           )}
         </button>
 
-        {/* Date Range Selector Dropdown */}
-        <div className="relative" ref={rangeRef}>
-          <button
-            onClick={() => setShowRangeDropdown(!showRangeDropdown)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 hover:bg-[#B8ED3E]/10 hover:border-[#B8ED3E]/40 rounded-xl text-xs sm:text-sm font-semibold text-neutral-700 transition-all"
-          >
-            <Calendar className="w-4 h-4 text-slate-500" />
-            <span className="hidden sm:inline">{selectedRange}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-          </button>
+        {/* Date Range Selector Dropdown (Synced with Dashboard Filters) */}
+        {!hideDateFilter && (
+          <div className="relative" ref={rangeRef}>
+            <button
+              onClick={() => setShowRangeDropdown(!showRangeDropdown)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 hover:bg-[#B8ED3E]/10 hover:border-[#B8ED3E]/40 rounded-xl text-xs sm:text-sm font-semibold text-neutral-700 transition-all"
+            >
+              <Calendar className="w-4 h-4 text-slate-500" />
+              <span className="hidden sm:inline">{activeRange}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </button>
 
-          {showRangeDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
-              {dateOptions.map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => {
-                    setSelectedRange(opt);
-                    setShowRangeDropdown(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 hover:bg-[#B8ED3E]/10 font-medium ${
-                    selectedRange === opt ? "text-[#4A7C0F] bg-[#B8ED3E]/20 font-bold" : "text-neutral-700"
-                  }`}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+            {showRangeDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-xl shadow-xl py-1 z-50 text-xs sm:text-sm">
+                {dateOptions.map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => {
+                      setInternalRange(opt);
+                      if (onRangeChange) {
+                        onRangeChange(opt);
+                      }
+                      setShowRangeDropdown(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 hover:bg-[#B8ED3E]/10 font-medium ${
+                      activeRange === opt ? "text-[#4A7C0F] bg-[#B8ED3E]/20 font-bold" : "text-neutral-700"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Notifications Popover */}
+        {/* Real-Time ERP Notifications Popover */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
             className="p-2 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100 rounded-xl relative transition-all"
-            title="Notifications & Alerts"
+            title="Notifications & ERP Alerts"
           >
             <Bell className="w-4 h-4" />
             {alerts.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#FFBE00] text-slate-950 text-[10px] font-black rounded-full flex items-center justify-center animate-pulse">
-                {alerts.length}
+              <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-[#FF3B30] text-white text-[10px] font-black rounded-full flex items-center justify-center animate-pulse shadow-sm">
+                {alerts.length > 99 ? "99+" : alerts.length}
               </span>
             )}
           </button>
@@ -226,22 +319,24 @@ export default function AdminHeader({
                     {alerts.length} New
                   </span>
                 </div>
-                <button
-                  onClick={() => setAlerts([])}
-                  className="text-xs text-neutral-400 hover:text-neutral-600 font-medium"
-                >
-                  Clear all
-                </button>
+                {alerts.length > 0 && (
+                  <button
+                    onClick={handleClearAllAlerts}
+                    className="text-xs text-neutral-400 hover:text-neutral-600 font-medium cursor-pointer"
+                  >
+                    Clear all
+                  </button>
+                )}
               </div>
 
-              <div className="max-h-72 overflow-y-auto divide-y divide-neutral-100">
+              <div className="max-h-80 overflow-y-auto divide-y divide-neutral-100">
                 {alerts.length === 0 ? (
                   <div className="p-6 text-center text-xs text-neutral-400">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-500 mx-auto mb-2 opacity-80" />
                     No new alerts. All operations running smoothly!
                   </div>
                 ) : (
                   alerts.map((alt) => {
-                    const Icon = alt.icon;
                     return (
                       <Link
                         key={alt.id}
@@ -250,14 +345,21 @@ export default function AdminHeader({
                         className="p-3.5 flex items-start gap-3 hover:bg-[#B8ED3E]/5 transition-colors block"
                       >
                         <div className={`p-2 rounded-xl shrink-0 ${alt.iconColor}`}>
-                          <Icon className="w-4 h-4" />
+                          {renderAlertIcon(alt.iconType)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-bold text-neutral-900 truncate">
-                              {alt.title}
-                            </p>
-                            <span className="text-[10px] text-neutral-400 font-mono">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <p className="text-xs font-bold text-neutral-900 truncate">
+                                {alt.title}
+                              </p>
+                              {alt.badge && (
+                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-neutral-100 text-neutral-600 shrink-0">
+                                  {alt.badge}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-neutral-400 font-mono shrink-0">
                               {alt.time}
                             </span>
                           </div>
