@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
     } catch {}
 
     const orderTotal = Number(order.total_amount || 0);
-    const expectedChargeRupees = isCodOrder ? configuredCodFee : orderTotal;
+    const expectedChargeRupees = isCodOrder ? Math.max(2, configuredCodFee) : orderTotal;
 
     if (
       !Number.isFinite(paidAmountRupees) ||

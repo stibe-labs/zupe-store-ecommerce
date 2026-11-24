@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     const minCatalogFloor = await computeAuthoritativeMinSubtotal(items);
     const maxAllowedPromoDiscount = Math.max(0, Math.round(Number(discount_amount || 0)));
 
-    let chargeAmount = isCod ? configuredCodAdvance : rawRequestedAmount;
+    let chargeAmount = isCod ? Math.max(2, configuredCodAdvance) : rawRequestedAmount;
     if (!isCod && minCatalogFloor !== null) {
       // Allow up to 50% legitimate coupon discount off catalog floor, minimum ₹2
       const safeDiscountCap = Math.min(maxAllowedPromoDiscount, Math.floor(minCatalogFloor * 0.5));
