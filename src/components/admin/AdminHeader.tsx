@@ -68,11 +68,213 @@ export default function AdminHeader({
   const [alerts, setAlerts] = useState<AdminAlert[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
 
+  // Browser Desktop Push Notifications State
+  const [browserPermission, setBrowserPermission] = useState<NotificationPermission>("default");
+  const [dismissedBanner, setDismissedBanner] = useState<boolean>(false);
+  const initialOrdersLoadedRef = useRef<boolean>(false);
+  const knownOrderIdsRef = useRef<Set<string>>(new Set());
+
   const activeRange = selectedRange || internalRange;
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const rangeRef = useRef<HTMLDivElement>(null);
+
+  // Synthesized Web Audio Cashier / Success Chime
+  const playOrderChime = () => {
+    if (typeof window === "undefined") return;
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      const now = ctx.currentTime;
+
+      // Note 1 (E5: 659.25Hz)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(659.25, now);
+      gain1.gain.setValueAtTime(0.25, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.3);
+
+      // Note 2 (G#5: 830.61Hz)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(830.61, now + 0.1);
+      gain2.gain.setValueAtTime(0.3, now + 0.1);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.1);
+      osc2.stop(now + 0.5);
+
+      // Note 3 (B5: 987.77Hz)
+      const osc3 = ctx.createOscillator();
+      const gain3 = ctx.createGain();
+      osc3.type = "triangle";
+      osc3.frequency.setValueAtTime(987.77, now + 0.22);
+      gain3.gain.setValueAtTime(0.35, now + 0.22);
+      gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+      osc3.connect(gain3);
+      gain3.connect(ctx.destination);
+      osc3.start(now + 0.22);
+      osc3.stop(now + 0.65);
+    } catch (e) {
+      console.warn("Could not play audio chime:", e);
+    }
+  };
+
+  // Helper to trigger desktop notification
+  const triggerBrowserNotification = (
+    title: string,
+    body: string,
+    url: string = "/admin/orders"
+  ) => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "granted") {
+      playOrderChime();
+      try {
+        const notif = new Notification(title, {
+          body,
+          icon: "/vl-logo-black.png",
+          badge: "/favicon-32x32.png",
+          tag: "vittal-order-" + Date.now(),
+          requireInteraction: true,
+        });
+        notif.onclick = () => {
+          window.focus();
+          router.push(url);
+          notif.close();
+        };
+      } catch (e) {
+        console.warn("Notification error:", e);
+      }
+    }
+  };
+
+  // Check and request browser notification permission
+  const requestNotificationPermission = () => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      Notification.requestPermission().then((perm) => {
+        setBrowserPermission(perm);
+        if (perm === "granted") {
+          setDismissedBanner(true);
+          triggerBrowserNotification(
+            "🛍️ Order Notifications Activated! — Vittal ERP",
+            "You will now receive instant desktop alerts with sound whenever new orders are confirmed, even when minimized.",
+            "/admin/orders"
+          );
+        }
+      });
+    }
+  };
+
+  // On mount: check permission and prompt if default
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setBrowserPermission(Notification.permission);
+      try {
+        const dismissed = sessionStorage.getItem("admin_dismissed_notif_banner");
+        if (dismissed === "1") {
+          setDismissedBanner(true);
+        }
+      } catch {}
+
+      // Automatically request permission on open if not asked yet
+      if (Notification.permission === "default") {
+        Notification.requestPermission().then((perm) => {
+          setBrowserPermission(perm);
+          if (perm === "granted") {
+            setDismissedBanner(true);
+            triggerBrowserNotification(
+              "🛍️ Order Notifications Activated! — Vittal ERP",
+              "You will now receive instant desktop alerts with sound whenever new orders are confirmed, even when minimized.",
+              "/admin/orders"
+            );
+          }
+        });
+      }
+    }
+  }, []);
+
+  // Background Order Poller for Minimized / Background Tabs
+  const checkForNewConfirmedOrders = async () => {
+    try {
+      const res = await fetch(`/api/admin/orders?_t=${Date.now()}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.success || !Array.isArray(data.orders)) return;
+
+      const currentOrderIds = new Set<string>(data.orders.map((o: any) => o.id));
+
+      if (!initialOrdersLoadedRef.current) {
+        let savedIds: string[] = [];
+        try {
+          savedIds = JSON.parse(localStorage.getItem("admin_known_order_ids") || "[]");
+        } catch {
+          savedIds = [];
+        }
+        const initialSet = new Set<string>([...savedIds, ...Array.from(currentOrderIds)]);
+        knownOrderIdsRef.current = initialSet;
+        try {
+          localStorage.setItem("admin_known_order_ids", JSON.stringify(Array.from(initialSet)));
+        } catch {}
+        initialOrdersLoadedRef.current = true;
+        return;
+      }
+
+      // Check for any new orders
+      const newOrders = data.orders.filter(
+        (o: any) =>
+          !knownOrderIdsRef.current.has(o.id) &&
+          o.status !== "Cancelled"
+      );
+
+      if (newOrders.length > 0) {
+        newOrders.forEach((newOrd: any) => {
+          knownOrderIdsRef.current.add(newOrd.id);
+          const cust = newOrd.customer_name || "Valued Customer";
+          const amount = (Number(newOrd.total_amount) || 0).toLocaleString("en-IN");
+          const ordId = newOrd.id?.startsWith("ord_") ? newOrd.id.substring(0, 16) : newOrd.id;
+
+          triggerBrowserNotification(
+            "🛍️ New Order Confirmed! — Vittal Lifestyle",
+            `Order #${ordId} from ${cust} (₹${amount}) has been confirmed! Click to view & dispatch.`,
+            `/admin/orders?search=${encodeURIComponent(newOrd.id)}`
+          );
+        });
+
+        try {
+          localStorage.setItem(
+            "admin_known_order_ids",
+            JSON.stringify(Array.from(knownOrderIdsRef.current))
+          );
+        } catch {}
+
+        // Flash document title
+        const originalTitle = document.title;
+        document.title = `(${newOrders.length}) 🛍️ NEW ORDER CONFIRMED! — Vittal ERP`;
+        const resetTitle = () => {
+          document.title = originalTitle;
+          window.removeEventListener("focus", resetTitle);
+        };
+        window.addEventListener("focus", resetTitle);
+      }
+    } catch (err) {
+      console.warn("Background order check error:", err);
+    }
+  };
+
+  useEffect(() => {
+    checkForNewConfirmedOrders();
+    const interval = setInterval(checkForNewConfirmedOrders, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch real-time alerts from ERP API
   const fetchAlerts = async () => {
@@ -179,7 +381,43 @@ export default function AdminHeader({
   ];
 
   return (
-    <header className="h-16 bg-white border-b border-neutral-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 font-mograph">
+    <>
+      {/* Browser Notification Permission Prompt Banner */}
+      {browserPermission === "default" && !dismissedBanner && (
+        <div className="bg-gradient-to-r from-[#111111] via-[#1a2512] to-[#111111] text-white px-4 py-2 text-xs font-semibold flex items-center justify-between gap-3 border-b border-[#B8ED3E]/30 sticky top-0 z-40 animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-6 h-6 rounded-lg bg-[#B8ED3E]/20 text-[#B8ED3E] flex items-center justify-center shrink-0">
+              <Bell className="w-3.5 h-3.5 animate-pulse" />
+            </div>
+            <p className="truncate">
+              <span className="font-bold text-[#B8ED3E]">Enable Desktop Alerts:</span> Allow browser notifications to receive sound alerts when orders are confirmed, even when this tab is minimized.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={requestNotificationPermission}
+              className="px-3 py-1 bg-[#B8ED3E] hover:bg-[#9FD92A] text-[#111111] rounded-lg font-bold text-xs transition-all shadow-xs active:scale-95 cursor-pointer"
+            >
+              Allow Notifications
+            </button>
+            <button
+              onClick={() => {
+                setDismissedBanner(true);
+                try {
+                  sessionStorage.setItem("admin_dismissed_notif_banner", "1");
+                } catch {}
+              }}
+              className="p-1 text-neutral-400 hover:text-white rounded-md transition-colors cursor-pointer"
+              title="Dismiss"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <header className="h-16 bg-white border-b border-neutral-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 font-mograph">
       {/* Left: Mobile hamburger & Global Search */}
       <div className="flex items-center gap-3 flex-1 max-w-xl">
         <button
@@ -312,6 +550,50 @@ export default function AdminHeader({
 
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-neutral-200 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in">
+              {/* Desktop Push Notification Status Bar */}
+              <div className="px-4 py-2 bg-neutral-50/90 border-b border-neutral-100 flex items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${
+                      browserPermission === "granted"
+                        ? "bg-emerald-500 animate-pulse"
+                        : browserPermission === "denied"
+                        ? "bg-rose-500"
+                        : "bg-amber-400"
+                    }`}
+                  />
+                  <span className="text-[11px] font-semibold text-neutral-700 truncate">
+                    {browserPermission === "granted"
+                      ? "Desktop Alerts: Active"
+                      : browserPermission === "denied"
+                      ? "Desktop Alerts: Blocked"
+                      : "Desktop Alerts: Inactive"}
+                  </span>
+                </div>
+
+                {browserPermission === "granted" ? (
+                  <button
+                    onClick={() => {
+                      triggerBrowserNotification(
+                        "🛍️ Test Order Notification",
+                        "Desktop notifications are working! You will get alerts with sound even when this window is minimized.",
+                        "/admin/orders"
+                      );
+                    }}
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-neutral-700 hover:text-[#4A7C0F] hover:border-[#B8ED3E] shadow-2xs transition-colors shrink-0 cursor-pointer"
+                  >
+                    Test Alert
+                  </button>
+                ) : browserPermission === "default" ? (
+                  <button
+                    onClick={requestNotificationPermission}
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#B8ED3E] text-[#111111] hover:bg-[#9FD92A] transition-colors shrink-0 cursor-pointer"
+                  >
+                    Enable Now
+                  </button>
+                ) : null}
+              </div>
+
               <div className="px-4 py-2 border-b border-neutral-100 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <h4 className="font-bold text-neutral-900 text-sm">ERP Alerts</h4>
@@ -441,5 +723,6 @@ export default function AdminHeader({
         </div>
       </div>
     </header>
+    </>
   );
 }
