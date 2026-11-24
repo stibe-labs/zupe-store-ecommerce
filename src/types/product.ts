@@ -17,9 +17,9 @@ export const DEFAULT_BUNDLE_TIERS: BuyMoreSaveMoreConfig = {
   enabled: true,
   headerTitle: "Buy More Save More",
   tiers: [
-    { qty: 1, badge: "BEST PRICE", discountPercent: 0, tagText: "", enabled: true },
-    { qty: 2, badge: "MOST POPULAR", discountPercent: 15, tagText: "Extra 15% OFF", enabled: true },
-    { qty: 3, badge: "BEST DEAL", discountPercent: 25, tagText: "Extra 25% OFF", enabled: true },
+    { qty: 1, badge: "BEST PRICE", discountPercent: 0, tagText: "Single Pack", enabled: true },
+    { qty: 2, badge: "MOST POPULAR", discountPercent: 15, tagText: "", enabled: true },
+    { qty: 3, badge: "BEST DEAL", discountPercent: 25, tagText: "", enabled: true },
   ],
 };
 

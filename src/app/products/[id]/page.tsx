@@ -928,12 +928,9 @@ export default function ProductDetailPage() {
             {bundleConfig.enabled !== false && activeTiers.length > 0 && (
               <div className="my-3.5 pt-1 space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base">🔥</span>
-                    <h3 className="font-mograph text-xs sm:text-sm font-extrabold text-neutral-900 uppercase tracking-wider">
-                      {bundleConfig.headerTitle || "Buy More Save More"}
-                    </h3>
-                  </div>
+                  <h3 className="font-mograph text-xs sm:text-sm font-extrabold text-neutral-900 uppercase tracking-wider">
+                    {bundleConfig.headerTitle || "Buy More Save More"}
+                  </h3>
                   {maxDiscountPercent > 0 && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[#E5F2D0] text-[#3B581C] border border-[#BBDC92]/60 shadow-xs">
                       Save up to {maxDiscountPercent}% OFF
@@ -942,7 +939,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Stack of Tier Options */}
-                <div className="space-y-2">
+                <div className="space-y-3.5 pt-2">
                   {activeTiers.map((tier) => {
                     const isSelected = quantity === tier.qty;
                     const regTotal = baseUnitPrice * tier.qty;
@@ -958,85 +955,85 @@ export default function ProductDetailPage() {
                     const perUnit = Math.round(tierTotal / tier.qty);
                     const tagText =
                       tier.tagText ||
-                      (tier.discountPercent > 0
-                        ? `Extra ${tier.discountPercent}% OFF`
-                        : savings > 0
-                        ? `Save ₹${savings.toLocaleString("en-IN")}`
-                        : "");
+                      (tier.qty === 1
+                        ? "Single Pack"
+                        : tier.qty === 2
+                        ? `Just ₹${perUnit.toLocaleString("en-IN")} each`
+                        : `Family Pack – ₹${perUnit.toLocaleString("en-IN")} each`);
+
+                    const badgeStyle = tier.badge
+                      ? tier.badge.toLowerCase().includes("popular")
+                        ? "bg-[#F95721] text-white"
+                        : tier.badge.toLowerCase().includes("deal")
+                        ? "bg-[#E53E29] text-white"
+                        : "bg-[#23272F] text-white"
+                      : "";
 
                     return (
                       <div
                         key={tier.qty}
                         onClick={() => setQuantity(tier.qty)}
-                        className={`relative p-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                        className={`relative p-3.5 sm:p-4 rounded-2xl transition-all cursor-pointer flex items-center justify-between gap-3 ${
                           isSelected
-                            ? "border-2 border-[#6B9E3A] bg-[#F2F8EB] shadow-xs shadow-[#6B9E3A]/10 ring-1 ring-[#6B9E3A]/30"
-                            : "border border-neutral-200 bg-[#FBFBFC] hover:border-neutral-300 hover:bg-neutral-50/80"
+                            ? "border-2 border-[#F95721] bg-[#FFFBF8] shadow-xs"
+                            : "border border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50/60"
                         }`}
                       >
-                        {/* Left: Radio Selector + Title + Badges */}
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          {/* Radio circle */}
+                        {/* Floating Reference Badge at Top-Right Border */}
+                        {tier.badge && (
+                          <span
+                            className={`absolute -top-2.5 right-5 sm:right-6 z-10 px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-xs select-none ${badgeStyle}`}
+                          >
+                            {tier.badge}
+                          </span>
+                        )}
+
+                        {/* Left: Radio Selector + Title + Tag */}
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Radio circle matching reference */}
                           <div
                             className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                               isSelected
-                                ? "bg-[#6B9E3A] text-white"
+                                ? "border-2 border-[#F95721] bg-white"
                                 : "border-2 border-neutral-300 bg-white"
                             }`}
                           >
-                            {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#F95721]" />}
                           </div>
 
-                          {/* Title & Badges */}
+                          {/* Title & Tag */}
                           <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="font-mograph text-xs sm:text-sm font-bold text-neutral-900">
-                                Buy {tier.qty} {tier.qty === 1 ? "Unit" : "Units"}
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mograph text-xs sm:text-sm font-extrabold text-neutral-950">
+                                Buy {tier.qty}
                               </span>
 
-                              {tier.badge && (
-                                <span
-                                  className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full tracking-wider uppercase ${
-                                    tier.badge.toLowerCase().includes("popular")
-                                      ? "bg-amber-100 text-amber-900 border border-amber-300/80"
-                                      : tier.badge.toLowerCase().includes("deal")
-                                      ? "bg-[#95CF42] text-neutral-950 font-black"
-                                      : "bg-neutral-200 text-neutral-800"
-                                  }`}
-                                >
-                                  {tier.badge}
-                                </span>
-                              )}
-
                               {tagText && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200/80">
+                                <span className="border border-[#F97316]/70 text-[#EA580C] bg-[#FFF7ED] rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-tight">
                                   {tagText}
                                 </span>
                               )}
                             </div>
 
-                            <div className="text-[11px] text-neutral-500 font-medium mt-0.5 flex items-center gap-1.5">
-                              {tier.qty > 1 ? (
-                                <span>₹{perUnit.toLocaleString("en-IN")}/unit</span>
-                              ) : (
-                                <span>Standard single pack</span>
-                              )}
-                              {savings > 0 && (
-                                <span className="font-bold text-[#3B581C]">
-                                  • You save ₹{savings.toLocaleString("en-IN")}
-                                </span>
-                              )}
-                            </div>
+                            {savings > 0 && (
+                              <div className="text-xs font-bold text-[#008060] mt-0.5">
+                                You save ₹{savings.toLocaleString("en-IN")}
+                              </div>
+                            )}
                           </div>
                         </div>
 
                         {/* Right: Total Price */}
                         <div className="text-right shrink-0">
-                          <div className="font-mograph text-sm sm:text-base font-extrabold text-neutral-950">
+                          <div
+                            className={`font-mograph text-base sm:text-lg font-extrabold ${
+                              savings > 0 ? "text-[#E53E29]" : "text-neutral-950"
+                            }`}
+                          >
                             ₹{tierTotal.toLocaleString("en-IN")}
                           </div>
                           {savings > 0 && (
-                            <div className="text-[11px] text-neutral-400 line-through">
+                            <div className="text-[11px] sm:text-xs text-neutral-400 line-through">
                               ₹{regTotal.toLocaleString("en-IN")}
                             </div>
                           )}
