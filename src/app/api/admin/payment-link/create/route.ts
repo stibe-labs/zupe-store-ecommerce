@@ -66,12 +66,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://turkiyejam.com").replace(/\/+$/, "");
+    const firstPartyPayUrl = `${siteUrl}/pay/${encodeURIComponent(pydartOrder.pydartOrderId)}`;
+
     return NextResponse.json({
       success: true,
       invoiceId: pydartOrder.pydartOrderId,
       invoiceNumber: pydartOrder.shortCode || pydartOrder.pydartOrderId,
-      payUrl: pydartOrder.paymentLink,
-      shortLink: pydartOrder.shortLink,
+      payUrl: firstPartyPayUrl,
+      shortLink: firstPartyPayUrl,
+      pydartHostedUrl: pydartOrder.paymentLink,
       amountRupees: resolvedAmount,
       customerName: String(customerName).trim(),
       customerPhone: cleanPhone,

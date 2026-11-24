@@ -215,7 +215,8 @@ export async function POST(req: NextRequest) {
       });
 
       pydartOrderId = pydartOrder.pydartOrderId;
-      pydartPayUrl = pydartOrder.paymentLink;
+      // Serve checkout first-party on turkiyejam.com so Razorpay website whitelist matches 100%
+      pydartPayUrl = `${siteUrl}/pay/${encodeURIComponent(pydartOrder.pydartOrderId)}`;
 
       // Bind PyDart Pay order_id 1:1 on D1 orders row for authoritative verification & webhooks
       await executeD1Query(

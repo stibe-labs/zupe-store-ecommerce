@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ExternalLink, Lock, ShieldCheck, X, AlertCircle, Loader2 } from "lucide-react";
+import { extractPyDartOrderIdFromUrl } from "@/lib/cardUtils";
+import { PyDartNativeCheckout } from "@/components/checkout/PyDartNativeCheckout";
 
 export interface PaymentPopupOrder {
   orderId: string;
@@ -29,39 +31,33 @@ export function PaymentPopupModal({
   onSwitchToCod,
 }: PaymentPopupModalProps) {
   const prefersReducedMotion = useReducedMotion();
-  const [iframeLoaded, setIframeLoaded] = useState(false);
   const [checkingOnClose, setCheckingOnClose] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const confirmedRef = useRef(false);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  const { embedUrl, expectedOrigin } = useMemo(() => {
-    if (!paymentOrder?.payUrl) return { embedUrl: "", expectedOrigin: "" };
-    try {
-      const parsed = new URL(paymentOrder.payUrl);
-      parsed.searchParams.set("embed", "1");
-      if (typeof window !== "undefined") {
-        parsed.searchParams.set("parentOrigin", window.location.origin);
-      }
-      return {
-        embedUrl: parsed.toString(),
-        expectedOrigin: parsed.origin,
-      };
-    } catch {
-      return { embedUrl: paymentOrder.payUrl, expectedOrigin: "" };
-    }
-  }, [paymentOrder?.payUrl]);
+  const resolvedPyDartOrderId = useMemo(() => {
+    if (!paymentOrder) return "";
+    return (
+      paymentOrder.pydartOrderId?.trim() ||
+      extractPyDartOrderIdFromUrl(paymentOrder.payUrl)
+    );
+  }, [paymentOrder]);
 
-  // Reset modal state when a new payment order opens
+  const fullPageUrl = useMemo(() => {
+    if (resolvedPyDartOrderId) {
+      return `/pay/${encodeURIComponent(resolvedPyDartOrderId)}`;
+    }
+    return paymentOrder?.payUrl || "";
+  }, [resolvedPyDartOrderId, paymentOrder?.payUrl]);
+
   useEffect(() => {
     if (!paymentOrder) return;
     confirmedRef.current = false;
-    setIframeLoaded(false);
     setCheckingOnClose(false);
     setInlineError(null);
   }, [paymentOrder?.orderId]);
 
-  // Lock background scroll while popup is open
   useEffect(() => {
     if (!paymentOrder || typeof document === "undefined") return;
     const prevOverflow = document.documentElement.style.overflow;
@@ -82,7 +78,7 @@ export function PaymentPopupModal({
     [onPaymentConfirmed]
   );
 
-  // Authoritative server status probe (used by polling, focus, and safe close)
+  // Authoritative Turkiye Jam server status probe (confirms order + triggers WhatsApp confirmation)
   const checkServerPaymentStatus = useCallback(async (orderId: string): Promise<boolean> => {
     try {
       const res = await fetch(
@@ -118,47 +114,19 @@ export function PaymentPopupModal({
     onDismissUnpaid,
   ]);
 
-  // Keyboard Escape dismissal
   useEffect(() => {
     if (!paymentOrder) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        handleRequestClose();
+        void handleRequestClose();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [paymentOrder, handleRequestClose]);
 
-  // Strict origin-pinned postMessage bridge from PyDart Pay embed
-  useEffect(() => {
-    if (!paymentOrder || !expectedOrigin) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== expectedOrigin) return;
-      const msg = event.data;
-      if (!msg || typeof msg !== "object") return;
-
-      if (msg.type === "PYDART_PAYMENT_SUCCESS") {
-        setInlineError(null);
-        triggerConfirmedOnce(paymentOrder.orderId);
-      } else if (msg.type === "PYDART_PAYMENT_FAILED") {
-        const reason =
-          typeof msg.payload?.reason === "string" && msg.payload.reason.trim()
-            ? msg.payload.reason.trim()
-            : "Payment was declined. You can try another UPI app or card above.";
-        setInlineError(reason);
-      } else if (msg.type === "PYDART_CHECKOUT_DISMISS") {
-        handleRequestClose();
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [paymentOrder, expectedOrigin, triggerConfirmedOnce, handleRequestClose]);
-
-  // Background polling + visibility/focus reconciliation (critical for mobile UPI app switching)
+  // Background polling + visibility/focus reconciliation
   useEffect(() => {
     if (!paymentOrder) return;
     const targetId = paymentOrder.orderId;
@@ -175,7 +143,7 @@ export function PaymentPopupModal({
     const intervalId = window.setInterval(pollOnce, 2500);
     const onFocusOrVisible = () => {
       if (document.visibilityState === "visible") {
-        pollOnce();
+        void pollOnce();
       }
     };
 
@@ -190,6 +158,14 @@ export function PaymentPopupModal({
     };
   }, [paymentOrder, checkServerPaymentStatus, triggerConfirmedOnce]);
 
+  const handleNativePaid = useCallback(async () => {
+    if (!paymentOrder) return;
+    setInlineError(null);
+    // Trigger server-side order verification immediately so D1 & WhatsApp receipt sync right away
+    await checkServerPaymentStatus(paymentOrder.orderId);
+    triggerConfirmedOnce(paymentOrder.orderId);
+  }, [paymentOrder, checkServerPaymentStatus, triggerConfirmedOnce]);
+
   return (
     <AnimatePresence>
       {paymentOrder && (
@@ -202,7 +178,7 @@ export function PaymentPopupModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.2, ease: MODAL_EASE }}
-          onClick={handleRequestClose}
+          onClick={() => void handleRequestClose()}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#120E0C]/65 backdrop-blur-[4px] p-0 sm:p-4"
         >
           <motion.div
@@ -227,7 +203,7 @@ export function PaymentPopupModal({
               ease: MODAL_EASE,
             }}
             onClick={(e) => e.stopPropagation()}
-            className="relative flex flex-col w-full sm:max-w-[460px] h-[92dvh] sm:h-[min(760px,90dvh)] bg-white rounded-t-3xl sm:rounded-2xl shadow-[0_24px_70px_-20px_rgba(18,14,12,0.45)] border border-black/10 overflow-hidden"
+            className="relative flex flex-col w-full sm:max-w-[460px] max-h-[92dvh] sm:max-h-[min(780px,90dvh)] bg-white rounded-t-3xl sm:rounded-2xl shadow-[0_24px_70px_-20px_rgba(18,14,12,0.45)] border border-black/10 overflow-hidden"
           >
             {/* Compact Payment Popup Header Chrome */}
             <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-stone-200/80 bg-[#FBF8F3] shrink-0">
@@ -247,7 +223,10 @@ export function PaymentPopupModal({
                     </span>
                   </div>
                   <p className="text-[11px] text-[#655B53] tabular-nums">
-                    Paying <strong className="font-semibold text-[#1B1714]">₹{paymentOrder.amount.toLocaleString("en-IN")}</strong>
+                    Paying{" "}
+                    <strong className="font-semibold text-[#1B1714]">
+                      ₹{paymentOrder.amount.toLocaleString("en-IN")}
+                    </strong>
                     {paymentOrder.isCod && paymentOrder.balanceDue > 0
                       ? ` · ₹${paymentOrder.balanceDue.toLocaleString("en-IN")} due on delivery`
                       : ""}
@@ -256,20 +235,22 @@ export function PaymentPopupModal({
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                <a
-                  href={paymentOrder.payUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Open payment screen in a new tab"
-                  className="inline-flex items-center gap-1 px-2.5 min-h-[36px] rounded-lg text-[11px] font-medium text-[#655B53] hover:text-[#1B1714] hover:bg-stone-200/60 transition-colors"
-                >
-                  <span className="hidden xs:inline sm:inline">Full page</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                {fullPageUrl && (
+                  <a
+                    href={fullPageUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open payment screen in a new tab"
+                    className="inline-flex items-center gap-1 px-2.5 min-h-[36px] rounded-lg text-[11px] font-medium text-[#655B53] hover:text-[#1B1714] hover:bg-stone-200/60 transition-colors"
+                  >
+                    <span className="hidden xs:inline sm:inline">Full page</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
                 <button
                   ref={closeButtonRef}
                   type="button"
-                  onClick={handleRequestClose}
+                  onClick={() => void handleRequestClose()}
                   disabled={checkingOnClose}
                   aria-label="Close payment popup"
                   className="w-10 h-10 rounded-full flex items-center justify-center text-[#655B53] hover:text-[#1B1714] hover:bg-stone-200/70 transition-colors cursor-pointer disabled:opacity-60"
@@ -283,7 +264,7 @@ export function PaymentPopupModal({
               </div>
             </div>
 
-            {/* Inline Payment Failure Notice (non-blocking — lets user retry another rail) */}
+            {/* Optional Non-Blocking Failure Banner with COD Switch */}
             {inlineError && (
               <div className="px-4 py-2.5 bg-rose-50 border-b border-rose-200 flex items-center justify-between gap-2 text-xs text-rose-900 shrink-0">
                 <div className="flex items-center gap-2 min-w-0">
@@ -302,56 +283,31 @@ export function PaymentPopupModal({
               </div>
             )}
 
-            {/* Embedded PyDart Pay Checkout Terminal */}
-            <div className="relative flex-1 bg-[#F7F8FA] overflow-hidden">
-              {!iframeLoaded && (
-                <div className="absolute inset-0 z-10 bg-white p-5 space-y-5">
-                  <div className="flex items-center justify-between pb-4 border-b border-stone-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-stone-100 animate-pulse" />
-                      <div className="space-y-1.5">
-                        <div className="h-3.5 w-28 rounded bg-stone-100 animate-pulse" />
-                        <div className="h-2.5 w-40 rounded bg-stone-100 animate-pulse" />
-                      </div>
-                    </div>
-                    <div className="h-6 w-20 rounded bg-stone-100 animate-pulse" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
-                    <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
-                    <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="h-12 rounded-xl bg-stone-100 animate-pulse" />
-                    <div className="h-12 rounded-xl bg-stone-100 animate-pulse" />
-                    <div className="h-12 rounded-xl bg-stone-100 animate-pulse" />
-                    <div className="h-12 rounded-xl bg-stone-100 animate-pulse" />
-                  </div>
-                  <div className="mx-auto w-44 h-44 rounded-2xl bg-stone-100 animate-pulse" />
-                  <p className="text-center text-xs text-[#655B53]">
-                    Loading UPI apps, QR code, and card options…
-                  </p>
+            {/* First-Party Native PyDart Pay Checkout (runs directly on turkiyejam.com!) */}
+            <div className="flex-1 overflow-y-auto bg-white">
+              {resolvedPyDartOrderId ? (
+                <PyDartNativeCheckout
+                  pydartOrderId={resolvedPyDartOrderId}
+                  variant="modal"
+                  onPaid={() => void handleNativePaid()}
+                  onPaymentError={(reason) => setInlineError(reason)}
+                />
+              ) : (
+                <div className="p-6 text-center text-xs text-[#655B53]">
+                  Payment session could not be initialized. Please close and try again.
                 </div>
               )}
-
-              <iframe
-                src={embedUrl}
-                title="PyDart Pay Secure Checkout"
-                allow="payment *"
-                onLoad={() => setIframeLoaded(true)}
-                className="w-full h-full border-0 block"
-              />
             </div>
 
             {/* Subtle Safe-Area Footer */}
             <div className="px-4 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] bg-white border-t border-stone-100 flex items-center justify-between text-[11px] text-[#655B53] shrink-0">
               <span className="inline-flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#116A4B]" />
-                <span>Verified by PyDart Pay</span>
+                <span>Powered by PyDart Pay</span>
               </span>
               <button
                 type="button"
-                onClick={handleRequestClose}
+                onClick={() => void handleRequestClose()}
                 disabled={checkingOnClose}
                 className="font-medium text-[#655B53] hover:text-[#1B1714] cursor-pointer"
               >
