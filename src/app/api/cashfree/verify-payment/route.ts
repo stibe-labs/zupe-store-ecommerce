@@ -1,345 +1,281 @@
 import { NextRequest, NextResponse } from "next/server";
-import { siteConfig } from "@/config/siteConfig";
 import { verifyCashfreePayment } from "@/lib/cashfree";
-import { updateERPOrder, getOrderById } from "@/lib/erpStore";
-import { updateStorefrontOrder } from "@/lib/orderStore";
+import {
+  verifyPyDartOrderByMerchantId,
+  verifyPyDartPaymentOrder,
+} from "@/lib/pydartPay";
+import {
+  confirmVerifiedOrderPayment,
+  parseStoredItems,
+} from "@/lib/pydartOrderConfirmation";
+import { getOrderById } from "@/lib/erpStore";
 import { executeD1Query } from "@/lib/d1";
-import { sendOrderConfirmationWhatsApp } from "@/lib/whatsappOrderConfirmation";
-import { sendOrderConfirmationEmail } from "@/lib/orderEmailService";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const orderId = url.searchParams.get("orderId") || url.searchParams.get("order_id");
-    const cashfreeOrderId = url.searchParams.get("cf_order_id") || url.searchParams.get("cashfreeOrderId");
-    const invoiceId = url.searchParams.get("invoice_id") || url.searchParams.get("invoiceId");
-    const isPaid = url.searchParams.get("paid") === "true";
+    const orderId =
+      url.searchParams.get("orderId") ||
+      url.searchParams.get("order_id") ||
+      url.searchParams.get("cf_order_id");
+    const pydartOrderId =
+      url.searchParams.get("pydart_order_id") ||
+      url.searchParams.get("pydartOrderId") ||
+      undefined;
+    const cashfreeOrderId =
+      url.searchParams.get("cf_order_id") ||
+      url.searchParams.get("cashfreeOrderId") ||
+      undefined;
 
-    if (!orderId && !cashfreeOrderId && !invoiceId) {
-      return NextResponse.json({ success: false, error: "Missing orderId" }, { status: 400 });
+    if (!orderId && !pydartOrderId && !cashfreeOrderId) {
+      return NextResponse.json(
+        { success: false, error: "Missing orderId" },
+        { status: 400 }
+      );
     }
 
     return POST(
       new NextRequest(req.url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: orderId || cashfreeOrderId || invoiceId, cashfreeOrderId, invoiceId, paid: isPaid }),
+        body: JSON.stringify({
+          orderId: orderId || cashfreeOrderId || pydartOrderId,
+          pydartOrderId,
+          cashfreeOrderId,
+        }),
       })
     );
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: err?.message || "Failed to verify payment" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { orderId, cashfreeOrderId, invoiceId, settlerInvoiceId, paid: isExplicitlyPaid } = body;
+    const body = await req.json().catch(() => ({}));
+    const { orderId, cashfreeOrderId, pydartOrderId, invoiceId, settlerInvoiceId } = body || {};
 
-    if (!orderId && !cashfreeOrderId && !invoiceId) {
+    const primaryLookupId = String(orderId || cashfreeOrderId || "").trim();
+    if (!primaryLookupId) {
       return NextResponse.json(
         { success: false, error: "Missing required orderId" },
         { status: 400 }
       );
     }
 
-    // 1. Verify payment status via Cashfree or Settler API
-    let isPaid = false;
-    let paymentId = cashfreeOrderId || `cf_${orderId}`;
-    let verificationAmount = 0;
-
-    // Check Cashfree direct API first (both IDs if available)
-    const candidateIds = [cashfreeOrderId, orderId, invoiceId, settlerInvoiceId].filter(Boolean) as string[];
-    for (const cid of candidateIds) {
-      if (isPaid) break;
-      try {
-        const verification = await verifyCashfreePayment(cid);
-        if (verification && verification.paid) {
-          isPaid = true;
-          paymentId = verification.paymentId || cid;
-          verificationAmount = verification.amount || 0;
-          break;
-        }
-      } catch {}
-    }
-
-    // Check Settler API if not verified directly
-    if (!isPaid) {
-      for (const cid of candidateIds) {
-        if (isPaid) break;
-        try {
-          const settlerVerifyRes = await fetch("https://settler.pydart.com/api/v1/orders/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: cid, invoiceId: cid }),
-          });
-          const settlerData: any = await settlerVerifyRes.json();
-          if (settlerData && settlerData.paid) {
-            isPaid = true;
-            paymentId = settlerData.bankReference || settlerData.orderId || paymentId;
-            break;
-          }
-        } catch {}
+    // 1. Fetch EXACT order by ID (never fall back to arbitrary latest pending order)
+    let order: any = await getOrderById(primaryLookupId);
+    if (!order) {
+      const rows = await executeD1Query<any>(
+        `SELECT id, shopify_order_id, razorpay_order_id, razorpay_payment_id, user_id, guest_email,
+                customer_name, customer_phone, total_amount, discount_amount, advance_paid, balance_due,
+                is_cod_partial, payment_method, payment_status, whatsapp_confirm_status,
+                shipping_address, city, postal_code, items, created_at
+         FROM orders
+         WHERE id = ? OR shopify_order_id = ? OR razorpay_order_id = ?
+         LIMIT 1`,
+        [primaryLookupId, primaryLookupId, primaryLookupId]
+      );
+      if (rows && rows.length > 0) {
+        order = rows[0];
       }
     }
 
-    // Direct confirmation flag from secure gateway return redirect (Settler / Cashfree return)
-    if (!isPaid && isExplicitlyPaid) {
-      isPaid = true;
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: "Order not found" },
+        { status: 404 }
+      );
     }
 
+    const effectiveOrderId = String(order.id);
+    const isCodOrder =
+      Boolean(order.is_cod_partial) ||
+      String(order.payment_method || "").toLowerCase().includes("cash on delivery") ||
+      String(order.payment_method || "").toUpperCase() === "COD";
+
+    let configuredCodFee = 49;
+    try {
+      const { getSettings } = await import("@/lib/erpStore");
+      const st = await getSettings();
+      if (st?.storeProfile?.codFee !== undefined) {
+        configuredCodFee = Number(st.storeProfile.codFee) || 49;
+      }
+    } catch {}
+
+    const orderTotal = Number(order.total_amount || 0);
+    const expectedChargeRupees = isCodOrder ? configuredCodFee : orderTotal;
+
+    if (!Number.isFinite(expectedChargeRupees) || expectedChargeRupees <= 0) {
+      return NextResponse.json(
+        { success: false, error: "Invalid stored order amount" },
+        { status: 400 }
+      );
+    }
+
+    // 2. Idempotent Fast-Path if webhook already confirmed this order before browser returned
+    const storedPayStatus = String(order.payment_status || "").toLowerCase();
+    const storedWaStatus = String(order.whatsapp_confirm_status || "").toLowerCase();
+    const storedAdvance = Number(order.advance_paid || 0);
+    const alreadyConfirmed =
+      storedPayStatus === "completed" ||
+      storedPayStatus === "paid" ||
+      storedWaStatus === "confirmed" ||
+      (isCodOrder && storedAdvance + 0.01 >= expectedChargeRupees);
+
+    if (alreadyConfirmed) {
+      const rawItems = parseStoredItems(order.items);
+      const effectiveAdvance = isCodOrder ? storedAdvance || expectedChargeRupees : orderTotal;
+      const effectiveBalance = isCodOrder ? Math.max(0, orderTotal - effectiveAdvance) : 0;
+
+      return NextResponse.json({
+        success: true,
+        paid: true,
+        orderStatus: "PAID",
+        orderId: effectiveOrderId,
+        shopifyOrderId: order.shopify_order_id || null,
+        customerName: order.customer_name || "Valued Customer",
+        customerPhone: order.customer_phone || "",
+        items: rawItems,
+        order: {
+          id: effectiveOrderId,
+          items: rawItems,
+          shipping_address: order.shipping_address || "",
+          city: order.city || "",
+          postal_code: order.postal_code || "",
+          customer_name: order.customer_name || "",
+          customer_email: order.guest_email || order.customer_email || "",
+        },
+        paymentId: order.razorpay_payment_id || `pyd_${effectiveOrderId}`,
+        isCodPartial: isCodOrder,
+        advancePaid: effectiveAdvance,
+        balanceDue: effectiveBalance,
+        totalAmount: orderTotal,
+        amount: effectiveAdvance,
+        message: "Order payment already verified and confirmed.",
+      });
+    }
+
+    // 3. Authoritative S2S Verification (never trusts client-supplied `paid: true` flags!)
+    let isPaid = false;
+    let gatewayLabel: "PyDart Pay" | "Cashfree" = "PyDart Pay";
+    let verifiedAmountRupees = 0;
+    let paymentId = "";
+    let observedStatus = "PENDING";
+    let observedFailureMessage: string | undefined;
+
+    // 3a. Primary Verification: PyDart Pay S2S (`GET /api/v1/payment-order/:id`)
+    const boundPyDartId = String(
+      order.razorpay_order_id || pydartOrderId || settlerInvoiceId || invoiceId || ""
+    ).trim();
+
+    const pydartResult = boundPyDartId
+      ? await verifyPyDartPaymentOrder(boundPyDartId)
+      : await verifyPyDartOrderByMerchantId(effectiveOrderId);
+
+    if (pydartResult) {
+      const matchesOrder =
+        pydartResult.merchantOrderId === effectiveOrderId ||
+        (boundPyDartId && pydartResult.pydartOrderId === boundPyDartId);
+
+      if (
+        pydartResult.paid &&
+        matchesOrder &&
+        pydartResult.amountRupees + 0.01 >= expectedChargeRupees
+      ) {
+        isPaid = true;
+        gatewayLabel = "PyDart Pay";
+        verifiedAmountRupees = pydartResult.amountRupees;
+        paymentId = pydartResult.paymentId || `pyd_${pydartResult.pydartOrderId || effectiveOrderId}`;
+      } else {
+        observedStatus = pydartResult.orderStatus || "PENDING";
+        observedFailureMessage = pydartResult.failureMessage;
+      }
+    }
+
+    // 3b. Fallback Verification: Direct Cashfree PG (for legacy orders created via Cashfree)
     if (!isPaid) {
+      try {
+        const cfResult = await verifyCashfreePayment(effectiveOrderId);
+        if (cfResult && cfResult.paid && Number(cfResult.amount || 0) + 0.01 >= expectedChargeRupees) {
+          isPaid = true;
+          gatewayLabel = "Cashfree";
+          verifiedAmountRupees = Number(cfResult.amount || expectedChargeRupees);
+          paymentId = cfResult.paymentId || `cf_${effectiveOrderId}`;
+        }
+      } catch {
+        // Cashfree check skipped when order belongs to PyDart Pay
+      }
+    }
+
+    if (!isPaid || !paymentId) {
       return NextResponse.json({
         success: false,
         paid: false,
-        orderStatus: "PENDING",
-        message: "Payment is not yet confirmed by gateway",
+        orderStatus: observedStatus || "PENDING",
+        failureMessage: observedFailureMessage,
+        message:
+          observedFailureMessage ||
+          "Payment is not yet confirmed by PyDart Pay gateway",
       });
     }
 
-    // 2. Fetch order details from ERP or D1 with deep fallback
-    let order: any = await getOrderById(orderId);
-    if (!order && cashfreeOrderId) {
-      order = await getOrderById(cashfreeOrderId);
-    }
-
-    if (!order) {
-      try {
-        const rows = await executeD1Query<any>(
-          "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? OR razorpay_order_id = ? LIMIT 1",
-          [orderId, orderId, orderId]
-        );
-        if (rows && rows.length > 0) order = rows[0];
-      } catch {}
-    }
-
-    if (!order && cashfreeOrderId) {
-      try {
-        const rows = await executeD1Query<any>(
-          "SELECT * FROM orders WHERE id = ? OR shopify_order_id = ? OR razorpay_order_id = ? LIMIT 1",
-          [cashfreeOrderId, cashfreeOrderId, cashfreeOrderId]
-        );
-        if (rows && rows.length > 0) order = rows[0];
-      } catch {}
-    }
-
-    // Fallback: If order wasn't found by exact ID, locate latest pending order in D1
-    if (!order) {
-      try {
-        const recentRows = await executeD1Query<any>(
-          "SELECT * FROM orders WHERE payment_status = 'Pending' OR payment_status = 'pending' ORDER BY created_at DESC LIMIT 1"
-        );
-        if (recentRows && recentRows.length > 0) {
-          order = recentRows[0];
-        }
-      } catch {}
-    }
-
-    const effectiveOrderId = order?.id || orderId;
-
-    const isCodOrder =
-      order?.payment_method?.includes("COD") ||
-      order?.payment_method?.toLowerCase().includes("cash on delivery") ||
-      Boolean(order?.is_cod_partial) ||
-      (Number(order?.advance_paid) > 0 && Number(order?.advance_paid) < Number(order?.total_amount));
-
-    const effectiveTotal = Number(order?.total_amount) || (isCodOrder ? (Number(order?.advance_paid || 1) + Number(order?.balance_due || 0)) : (verificationAmount || 899));
-    const advancePaid = isCodOrder
-      ? (verificationAmount || (Number(order?.advance_paid) > 0 ? Number(order?.advance_paid) : 1))
-      : (effectiveTotal || verificationAmount || 899);
-    const balanceDue = isCodOrder
-      ? Math.max(0, effectiveTotal - advancePaid)
-      : 0;
-
-    // 3. Update in ERP Store (handles memory + D1 update)
-    await updateERPOrder(effectiveOrderId, {
-      payment_method: isCodOrder ? "Cash on Delivery" : "Prepaid",
-      payment_status: isCodOrder ? "Pending" : "Completed",
-      advance_paid: advancePaid,
-      balance_due: balanceDue,
-      is_cod_partial: isCodOrder ? 1 : 0,
-      whatsapp_confirm_status: "confirmed",
-      delivery_status: "Processing",
-      status: "Processing",
-      remittance_status: isCodOrder ? "Pending" : "Settled",
+    // 4. Atomic Idempotent Confirmation + Notifications
+    const confirmation = await confirmVerifiedOrderPayment({
+      order,
+      effectiveOrderId,
+      isCodOrder,
+      orderTotal,
+      verifiedAmountRupees,
+      paymentId,
+      gatewayLabel,
     });
 
-    // 4. Update in D1 orders table
-    try {
-      await executeD1Query(
-        `UPDATE orders
-         SET payment_method = ?,
-             payment_status = ?,
-             advance_paid = ?,
-             balance_due = ?,
-             is_cod_partial = ?,
-             whatsapp_confirm_status = 'confirmed',
-             whatsapp_token_used = 1,
-             delivery_status = 'Processing',
-             status = 'Processing',
-             remittance_status = ?
-         WHERE id = ? OR shopify_order_id = ? OR id = ?`,
-        [
-          isCodOrder ? "Cash on Delivery" : "Prepaid",
-          isCodOrder ? "Pending" : "Completed",
-          advancePaid,
-          balanceDue,
-          isCodOrder ? 1 : 0,
-          isCodOrder ? "Pending" : "Settled",
-          effectiveOrderId,
-          effectiveOrderId,
-          orderId,
-        ]
+    if (!confirmation.accepted) {
+      return NextResponse.json(
+        { success: false, error: "Duplicate or replayed payment reference rejected." },
+        { status: 409 }
       );
-    } catch (d1Err) {
-      console.warn("D1 update order after Cashfree payment warning:", d1Err);
-    }
-
-    // 5. Update local storefront store
-    try {
-      updateStorefrontOrder(effectiveOrderId, {
-        payment_method: isCodOrder ? "Cash on Delivery" : "Prepaid",
-        payment_status: isCodOrder ? "pending" : "paid",
-        order_status: "processing",
-        whatsapp_confirm_status: "confirmed",
-        advance_paid: advancePaid,
-        balance_due: balanceDue,
-        is_cod_partial: isCodOrder ? 1 : 0,
-      });
-    } catch {}
-
-    const custName = order?.customer_name || "Valued Customer";
-    const custPhone = order?.customer_phone || "";
-    let rawItems: any[] = [];
-    if (order?.items) {
-      try {
-        rawItems = typeof order.items === "string" ? JSON.parse(order.items) : order.items;
-      } catch {
-        rawItems = [];
-      }
-    }
-
-    // 6. Dispatch Official WhatsApp Confirmation
-    if (custPhone) {
-      try {
-        await sendOrderConfirmationWhatsApp({
-          customerName: custName,
-          customerPhone: custPhone,
-          orderId: order?.shopify_order_id || orderId,
-          totalAmount: effectiveTotal,
-          paymentMethod: isCodOrder ? "cod" : "prepaid",
-          advancePaid: isCodOrder ? advancePaid : undefined,
-          balanceDue: isCodOrder ? balanceDue : undefined,
-          items: rawItems.map((it: any) => ({
-            name: it.product_name || it.name || "Turkiye Jam",
-            quantity: Number(it.quantity || 1),
-            price: Number(it.unit_price || it.price || 0),
-          })),
-        });
-      } catch (waErr) {
-        console.warn("Cashfree WhatsApp confirmation dispatch error:", waErr);
-      }
-
-      // Dispatch Real-Time Admin WhatsApp Alert (+91 7356765036)
-      try {
-        const { notifyAdminNewOrder, notifyAdminPaymentReceived } = await import("@/lib/adminNotification");
-        await notifyAdminNewOrder({
-          orderId: order?.shopify_order_id || orderId,
-          customerName: custName,
-          customerPhone: custPhone,
-          totalAmount: effectiveTotal,
-          paymentMethod: isCodOrder ? "Cash on Delivery" : "Online Prepaid",
-          paymentStatus: "Paid",
-          advancePaid: isCodOrder ? advancePaid : undefined,
-          balanceDue: isCodOrder ? balanceDue : undefined,
-          shippingAddress: order?.shipping_address || "",
-          city: order?.city || "",
-          postalCode: order?.postal_code || "",
-          items: rawItems.map((it: any) => ({
-            name: it.product_name || it.name || "Turkiye Jam",
-            quantity: Number(it.quantity || 1),
-            price: Number(it.unit_price || it.price || 0),
-          })),
-        });
-
-        // Dedicated Payment Received Alert
-        await notifyAdminPaymentReceived({
-          amount: isCodOrder ? advancePaid : effectiveTotal,
-          orderId: order?.shopify_order_id || orderId,
-          customerName: custName,
-          customerPhone: custPhone,
-          paymentMethod: isCodOrder ? "UPI (COD Advance)" : "Cashfree UPI / Online",
-          bankReference: paymentId || undefined,
-          paymentType: isCodOrder ? "COD Advance (₹49)" : "Full Online Prepaid",
-          totalOrderAmount: effectiveTotal,
-          balanceDue: isCodOrder ? balanceDue : 0,
-        });
-      } catch (adminNotifErr) {
-        console.warn("Failed to dispatch admin new order WhatsApp alert:", adminNotifErr);
-      }
-
-      // Mark abandoned checkout as recovered
-      try {
-        const cleanDigits = custPhone.replace(/\D/g, "").slice(-10);
-        if (cleanDigits) {
-          await executeD1Query(
-            "UPDATE abandoned_checkouts SET status = 'recovered', recovered_order_id = ? WHERE customer_phone LIKE ? AND status = 'abandoned'",
-            [orderId, `%${cleanDigits}`]
-          );
-        }
-      } catch {}
-    }
-
-    // 7. Dispatch Email Confirmation if customer email provided
-    const custEmail = (order?.guest_email || order?.customer_email || "").trim();
-    if (custEmail && !siteConfig.isSyntheticEmail(custEmail)) {
-      try {
-        await sendOrderConfirmationEmail({
-          orderId,
-          customerName: custName,
-          customerEmail: custEmail,
-          customerPhone: custPhone,
-          shippingAddress: order?.shipping_address || "",
-          city: order?.city || "",
-          postalCode: order?.postal_code || "",
-          totalAmount: effectiveTotal,
-          discountAmount: Number(order?.discount_amount || 0),
-          paymentMethod: isCodOrder ? "Cash on Delivery (₹49 Advance Paid)" : "Online Payment (Cashfree)",
-          paymentStatus: isCodOrder ? "pending" : "paid",
-          items: rawItems,
-          createdAt: order?.created_at || new Date().toISOString(),
-        });
-      } catch (e) {
-        console.warn("Cashfree email confirmation error:", e);
-      }
     }
 
     return NextResponse.json({
       success: true,
       paid: true,
+      orderStatus: "PAID",
       orderId: effectiveOrderId,
-      shopifyOrderId: order?.shopify_order_id || null,
-      customerName: custName,
-      customerPhone: custPhone,
-      items: rawItems,
+      shopifyOrderId: order.shopify_order_id || null,
+      customerName: confirmation.customerName,
+      customerPhone: confirmation.customerPhone,
+      items: confirmation.rawItems,
+      order: {
+        id: effectiveOrderId,
+        items: confirmation.rawItems,
+        shipping_address: order.shipping_address || "",
+        city: order.city || "",
+        postal_code: order.postal_code || "",
+        customer_name: confirmation.customerName,
+        customer_email: confirmation.customerEmail,
+      },
       paymentId,
       isCodPartial: isCodOrder,
-      advancePaid,
-      balanceDue,
-      totalAmount: effectiveTotal,
-      amount: verificationAmount || (isCodOrder ? advancePaid : effectiveTotal),
+      advancePaid: confirmation.advancePaid,
+      balanceDue: confirmation.balanceDue,
+      totalAmount: orderTotal,
+      amount: verifiedAmountRupees,
       message: isCodOrder
         ? "Cash on Delivery courier advance verified and order confirmed successfully"
-        : "Cashfree payment verified and order confirmed successfully",
+        : "PyDart Pay payment verified and order confirmed successfully",
     });
   } catch (err: any) {
-    console.error("Cashfree verify-payment error:", err);
+    console.error("Payment verify-payment error:", err);
     return NextResponse.json(
-      { success: false, error: err.message || "Failed to verify Cashfree payment" },
+      { success: false, error: err?.message || "Failed to verify payment" },
       { status: 500 }
     );
   }
 }
-

@@ -289,7 +289,7 @@ function CheckoutContent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const hasPaymentCallback = searchParams.get("paid") === "true" || !!searchParams.get("order_id") || !!searchParams.get("cf_order_id");
+      const hasPaymentCallback = searchParams.get("paid") === "true" || !!searchParams.get("order_id") || !!searchParams.get("cf_order_id") || !!searchParams.get("pydart_order_id");
 
       // If user has active items in cart and did NOT arrive via payment callback, they are placing a new order!
       if (cart.length > 0 && !hasPaymentCallback) {
@@ -320,22 +320,22 @@ function CheckoutContent() {
     } catch {}
   }, [cart.length, searchParams]);
 
-  // Cashfree / Settler Order Verification Helper with Exponential Polling Retry
+  // PyDart Pay / Cashfree Order Verification Helper with Exponential Polling Retry
   const verifyCashfreeOrder = async (orderIdToVerify: string, attempt: number = 1) => {
     setVerifyingPayment(true);
     setLoading(true);
     setErrorMessage("");
     try {
       const rawOrderId = searchParams.get("order_id") || "";
-      const isPaidFlag = searchParams.get("paid") === "true";
+      const pydartOrderIdParam = searchParams.get("pydart_order_id") || "";
 
       const res = await fetch("/api/cashfree/verify-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           orderId: orderIdToVerify,
+          pydartOrderId: pydartOrderIdParam || undefined,
           cashfreeOrderId: rawOrderId && rawOrderId !== orderIdToVerify ? rawOrderId : undefined,
-          paid: isPaidFlag,
         }),
       });
       const data = await res.json();
@@ -343,7 +343,7 @@ function CheckoutContent() {
         syncAddressAfterOrder();
         const finalOrderId = data.orderId || orderIdToVerify;
         const total = data.totalAmount || data.amount || grandTotal;
-        const paymentLabel = data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (Cashfree / Settler)");
+        const paymentLabel = data.isCodPartial ? "Cash on Delivery" : (data.paymentId || "Online Payment (PyDart Pay)");
         const advance = data.advancePaid || (data.isCodPartial ? configuredCodFee : 0);
         const due = data.isCodPartial ? (data.balanceDue !== undefined && data.balanceDue < total ? data.balanceDue : Math.max(0, total - advance)) : 0;
         const itemsToSave = (data.order?.items && Array.isArray(data.order.items) && data.order.items.length > 0)
@@ -388,6 +388,7 @@ function CheckoutContent() {
           if (typeof window !== "undefined") {
             const cleanUrl = new URL(window.location.href);
             cleanUrl.searchParams.delete("cf_order_id");
+            cleanUrl.searchParams.delete("pydart_order_id");
             cleanUrl.searchParams.delete("order_id");
             cleanUrl.searchParams.delete("paid");
             window.history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search ? cleanUrl.search : ""));
