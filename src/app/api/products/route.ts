@@ -167,6 +167,13 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
     bundle_tiers: parsedTiers,
     how_to_use: parsedHowToUse,
     video_ids: Array.isArray(parsedVideoIds) ? parsedVideoIds : undefined,
+    size_guide_enabled:
+      p.size_guide_enabled !== undefined && p.size_guide_enabled !== null
+        ? Boolean(Number(p.size_guide_enabled))
+        : defaultFound?.size_guide_enabled !== undefined
+        ? defaultFound.size_guide_enabled
+        : true,
+    size_guide_image: p.size_guide_image?.trim() || defaultFound?.size_guide_image?.trim() || "",
     created_at: p.created_at || defaultFound?.created_at || new Date().toISOString(),
   };
 }
@@ -345,6 +352,8 @@ export async function POST(req: NextRequest) {
       bundle_tiers,
       how_to_use,
       video_ids,
+      size_guide_enabled,
+      size_guide_image,
     } = body;
 
     // Find existing product in D1 first, then cache or defaults
@@ -486,6 +495,8 @@ export async function POST(req: NextRequest) {
       bundle_tiers: bundle_tiers !== undefined ? bundle_tiers : existingProd?.bundle_tiers || undefined,
       how_to_use: how_to_use !== undefined ? how_to_use : existingProd?.how_to_use || undefined,
       video_ids: video_ids !== undefined ? video_ids : existingProd?.video_ids || undefined,
+      size_guide_enabled: size_guide_enabled !== undefined ? Boolean(size_guide_enabled) : existingProd?.size_guide_enabled !== undefined ? existingProd.size_guide_enabled : true,
+      size_guide_image: size_guide_image !== undefined ? (typeof size_guide_image === "string" ? size_guide_image.trim() : "") : existingProd?.size_guide_image || "",
       created_at: existingProd?.created_at || new Date().toISOString(),
     };
 
@@ -523,7 +534,8 @@ export async function POST(req: NextRequest) {
                  price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
                  poster_image = ?, images = ?, color = ?, colors = ?, has_colors = ?, overview_blocks = ?, material = ?, badge = ?,
                  in_stock = ?, rating = ?, review_count = ?, sold_count = ?, features = ?,
-                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?, video_ids = ?
+                 specifications = ?, whats_in_box = ?, bundle_tiers = ?, how_to_use = ?, video_ids = ?,
+                 size_guide_enabled = ?, size_guide_image = ?
              WHERE id = ?;`,
             [
               newProd.slug,
@@ -557,6 +569,8 @@ export async function POST(req: NextRequest) {
               tiersJson,
               howToUseJson,
               videoIdsJson,
+              newProd.size_guide_enabled ? 1 : 0,
+              newProd.size_guide_image ?? null,
               existingRows[0].id,
             ]
           );
@@ -567,9 +581,10 @@ export async function POST(req: NextRequest) {
                price, mrp, offer_price, cost_price, stock_count, volume,
                poster_image, images, color, colors, has_colors, overview_blocks, material, badge,
                in_stock, rating, review_count, sold_count, features,
-               specifications, whats_in_box, bundle_tiers, how_to_use, video_ids
+               specifications, whats_in_box, bundle_tiers, how_to_use, video_ids,
+               size_guide_enabled, size_guide_image
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
             [
               newProd.id,
               newProd.slug,
@@ -603,6 +618,8 @@ export async function POST(req: NextRequest) {
               tiersJson,
               howToUseJson,
               videoIdsJson,
+              newProd.size_guide_enabled ? 1 : 0,
+              newProd.size_guide_image ?? null,
             ]
           );
         }
@@ -627,6 +644,15 @@ export async function POST(req: NextRequest) {
             migrated = true;
           } catch (migErr) {
             console.warn("Could not add how_to_use column:", migErr);
+          }
+        }
+        if (errMsg.includes("size_guide")) {
+          try {
+            await executeD1Query("ALTER TABLE products ADD COLUMN size_guide_enabled INTEGER DEFAULT 1;");
+            await executeD1Query("ALTER TABLE products ADD COLUMN size_guide_image TEXT;");
+            migrated = true;
+          } catch (migErr) {
+            console.warn("Could not add size_guide columns:", migErr);
           }
         }
 

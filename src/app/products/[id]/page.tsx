@@ -152,51 +152,74 @@ function getProductVariants(product: Product) {
   const cat = (product.category || "").toLowerCase();
   const n = (product.name || "").toLowerCase();
 
-  if (cat.includes("supplement") || n.includes("protein") || n.includes("gainer")) {
-    return {
-      label: "Select Size",
-      guideLabel: "Size Guide",
-      options: ["1 kg", "2 kg", "5 kg"],
-      defaultIndex: 0,
-    };
-  }
-  if (n.includes("creatine")) {
-    return {
-      label: "Select Weight",
-      guideLabel: "Usage Guide",
-      options: ["100g", "250g", "500g"],
-      defaultIndex: 1,
-    };
-  }
-  if (cat.includes("outfit") || cat.includes("apparel") || n.includes("t-shirt") || n.includes("set")) {
+  const isApparel =
+    cat.includes("outfit") ||
+    cat.includes("apparel") ||
+    cat.includes("sportswear") ||
+    cat.includes("clothing") ||
+    cat.includes("wear") ||
+    n.includes("t-shirt") ||
+    n.includes("tshirt") ||
+    n.includes("tee") ||
+    n.includes("jogger") ||
+    n.includes("short") ||
+    n.includes("pant") ||
+    n.includes("track") ||
+    n.includes("hoodie") ||
+    n.includes("set");
+
+  if (isApparel) {
     return {
       label: "Select Size",
       guideLabel: "Size Guide",
       options: ["S", "M", "L", "XL", "XXL"],
       defaultIndex: 1, // M
+      showGuide: product.size_guide_enabled !== false,
+    };
+  }
+
+  if (cat.includes("supplement") || n.includes("protein") || n.includes("gainer")) {
+    return {
+      label: "Select Weight",
+      guideLabel: "",
+      options: ["1 kg", "2 kg", "5 kg"],
+      defaultIndex: 0,
+      showGuide: Boolean(product.size_guide_enabled && product.size_guide_image),
+    };
+  }
+  if (n.includes("creatine")) {
+    return {
+      label: "Select Weight",
+      guideLabel: "",
+      options: ["100g", "250g", "500g"],
+      defaultIndex: 1,
+      showGuide: Boolean(product.size_guide_enabled && product.size_guide_image),
     };
   }
   if (cat.includes("date") || cat.includes("nut") || n.includes("date") || n.includes("almond")) {
     return {
       label: "Select Weight",
-      guideLabel: "Guide",
+      guideLabel: "",
       options: ["250g", "500g", "1 kg"],
       defaultIndex: 1,
+      showGuide: false,
     };
   }
   if (cat.includes("choc") || cat.includes("candy") || n.includes("candy")) {
     return {
       label: "Select Pack",
-      guideLabel: "Guide",
+      guideLabel: "",
       options: ["16 Pcs (250g)", "32 Pcs (500g)"],
       defaultIndex: 0,
+      showGuide: false,
     };
   }
   return {
     label: "Select Option",
-    guideLabel: "Guide",
+    guideLabel: "Size Guide",
     options: ["Standard", "Pro"],
     defaultIndex: 0,
+    showGuide: Boolean(product.size_guide_enabled && product.size_guide_image),
   };
 }
 
@@ -215,6 +238,8 @@ export default function ProductDetailPage() {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState<boolean>(false);
+  const [sizeUnit, setSizeUnit] = useState<"in" | "cm">("in");
   const [showToast, setShowToast] = useState<string | null>(null);
   const [showStickyBar, setShowStickyBar] = useState<boolean>(false);
 
@@ -857,14 +882,16 @@ export default function ProductDetailPage() {
                 <span className="font-mograph text-xs sm:text-sm font-bold text-neutral-900">
                   {variantsConfig.label}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion("nutrition")}
-                  className="text-xs text-neutral-500 hover:text-[#6B9E3A] flex items-center gap-1 transition-colors cursor-pointer font-medium"
-                >
-                  <span>{variantsConfig.guideLabel}</span>
-                  <Ruler className="w-3.5 h-3.5" />
-                </button>
+                {variantsConfig.showGuide && (
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeGuideOpen(true)}
+                    className="text-xs text-[#2E4815] hover:text-[#1E300E] font-bold flex items-center gap-1.5 transition-colors cursor-pointer bg-[#E5F2D0]/60 hover:bg-[#E5F2D0] px-3 py-1 rounded-full border border-[#BBDC92]/70"
+                  >
+                    <span>{variantsConfig.guideLabel || "Size Guide"}</span>
+                    <Ruler className="w-3.5 h-3.5 text-[#3B581C]" />
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-2.5 flex-wrap">
@@ -1449,6 +1476,186 @@ export default function ProductDetailPage() {
               </button>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* =================================================================== */}
+      {/* SIZE GUIDE MODAL (Apparels & Outfits)                               */}
+      {/* =================================================================== */}
+      <AnimatePresence>
+        {isSizeGuideOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
+            onClick={() => setIsSizeGuideOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-xl bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-neutral-100 max-h-[90vh] overflow-y-auto"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center shrink-0">
+                    <Ruler className="w-5 h-5 stroke-[2.2]" />
+                  </div>
+                  <div>
+                    <h3 className="font-mograph text-base sm:text-lg font-extrabold text-neutral-950">
+                      Size Guide & Measurements
+                    </h3>
+                    <p className="text-xs text-neutral-500 font-medium">
+                      {activeProduct.name} • Athletic Silhouette
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsSizeGuideOpen(false)}
+                  className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+                  aria-label="Close size guide"
+                >
+                  <X className="w-4 h-4 stroke-[2.5]" />
+                </button>
+              </div>
+
+              {/* Unit Switcher */}
+              <div className="flex items-center justify-between my-4">
+                <span className="text-xs font-bold text-neutral-700 uppercase tracking-wider font-mograph">
+                  Unit Measurement:
+                </span>
+                <div className="flex items-center p-1 bg-neutral-100 rounded-xl border border-neutral-200/80">
+                  <button
+                    type="button"
+                    onClick={() => setSizeUnit("in")}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      sizeUnit === "in"
+                        ? "bg-white text-neutral-950 shadow-xs"
+                        : "text-neutral-500 hover:text-neutral-900"
+                    }`}
+                  >
+                    Inches (in)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSizeUnit("cm")}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      sizeUnit === "cm"
+                        ? "bg-white text-neutral-950 shadow-xs"
+                        : "text-neutral-500 hover:text-neutral-900"
+                    }`}
+                  >
+                    Centimeters (cm)
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom Size Guide Image (if uploaded in Admin) */}
+              {activeProduct.size_guide_image && (
+                <div className="mb-4 rounded-2xl overflow-hidden border border-neutral-200 bg-[#FBFBFC] p-2 flex items-center justify-center">
+                  <img
+                    src={activeProduct.size_guide_image}
+                    alt={`${activeProduct.name} Size Chart`}
+                    className="w-full max-h-[320px] object-contain rounded-xl"
+                  />
+                </div>
+              )}
+
+              {/* Standard Apparel Size Table */}
+              <div className="overflow-x-auto rounded-2xl border border-neutral-200 shadow-xs mb-4">
+                <table className="w-full text-left text-xs font-mograph">
+                  <thead className="bg-[#F8FAF4] text-neutral-700 uppercase tracking-wider text-[11px] font-extrabold border-b border-neutral-200">
+                    <tr>
+                      <th className="py-2.5 px-3.5">Size</th>
+                      <th className="py-2.5 px-3">Chest ({sizeUnit})</th>
+                      <th className="py-2.5 px-3">Length ({sizeUnit})</th>
+                      <th className="py-2.5 px-3">Shoulder ({sizeUnit})</th>
+                      <th className="py-2.5 px-3">Sleeve ({sizeUnit})</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100">
+                    {[
+                      { size: "S", in: [38, 27, 16.5, 8], cm: [96, 68, 42, 20], idx: 0 },
+                      { size: "M", in: [40, 28, 17.5, 8.5], cm: [101, 71, 44, 21.5], idx: 1 },
+                      { size: "L", in: [42, 29, 18.5, 9], cm: [106, 73, 47, 23], idx: 2 },
+                      { size: "XL", in: [44, 30, 19.5, 9.5], cm: [111, 76, 49, 24], idx: 3 },
+                      { size: "XXL", in: [46, 31, 20.5, 10], cm: [117, 78, 52, 25], idx: 4 },
+                    ].map((row) => {
+                      const isRowSelected = selectedVariantIndex === row.idx;
+                      const vals = sizeUnit === "in" ? row.in : row.cm;
+                      return (
+                        <tr
+                          key={row.size}
+                          onClick={() => {
+                            setSelectedVariantIndex(row.idx);
+                            setShowToast(`Selected size ${row.size}`);
+                          }}
+                          className={`cursor-pointer transition-colors ${
+                            isRowSelected
+                              ? "bg-[#E5F2D0]/50 font-bold text-[#284214]"
+                              : "hover:bg-neutral-50 text-neutral-800"
+                          }`}
+                        >
+                          <td className="py-2.5 px-3.5 font-extrabold flex items-center gap-1.5">
+                            <span>{row.size}</span>
+                            {isRowSelected && (
+                              <span className="text-[10px] bg-[#6B9E3A] text-white px-1.5 py-0.5 rounded font-bold">
+                                Selected
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3">{vals[0]}</td>
+                          <td className="py-2.5 px-3">{vals[1]}</td>
+                          <td className="py-2.5 px-3">{vals[2]}</td>
+                          <td className="py-2.5 px-3">{vals[3]}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* How to Measure Guidelines */}
+              <div className="p-3.5 rounded-2xl bg-[#F7F8FA] border border-neutral-200/80 mb-4 space-y-2 text-xs">
+                <span className="font-bold text-neutral-900 block font-mograph uppercase tracking-wider text-[11px]">
+                  How to Measure Accurately:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-neutral-600">
+                  <div>
+                    <span className="font-bold text-neutral-800 block">1. Chest:</span>
+                    Measure around fullest part of chest under arms.
+                  </div>
+                  <div>
+                    <span className="font-bold text-neutral-800 block">2. Body Length:</span>
+                    Measure from top of shoulder down to hemline.
+                  </div>
+                  <div>
+                    <span className="font-bold text-neutral-800 block">3. Shoulder:</span>
+                    Measure across back from shoulder tip to shoulder tip.
+                  </div>
+                </div>
+              </div>
+
+              {/* Fit Tip Alert */}
+              <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/80 text-xs text-amber-900 font-medium mb-4 flex items-start gap-2">
+                <span className="text-base shrink-0">💡</span>
+                <span>
+                  <strong>Fit Tip:</strong> Our performance apparel is crafted with an athletic structured drape. If you prefer a loose or oversized street fit, we recommend selecting one size up.
+                </span>
+              </div>
+
+              {/* Close Action */}
+              <button
+                type="button"
+                onClick={() => setIsSizeGuideOpen(false)}
+                className="w-full py-3 rounded-2xl bg-[#111111] hover:bg-black text-white font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer font-mograph"
+              >
+                Close Guide
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

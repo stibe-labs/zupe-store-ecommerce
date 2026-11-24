@@ -100,6 +100,8 @@ export interface Product {
   bundle_tiers?: BuyMoreSaveMoreConfig;
   how_to_use?: HowToUseConfig;
   video_ids?: string[];
+  size_guide_enabled?: boolean;
+  size_guide_image?: string;
   shipping_info?: string[];
   return_info?: string[];
   reviews_data?: {
@@ -153,4 +155,6 @@ export interface AdminProductFormData {
   bundle_tiers?: BuyMoreSaveMoreConfig;
   how_to_use?: HowToUseConfig;
   video_ids?: string[];
+  size_guide_enabled?: boolean;
+  size_guide_image?: string;
 }
