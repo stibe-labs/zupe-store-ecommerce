@@ -310,8 +310,9 @@ export default function ChatSidebar({
                       )}
                       <span className="truncate">
                         {conv.lastMessage.text?.trim().toLowerCase() === "[unsupported]" ||
-                        conv.lastMessage.text?.includes("not supported on WhatsApp Cloud API")
-                          ? "📎 Unsupported attachment"
+                        conv.lastMessage.text?.includes("not supported on WhatsApp Cloud API") ||
+                        conv.lastMessage.text?.includes("WhatsApp Cloud API restricted")
+                          ? "📎 Restricted format (Cloud API)"
                           : conv.lastMessage.text}
                       </span>
                     </div>

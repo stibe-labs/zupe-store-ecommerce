@@ -660,7 +660,20 @@ export async function getERPOrders(filters?: {
     sql += " ORDER BY orders.created_at DESC";
 
     const rows = await executeD1Query<ERPOrder>(sql, params);
-    if (rows && rows.length > 0) {
+    if (Array.isArray(rows)) {
+      if (rows.length === 0) {
+        // D1 is authoritative: if D1 has 0 orders, clear stale isolate memory unless unfiltered matches nothing
+        if (
+          !filters?.delivery_status &&
+          !filters?.payment_method &&
+          !filters?.courier_partner &&
+          !filters?.search &&
+          !filters?.whatsapp_status
+        ) {
+          inMemoryERPOrders = [];
+        }
+        return [];
+      }
       const d1Ids = new Set(rows.map((r) => r.id));
       let memoryOnly = inMemoryERPOrders.filter((m) => !d1Ids.has(m.id));
 

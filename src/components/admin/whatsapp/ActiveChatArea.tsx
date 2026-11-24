@@ -12,6 +12,7 @@ import {
   X,
   Lock,
   User,
+  Download,
 } from "lucide-react";
 import { WhatsAppConversation, WhatsAppMessage } from "@/lib/whatsappStore";
 import MessageBubble from "./MessageBubble";
@@ -33,6 +34,7 @@ interface ActiveChatAreaProps {
   onOpenPaymentLinkModal?: () => void;
   draftText?: string;
   onClearDraftText?: () => void;
+  onQuickReply?: (text: string) => void;
   isTyping?: boolean;
 }
 
@@ -51,6 +53,7 @@ export default function ActiveChatArea({
   onOpenPaymentLinkModal,
   draftText,
   onClearDraftText,
+  onQuickReply,
   isTyping = false,
 }: ActiveChatAreaProps) {
   const [replyTarget, setReplyTarget] = useState<WhatsAppMessage | null>(null);
@@ -59,6 +62,16 @@ export default function ActiveChatArea({
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Close photo lightbox on Escape key (WCAG keyboard navigation)
+  useEffect(() => {
+    if (!zoomedImage) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoomedImage(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [zoomedImage]);
 
   // Auto scroll to bottom on new messages
   useEffect(() => {
@@ -237,6 +250,7 @@ export default function ActiveChatArea({
             onDelete={(msgId) => onDeleteMessage(msgId)}
             onUpdateOrderStatus={onUpdateOrderStatus}
             onImageZoom={(url) => setZoomedImage(url)}
+            onQuickReply={onQuickReply}
           />
         ))}
 
@@ -271,18 +285,46 @@ export default function ActiveChatArea({
         onClearDraftText={onClearDraftText}
       />
 
-      {/* Lightbox Modal for Photo Zoom */}
+      {/* Lightbox Modal for Photo / Sticker Zoom */}
       {zoomedImage && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Full size WhatsApp media preview"
           onClick={() => setZoomedImage(null)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm cursor-zoom-out animate-in fade-in"
         >
-          <div className="relative max-w-4xl max-h-[85vh] w-full h-full flex items-center justify-center">
-            <Image
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+            <a
+              href={
+                zoomedImage.startsWith("/api/admin/whatsapp/media")
+                  ? `${zoomedImage}${zoomedImage.includes("?") ? "&" : "?"}download=1&filename=whatsapp-media`
+                  : zoomedImage
+              }
+              download="whatsapp-media"
+              onClick={(e) => e.stopPropagation()}
+              aria-label="Download media"
+              className="w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors"
+            >
+              <Download className="w-5 h-5" />
+            </a>
+            <button
+              type="button"
+              onClick={() => setZoomedImage(null)}
+              aria-label="Close media preview"
+              className="w-11 h-11 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-4xl max-h-[85vh] flex items-center justify-center cursor-default"
+          >
+            <img
               src={zoomedImage}
-              alt="Zoomed Photo"
-              fill
-              className="object-contain"
+              alt="Zoomed WhatsApp media"
+              className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
             />
           </div>
         </div>

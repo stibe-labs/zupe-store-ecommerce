@@ -121,7 +121,11 @@ export default function WhatsAppLayout() {
               nm &&
               pm.id === nm.id &&
               pm.status === nm.status &&
-              pm.content === nm.content
+              pm.content === nm.content &&
+              pm.mediaUrl === nm.mediaUrl &&
+              pm.mediaCaption === nm.mediaCaption &&
+              JSON.stringify(pm.reactions || []) === JSON.stringify(nm.reactions || []) &&
+              JSON.stringify(pm.metadata || null) === JSON.stringify(nm.metadata || null)
             );
           });
           return isSame ? prev : merged;
@@ -505,6 +509,7 @@ export default function WhatsAppLayout() {
           onOpenPaymentLinkModal={() => setShowPaymentLinkModal(true)}
           draftText={draftMessageText}
           onClearDraftText={() => setDraftMessageText("")}
+          onQuickReply={(text) => setDraftMessageText(text)}
           isTyping={isCustomerTyping}
         />
       ) : (

@@ -10,6 +10,7 @@ import {
   deleteWhatsAppMessage,
   createNewConversation,
   sendMetaCloudApiMessage,
+  attachOutboundWaMessageId,
   generateSmartCustomerReply,
   updateMessageStatus,
   clearAllWhatsAppChats,
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
     const { action } = body;
 
     if (action === "send_message") {
-      const { conversationId, content, type, orderData, productData, mediaUrl, mediaCaption, mediaDuration, replyTo } =
+      const { conversationId, content, type, orderData, productData, mediaUrl, mediaCaption, mediaDuration, replyTo, metadata } =
         body;
 
       if (!conversationId) {
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
         mediaCaption,
         mediaDuration,
         replyTo,
+        metadata,
         status: "sending",
       });
 
@@ -160,6 +162,9 @@ export async function POST(req: NextRequest) {
       const result = await sendMetaCloudApiMessage(recipientPhone, messageText);
       if (result.success && messageId) {
         await updateMessageStatus(messageId, "delivered");
+        if (result.waMessageId) {
+          await attachOutboundWaMessageId(messageId, result.waMessageId);
+        }
       }
       return NextResponse.json(result);
     }

@@ -2,8 +2,15 @@
 import { getERPOrders, ERPOrder } from "@/lib/erpStore";
 import { executeD1Query } from "@/lib/d1";
 import { formatToIST, formatChatListTimeIST, parseDbTimestamp } from "@/lib/istTime";
+import { getRuntimeSecret } from "@/lib/pydartPay";
+import type {
+  ParsedInboundWhatsAppMessage,
+  WhatsAppMessageMetadata,
+  WhatsAppRichMessageType,
+} from "@/lib/whatsappInboundParser";
 
 export { formatToIST, formatChatListTimeIST, parseDbTimestamp };
+export type { WhatsAppMessageMetadata, WhatsAppRichMessageType };
 
 export interface WhatsAppReaction {
   emoji: string;
@@ -12,21 +19,15 @@ export interface WhatsAppReaction {
 
 export interface WhatsAppMessage {
   id: string;
+  waMessageId?: string;
   conversationId: string;
   sender: "agent" | "customer" | "system";
-  type:
-    | "text"
-    | "image"
-    | "voice"
-    | "order_card"
-    | "tracking_card"
-    | "product_card"
-    | "template"
-    | "document";
+  type: WhatsAppRichMessageType;
   content: string;
   mediaUrl?: string;
   mediaCaption?: string;
   mediaDuration?: number; // seconds
+  metadata?: WhatsAppMessageMetadata;
   orderData?: {
     orderId: string;
     totalAmount: number;
@@ -54,6 +55,45 @@ export interface WhatsAppMessage {
   status: "sending" | "sent" | "delivered" | "read";
   timestamp: string;
   createdAt?: string;
+}
+
+function safeParseJson<T>(raw: unknown, fallback: T): T {
+  if (!raw || typeof raw !== "string") return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function buildSidebarPreviewText(msg: Partial<WhatsAppMessage>): string {
+  const caption = msg.mediaCaption?.trim();
+  const content = msg.content?.trim();
+
+  switch (msg.type) {
+    case "image":
+      return caption ? `📷 ${caption}` : content || "📷 Photo";
+    case "video":
+      return caption ? `🎥 ${caption}` : content || "🎥 Video";
+    case "voice":
+      return content || "🎤 Voice note";
+    case "sticker":
+      return content || "🎨 Sticker";
+    case "document":
+      return `📄 ${msg.metadata?.filename || content || "Document"}`;
+    case "location":
+      return content || "📍 Shared Location";
+    case "contacts":
+      return content || "👤 Shared Contact";
+    case "order":
+      return content || "🛒 WhatsApp Catalog Cart";
+    case "reaction":
+      return content || "👍 Reaction";
+    case "unsupported":
+      return "📎 Restricted format (Cloud API)";
+    default:
+      return content || "Media";
+  }
 }
 
 export interface WhatsAppConversation {
@@ -382,20 +422,30 @@ export async function getWhatsAppMessages(conversationId: string): Promise<Whats
       [conversationId]
     );
     if (rows && rows.length > 0) {
-      const dbMsgs: WhatsAppMessage[] = rows.map((r) => ({
-        id: r.id,
-        conversationId: r.conversation_id,
-        sender: r.sender,
-        type: r.type || "text",
-        content: r.content,
-        mediaUrl: r.media_url,
-        mediaCaption: r.media_caption,
-        mediaDuration: r.media_duration,
-        reactions: r.reactions ? JSON.parse(r.reactions) : [],
-        status: r.status || "delivered",
-        timestamp: formatToIST(r.created_at || Date.now()),
-        createdAt: r.created_at,
-      }));
+      const dbMsgs: WhatsAppMessage[] = rows.map((r) => {
+        const parsedMeta = safeParseJson<WhatsAppMessageMetadata | undefined>(r.metadata, undefined);
+        const parsedReactions = safeParseJson<WhatsAppReaction[]>(r.reactions, []);
+
+        return {
+          id: r.id,
+          waMessageId: r.wa_message_id || undefined,
+          conversationId: r.conversation_id,
+          sender: r.sender,
+          type: (r.type || "text") as WhatsAppRichMessageType,
+          content: r.content,
+          mediaUrl: r.media_url || undefined,
+          mediaCaption: r.media_caption || undefined,
+          mediaDuration: r.media_duration || undefined,
+          metadata: parsedMeta,
+          orderData: parsedMeta?.orderData,
+          productData: parsedMeta?.productData,
+          replyTo: parsedMeta?.replyTo,
+          reactions: Array.isArray(parsedReactions) ? parsedReactions : [],
+          status: r.status || "delivered",
+          timestamp: formatToIST(r.created_at || Date.now()),
+          createdAt: r.created_at,
+        };
+      });
       // Deduplicate by message ID
       const seenIds = new Set<string>();
       const combined: WhatsAppMessage[] = [];
@@ -427,8 +477,17 @@ export async function addWhatsAppMessage(
   const timeFormatted = formatToIST(now);
   const chatListFormatted = formatChatListTimeIST(now);
 
+  const mergedMetadata: WhatsAppMessageMetadata = {
+    ...(payload.metadata || {}),
+    ...(payload.orderData ? { orderData: payload.orderData } : {}),
+    ...(payload.productData ? { productData: payload.productData } : {}),
+    ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
+  };
+  const hasMetadata = Object.keys(mergedMetadata).length > 0;
+
   const newMessage: WhatsAppMessage = {
     id: msgId,
+    waMessageId: payload.waMessageId,
     conversationId,
     sender: payload.sender || "agent",
     type: payload.type || "text",
@@ -436,6 +495,7 @@ export async function addWhatsAppMessage(
     mediaUrl: payload.mediaUrl,
     mediaCaption: payload.mediaCaption,
     mediaDuration: payload.mediaDuration,
+    metadata: hasMetadata ? mergedMetadata : undefined,
     orderData: payload.orderData,
     productData: payload.productData,
     replyTo: payload.replyTo,
@@ -454,7 +514,7 @@ export async function addWhatsAppMessage(
   const convIndex = inMemoryConversations.findIndex((c) => c.id === conversationId);
   if (convIndex !== -1) {
     inMemoryConversations[convIndex].lastMessage = {
-      text: newMessage.content || (newMessage.type === "voice" ? "🎤 Voice message" : "Media"),
+      text: buildSidebarPreviewText(newMessage),
       sender: newMessage.sender,
       timestamp: chatListFormatted,
       status: newMessage.status,
@@ -465,11 +525,13 @@ export async function addWhatsAppMessage(
     }
   }
 
-  // Persist directly to real Cloudflare D1
+  const metadataJson = hasMetadata ? JSON.stringify(mergedMetadata) : null;
+
+  // Persist directly to real Cloudflare D1 (with legacy-column fallback)
   try {
-    await executeD1Query(
-      `INSERT INTO whatsapp_messages (id, conversation_id, sender, type, content, media_url, media_caption, media_duration, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+    const inserted = await executeD1Query(
+      `INSERT INTO whatsapp_messages (id, conversation_id, sender, type, content, media_url, media_caption, media_duration, status, metadata, wa_message_id, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
       [
         newMessage.id,
         newMessage.conversationId,
@@ -480,8 +542,27 @@ export async function addWhatsAppMessage(
         newMessage.mediaCaption || null,
         newMessage.mediaDuration || null,
         newMessage.status,
+        metadataJson,
+        newMessage.waMessageId || null,
       ]
     );
+    if (inserted === null) {
+      await executeD1Query(
+        `INSERT INTO whatsapp_messages (id, conversation_id, sender, type, content, media_url, media_caption, media_duration, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        [
+          newMessage.id,
+          newMessage.conversationId,
+          newMessage.sender,
+          newMessage.type,
+          newMessage.content,
+          newMessage.mediaUrl || null,
+          newMessage.mediaCaption || null,
+          newMessage.mediaDuration || null,
+          newMessage.status,
+        ]
+      );
+    }
   } catch (e) {
     // Non-fatal
   }
@@ -514,6 +595,60 @@ export async function updateMessageStatus(
   } catch (e) {
     console.warn("D1 updateMessageStatus warning:", e);
   }
+}
+
+export async function attachOutboundWaMessageId(
+  messageId: string,
+  waMessageId: string
+): Promise<void> {
+  if (!messageId || !waMessageId) return;
+  for (const convId in inMemoryMessages) {
+    const msg = inMemoryMessages[convId]?.find((m) => m.id === messageId);
+    if (msg) {
+      msg.waMessageId = waMessageId;
+      break;
+    }
+  }
+  try {
+    await executeD1Query(
+      "UPDATE whatsapp_messages SET wa_message_id = ? WHERE id = ?",
+      [waMessageId, messageId]
+    );
+  } catch (e) {
+    console.warn("D1 attachOutboundWaMessageId warning:", e);
+  }
+}
+
+export async function updateMessageStatusByWaId(
+  waMessageId: string,
+  status: "sent" | "delivered" | "read"
+): Promise<boolean> {
+  if (!waMessageId) return false;
+  let matched = false;
+  for (const convId in inMemoryMessages) {
+    const msg = inMemoryMessages[convId]?.find((m) => m.waMessageId === waMessageId);
+    if (msg) {
+      msg.status = status;
+      matched = true;
+      break;
+    }
+  }
+  try {
+    const existing = await executeD1Query<{ id: string }>(
+      "SELECT id FROM whatsapp_messages WHERE wa_message_id = ? LIMIT 1",
+      [waMessageId]
+    );
+    if (existing && existing.length > 0) {
+      await executeD1Query(
+        "UPDATE whatsapp_messages SET status = ? WHERE wa_message_id = ?",
+        [status, waMessageId]
+      );
+      matched = true;
+    }
+  } catch (e) {
+    console.warn("D1 updateMessageStatusByWaId warning:", e);
+  }
+  return matched;
 }
 
 export async function updateMessageStatusByRecipient(
@@ -608,22 +743,101 @@ export async function addMessageReaction(
   emoji: string,
   by: "agent" | "customer" = "agent"
 ): Promise<void> {
-  const list = inMemoryMessages[conversationId];
-  if (!list) return;
+  let updatedReactions: WhatsAppReaction[] | null = null;
 
-  const msg = list.find((m) => m.id === messageId);
-  if (msg) {
-    if (!msg.reactions) msg.reactions = [];
-    const existing = msg.reactions.findIndex((r) => r.by === by);
-    if (existing !== -1) {
-      if (msg.reactions[existing].emoji === emoji) {
-        msg.reactions.splice(existing, 1);
+  const list = inMemoryMessages[conversationId];
+  const memMsg = list?.find((m) => m.id === messageId || m.waMessageId === messageId);
+  if (memMsg) {
+    if (!memMsg.reactions) memMsg.reactions = [];
+    const existing = memMsg.reactions.findIndex((r) => r.by === by);
+    if (!emoji) {
+      if (existing !== -1) memMsg.reactions.splice(existing, 1);
+    } else if (existing !== -1) {
+      if (memMsg.reactions[existing].emoji === emoji && by === "agent") {
+        memMsg.reactions.splice(existing, 1);
       } else {
-        msg.reactions[existing].emoji = emoji;
+        memMsg.reactions[existing].emoji = emoji;
       }
     } else {
-      msg.reactions.push({ emoji, by });
+      memMsg.reactions.push({ emoji, by });
     }
+    updatedReactions = [...memMsg.reactions];
+  }
+
+  try {
+    if (!updatedReactions) {
+      const rows = await executeD1Query<{ reactions: string | null }>(
+        "SELECT reactions FROM whatsapp_messages WHERE id = ? OR wa_message_id = ? LIMIT 1",
+        [messageId, messageId]
+      );
+      if (rows && rows.length > 0) {
+        const current = safeParseJson<WhatsAppReaction[]>(rows[0].reactions, []);
+        const existing = current.findIndex((r) => r.by === by);
+        if (!emoji) {
+          if (existing !== -1) current.splice(existing, 1);
+        } else if (existing !== -1) {
+          if (current[existing].emoji === emoji && by === "agent") {
+            current.splice(existing, 1);
+          } else {
+            current[existing].emoji = emoji;
+          }
+        } else {
+          current.push({ emoji, by });
+        }
+        updatedReactions = current;
+      }
+    }
+
+    if (updatedReactions) {
+      await executeD1Query(
+        "UPDATE whatsapp_messages SET reactions = ? WHERE id = ? OR wa_message_id = ?",
+        [JSON.stringify(updatedReactions), messageId, messageId]
+      );
+    }
+  } catch (e) {
+    console.warn("D1 addMessageReaction warning:", e);
+  }
+}
+
+export async function applyInboundWhatsAppReaction(
+  conversationId: string,
+  targetWaMessageId: string,
+  emoji: string
+): Promise<boolean> {
+  if (!targetWaMessageId) return false;
+  try {
+    const rows = await executeD1Query<{ id: string; reactions: string | null }>(
+      "SELECT id, reactions FROM whatsapp_messages WHERE wa_message_id = ? LIMIT 1",
+      [targetWaMessageId]
+    );
+    if (!rows || rows.length === 0) return false;
+
+    const targetId = rows[0].id;
+    const current = safeParseJson<WhatsAppReaction[]>(rows[0].reactions, []);
+    const existingIdx = current.findIndex((r) => r.by === "customer");
+    if (!emoji) {
+      if (existingIdx !== -1) current.splice(existingIdx, 1);
+    } else if (existingIdx !== -1) {
+      current[existingIdx].emoji = emoji;
+    } else {
+      current.push({ emoji, by: "customer" });
+    }
+
+    await executeD1Query(
+      "UPDATE whatsapp_messages SET reactions = ? WHERE id = ?",
+      [JSON.stringify(current), targetId]
+    );
+
+    const list = inMemoryMessages[conversationId];
+    const memTarget = list?.find((m) => m.id === targetId || m.waMessageId === targetWaMessageId);
+    if (memTarget) {
+      memTarget.reactions = current;
+    }
+
+    return true;
+  } catch (e) {
+    console.warn("applyInboundWhatsAppReaction warning:", e);
+    return false;
   }
 }
 
@@ -766,11 +980,11 @@ export async function createNewConversation(payload: {
 export async function sendMetaCloudApiMessage(
   recipientPhone: string,
   messageText: string
-): Promise<{ success: boolean; data?: any; error?: string }> {
+): Promise<{ success: boolean; data?: any; waMessageId?: string; error?: string }> {
   const token =
-    process.env.WHATSAPP_TOKEN ||
+    (await getRuntimeSecret("WHATSAPP_TOKEN")) ||
     "EAATwm2s3GMYBS7KhJQ2MDiAyAGFS6OwFHiXZAFvfPlyMUg4Jf3wV5e8TPj0PKC8rkE6x9vkzuZANllpjCUHvJaXYAZB6Ursyzc26l0SDJrBEEPJYB4ZB8rjEQ2qTSBI6tEYgZBOTJ47DAmVNAhuyaQAoryvhYiO6vRpAFdE0H61gFXCkwttX5sZCCSyR20kCwOOQZDZD";
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID || "1477900698733187";
+  const phoneId = (await getRuntimeSecret("WHATSAPP_PHONE_NUMBER_ID")) || "1477900698733187";
 
   const digits = recipientPhone.replace(/\D/g, "");
   const normalizedPhone = digits.length === 10 ? `91${digits}` : digits;
@@ -789,11 +1003,14 @@ export async function sendMetaCloudApiMessage(
         type: "text",
         text: { preview_url: false, body: messageText },
       }),
+      signal: AbortSignal.timeout(8000),
     });
 
     const data = await res.json();
     if (res.ok) {
-      return { success: true, data };
+      const waMessageId =
+        Array.isArray(data?.messages) && data.messages[0]?.id ? String(data.messages[0].id) : undefined;
+      return { success: true, data, waMessageId };
     }
     return { success: false, error: data.error?.message || "Failed to send Meta Cloud API message" };
   } catch (err: any) {
@@ -838,20 +1055,53 @@ export function generateSmartCustomerReply(
 }
 
 export async function recordInboundCustomerMessage(
-  phone: string,
-  text: string,
-  type: WhatsAppMessage["type"] = "text",
-  mediaUrl?: string,
-  mediaDuration?: number
+  phoneOrParsed: string | ParsedInboundWhatsAppMessage,
+  legacyText?: string,
+  legacyType: WhatsAppMessage["type"] = "text",
+  legacyMediaUrl?: string,
+  legacyMediaDuration?: number
 ): Promise<WhatsAppMessage | null> {
   try {
+    const parsed: ParsedInboundWhatsAppMessage =
+      typeof phoneOrParsed === "string"
+        ? {
+            from: phoneOrParsed,
+            sender: "customer",
+            type: legacyType,
+            content: legacyText || "",
+            mediaUrl: legacyMediaUrl,
+          }
+        : phoneOrParsed;
+
+    const phone = parsed.from;
     if (!phone) return null;
+
+    // Idempotent deduplication against Meta webhook retries
+    if (parsed.waMessageId) {
+      try {
+        const dupRows = await executeD1Query<{ id: string }>(
+          "SELECT id FROM whatsapp_messages WHERE wa_message_id = ? LIMIT 1",
+          [parsed.waMessageId]
+        );
+        if (dupRows && dupRows.length > 0) {
+          return null;
+        }
+      } catch {
+        // Non-fatal if column isn't present in local SQLite
+      }
+    }
+
     await syncConversationsFromERP();
 
     const digits = phone.replace(/\D/g, "");
     if (!digits) return null;
     const norm10 = digits.slice(-10);
-    const displayPhone = `+91 ${norm10.slice(0, 5)} ${norm10.slice(5)}`;
+    const displayPhone =
+      norm10.length === 10
+        ? `+91 ${norm10.slice(0, 5)} ${norm10.slice(5)}`
+        : phone.startsWith("+")
+        ? phone
+        : `+${digits}`;
 
     let conv = inMemoryConversations.find((c) => {
       const cDigits = c.customerPhone.replace(/\D/g, "");
@@ -859,7 +1109,7 @@ export async function recordInboundCustomerMessage(
     });
 
     if (!conv) {
-      let customerName = displayPhone;
+      let customerName = parsed.profileName || displayPhone;
       let orderId: string | undefined = undefined;
 
       try {
@@ -887,14 +1137,57 @@ export async function recordInboundCustomerMessage(
         orderId,
         category: "orders",
       });
+    } else if (parsed.profileName) {
+      const isPlaceholderName =
+        conv.customerName.includes("(") || /^\+?\d[\d\s-]+$/.test(conv.customerName.trim());
+      if (isPlaceholderName) {
+        conv.customerName = parsed.profileName;
+      }
+    }
+
+    // Handle inbound reaction directly on target message when found in history
+    if (parsed.type === "reaction" && parsed.metadata?.reaction?.targetWaMessageId) {
+      const applied = await applyInboundWhatsAppReaction(
+        conv.id,
+        parsed.metadata.reaction.targetWaMessageId,
+        parsed.metadata.reaction.emoji
+      );
+      if (applied) {
+        await persistConversationToD1(conv);
+        return null;
+      }
+    }
+
+    // Resolve quoted reply context if Meta supplied context.id
+    let replyTo: WhatsAppMessage["replyTo"] = undefined;
+    if (parsed.metadata?.quotedWaMessageId) {
+      try {
+        const quotedRows = await executeD1Query<{ id: string; sender: string; content: string }>(
+          "SELECT id, sender, content FROM whatsapp_messages WHERE wa_message_id = ? LIMIT 1",
+          [parsed.metadata.quotedWaMessageId]
+        );
+        if (quotedRows && quotedRows.length > 0) {
+          replyTo = {
+            id: quotedRows[0].id,
+            sender: quotedRows[0].sender === "agent" ? "You" : conv.customerName,
+            snippet: (quotedRows[0].content || "Quoted message").slice(0, 140),
+          };
+        }
+      } catch {
+        // Non-fatal
+      }
     }
 
     const msg = await addWhatsAppMessage(conv.id, {
-      sender: "customer",
-      type,
-      content: text,
-      mediaUrl,
-      mediaDuration,
+      waMessageId: parsed.waMessageId,
+      sender: parsed.sender || "customer",
+      type: parsed.type,
+      content: parsed.content,
+      mediaUrl: parsed.mediaUrl,
+      mediaCaption: parsed.mediaCaption,
+      mediaDuration: legacyMediaDuration,
+      metadata: parsed.metadata,
+      replyTo,
       status: "read",
     });
 
@@ -903,12 +1196,13 @@ export async function recordInboundCustomerMessage(
     // Sync into CRM leads with deduplication
     try {
       const leadId = `lead_${norm10}`;
-      const leadNotes = `[WhatsApp Inquiry]: ${(text || "").slice(0, 120)}`;
+      const leadNotes = `[WhatsApp Inquiry]: ${(parsed.content || "").slice(0, 120)}`;
       await executeD1Query(
         `INSERT INTO crm_leads (
           id, name, phone, email, source, status, temperature, potential_value, tags, notes, converted_order_id, last_contacted_at, created_at, updated_at
         ) VALUES (?, ?, ?, ?, 'whatsapp', 'new', 'hot', 899, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         ON CONFLICT(id) DO UPDATE SET
+          name = CASE WHEN crm_leads.name LIKE '+%' OR crm_leads.name LIKE 'Customer (%' THEN excluded.name ELSE crm_leads.name END,
           notes = excluded.notes,
           last_contacted_at = CURRENT_TIMESTAMP,
           updated_at = CURRENT_TIMESTAMP`,
@@ -932,8 +1226,8 @@ export async function recordInboundCustomerMessage(
       await notifyAdminIncomingWhatsAppMessage({
         customerName: conv.customerName,
         customerPhone: conv.customerPhone,
-        content: text,
-        messageType: type,
+        content: parsed.content,
+        messageType: parsed.type,
       });
     } catch (notifErr) {
       console.warn("Failed to dispatch admin WhatsApp alert:", notifErr);

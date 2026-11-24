@@ -233,7 +233,13 @@ export async function getOrdersAsync(
     query += " ORDER BY o.created_at DESC";
 
     const rows = await executeD1Query<any>(query, params);
-    if (rows && rows.length > 0) {
+    if (Array.isArray(rows)) {
+      if (rows.length === 0) {
+        if (!userEmail && !userPhone && !userId) {
+          inMemoryOrders = [];
+        }
+        return [];
+      }
       const d1Orders: OrderRecord[] = rows.map((r) => {
         let items: OrderItem[] = [];
         try {
