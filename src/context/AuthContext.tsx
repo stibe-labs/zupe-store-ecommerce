@@ -56,16 +56,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalInitialPhone, setAuthModalInitialPhone] = useState<string | null>(null);
   const [authModalAutoSendOtp, setAuthModalAutoSendOtp] = useState<boolean>(false);
 
-  const syncUserSession = () => {
+  const syncUserSession = async () => {
     try {
       const stored = localStorage.getItem("zp_user_session");
       if (stored) {
         setUser(JSON.parse(stored));
-      } else {
-        setUser(null);
+      }
+    } catch {}
+
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "GET",
+        cache: "no-store",
+        credentials: "same-origin",
+        signal: AbortSignal.timeout(5000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.authenticated && data?.user) {
+          setUser(data.user);
+          try {
+            localStorage.setItem("zp_user_session", JSON.stringify(data.user));
+          } catch {}
+        } else {
+          // Server cookie absent or expired — clear stale client state so login gate always triggers
+          setUser(null);
+          try {
+            localStorage.removeItem("zp_user_session");
+          } catch {}
+        }
       }
     } catch (e) {
-      console.warn("Could not load user session:", e);
+      console.warn("Could not verify server user session:", e);
     } finally {
       setIsLoading(false);
     }

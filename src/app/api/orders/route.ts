@@ -201,6 +201,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "AUTH_REQUIRED",
+          error: "Please sign in with WhatsApp or email before placing an order.",
+        },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const {
       customer_name,
@@ -238,7 +250,7 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanPhone = (customer_phone || "").replace(/\D/g, "");
-    const effectiveUserId = user_id || (cleanPhone ? `guest_${cleanPhone}` : `guest_${Date.now()}`);
+    const effectiveUserId = auth.user.id;
 
     // Auto-provision guest user in D1 if not existing
     try {

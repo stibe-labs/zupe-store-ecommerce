@@ -200,6 +200,14 @@ export async function confirmVerifiedOrderPayment(
 
   await Promise.allSettled([
     (async () => {
+      const targetUserId = String(order?.user_id || "").trim();
+      if (!targetUserId) return;
+      await executeD1Query(
+        `INSERT OR REPLACE INTO user_carts (user_id, cart_data, updated_at) VALUES (?, '[]', ?)`,
+        [targetUserId, new Date().toISOString()]
+      );
+    })(),
+    (async () => {
       if (!custPhone) return;
       await sendOrderConfirmationWhatsApp({
         customerName: custName,

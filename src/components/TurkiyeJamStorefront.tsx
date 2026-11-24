@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
+import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 // Motion Animation Variants for Scroll Reveals
@@ -232,6 +233,7 @@ interface TurkiyeJamStorefrontProps {
 export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontProps = {}) {
   const router = useRouter();
   const { addItem, openCart } = useCart();
+  const { user, openAuthModal } = useAuth();
   const [openFaq, setOpenFaq] = useState<number | null>(1); // Question 1 open by default matching SVG
   const [isNavigatingCheckout, setIsNavigatingCheckout] = useState(false);
   const [liveCatalog, setLiveCatalog] = useState<Product[]>(
@@ -324,7 +326,6 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
     const details = getPackageLiveDetails(pkg);
     if (details.isOutOfStock || isNavigatingCheckout) return;
 
-    setIsNavigatingCheckout(true);
     const item = {
       id: `turkiye-jam-${pkg.id}`,
       name: `Turkiye Jam (${pkg.name})`,
@@ -336,6 +337,33 @@ export function TurkiyeJamStorefront({ initialProducts }: TurkiyeJamStorefrontPr
       color: pkg.name,
     };
     addItem(item, 1, { overrideQuantity: true, replaceCart: true });
+    try {
+      sessionStorage.removeItem("zupe_confirmed_order");
+    } catch {}
+
+    if (!user) {
+      const savedPhone =
+        typeof window !== "undefined"
+          ? localStorage.getItem("zupe_checkout_phone") ||
+            localStorage.getItem("zupe_last_phone") ||
+            ""
+          : "";
+      openAuthModal(
+        "login",
+        "Please sign in with WhatsApp to place your order 🛍️",
+        "/checkout",
+        () => {
+          router.push("/checkout");
+        },
+        {
+          initialPhone: savedPhone || undefined,
+          autoSendOtp: Boolean(savedPhone && savedPhone.length === 10),
+        }
+      );
+      return;
+    }
+
+    setIsNavigatingCheckout(true);
     router.push("/checkout");
   };
 

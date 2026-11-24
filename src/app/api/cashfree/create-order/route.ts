@@ -4,6 +4,7 @@ import { createPyDartPaymentOrder, getPyDartPayConfig } from "@/lib/pydartPay";
 import { createOrder, OrderRecord } from "@/lib/orderStore";
 import { executeD1Query } from "@/lib/d1";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { getAuthenticatedUser } from "@/lib/userAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,19 @@ async function computeAuthoritativeMinSubtotal(
 
 export async function POST(req: NextRequest) {
   try {
+    // 0. Mandatory Authenticated Customer Session (HttpOnly signed cookie)
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "AUTH_REQUIRED",
+          error: "Please sign in with WhatsApp or email before placing an order.",
+        },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const {
       amount,
@@ -127,8 +141,7 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanPhone = String(customer_phone || "").replace(/\D/g, "");
-    const effectiveUserId =
-      user_id || (cleanPhone ? `guest_${cleanPhone}` : `guest_${Date.now()}`);
+    const effectiveUserId = auth.user.id;
 
     const orderId = `ord_${Date.now()}_${crypto.randomUUID().replace(/-/g, "").slice(0, 6)}`;
     const confirmToken = `tok_${crypto.randomUUID().replace(/-/g, "")}`;

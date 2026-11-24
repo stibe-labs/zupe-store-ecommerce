@@ -1,8 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRazorpayOrder, RAZORPAY_KEY_ID } from "@/lib/razorpay";
+import { getAuthenticatedUser } from "@/lib/userAuth";
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "AUTH_REQUIRED",
+          error: "Please sign in with WhatsApp or email before placing an order.",
+        },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { amount, receipt, notes, items } = body;
 

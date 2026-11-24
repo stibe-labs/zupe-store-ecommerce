@@ -274,6 +274,8 @@ function CheckoutContent() {
   const [cancelledPaymentOrderId, setCancelledPaymentOrderId] = useState<string>("");
   const [awaitingPaymentOrder, setAwaitingPaymentOrder] = useState<{ orderId: string; amount: number; payUrl: string } | null>(null);
   const paymentWindowRef = useRef<Window | null>(null);
+  const orderConfirmedInSessionRef = useRef(false);
+  const verifyingOrderIdRef = useRef<string | null>(null);
 
   // Ensure scroll is unlocked and modals/drawers are dismissed on checkout mount
   useEffect(() => {
@@ -288,34 +290,39 @@ function CheckoutContent() {
   // Restore confirmed order from sessionStorage ONLY if user is not checking out a new cart
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Once an order is confirmed during this checkout visit, NEVER let a late cart re-hydration
+    // or URL cleanup flip the confirmation screen back to the checkout form!
+    if (orderConfirmedInSessionRef.current) return;
+
     try {
       const hasPaymentCallback = searchParams.get("paid") === "true" || !!searchParams.get("order_id") || !!searchParams.get("cf_order_id") || !!searchParams.get("pydart_order_id");
-
-      // If user has active items in cart and did NOT arrive via payment callback, they are placing a new order!
-      if (cart.length > 0 && !hasPaymentCallback) {
-        sessionStorage.removeItem("zupe_confirmed_order");
-        setOrderComplete(false);
-        return;
-      }
 
       const storedConfirm = sessionStorage.getItem("zupe_confirmed_order");
       if (storedConfirm) {
         const parsed = JSON.parse(storedConfirm);
-        if (parsed && parsed.orderId && (Date.now() - (parsed.confirmedAt || 0) < 4 * 3600 * 1000)) {
-          // Double check: if user has items in cart and no payment callback, don't show old order
-          if (cart.length > 0 && !hasPaymentCallback) {
+        const ageMs = Date.now() - (parsed?.confirmedAt || 0);
+        if (parsed && parsed.orderId && ageMs < 4 * 3600 * 1000) {
+          // Protect a freshly confirmed order (last 30s) even if D1 cart sync resolves slightly late
+          if (cart.length > 0 && !hasPaymentCallback && ageMs > 30_000) {
             sessionStorage.removeItem("zupe_confirmed_order");
             setOrderComplete(false);
             return;
           }
           setConfirmedOrderId(parsed.orderId);
           setConfirmedTotal(parsed.total || 0);
-          setConfirmedPaymentId(parsed.paymentId || "Online Payment");
+          setConfirmedPaymentId(parsed.paymentId || "Online Payment (PyDart Pay)");
           setConfirmedAdvancePaid(parsed.advancePaid || 0);
           setConfirmedBalanceDue(parsed.balanceDue || 0);
           if (Array.isArray(parsed.items)) setConfirmedItems(parsed.items);
           setOrderComplete(true);
+          return;
         }
+      }
+
+      // If user has active items in cart and did NOT arrive via payment callback, they are placing a new order!
+      if (cart.length > 0 && !hasPaymentCallback) {
+        sessionStorage.removeItem("zupe_confirmed_order");
+        setOrderComplete(false);
       }
     } catch {}
   }, [cart.length, searchParams]);
@@ -350,6 +357,8 @@ function CheckoutContent() {
           ? data.order.items
           : (cart && cart.length > 0 ? cart : []);
 
+        orderConfirmedInSessionRef.current = true;
+        verifyingOrderIdRef.current = null;
         setConfirmedTotal(total);
         setConfirmedOrderId(finalOrderId);
         setConfirmedPaymentId(paymentLabel);
@@ -359,10 +368,10 @@ function CheckoutContent() {
         setOrderComplete(true);
         clearCart();
 
-        // Ensure both guest and logged-in user carts are purged
+        // Ensure both guest and logged-in user carts are purged & prevent stale pageshow re-verification
         try {
           localStorage.removeItem("zp_guest_cart");
-          localStorage.setItem("zupe_last_order_id", finalOrderId);
+          localStorage.removeItem("zupe_last_order_id");
           if (phone.trim()) localStorage.setItem("zupe_last_phone", phone.trim());
           sessionStorage.setItem("zupe_confirmed_order", JSON.stringify({
             orderId: finalOrderId,
@@ -446,6 +455,7 @@ function CheckoutContent() {
       setErrorMessage("Could not verify payment status. If money was deducted, your order will be confirmed automatically.");
     } finally {
       if (attempt >= 3) {
+        verifyingOrderIdRef.current = null;
         setVerifyingPayment(false);
         setLoading(false);
       }
@@ -664,7 +674,8 @@ function CheckoutContent() {
       targetOrder = localStorage.getItem("zupe_last_order_id");
     }
 
-    if (targetOrder && !orderComplete && !verifyingPayment) {
+    if (targetOrder && !orderComplete && !verifyingPayment && !orderConfirmedInSessionRef.current && verifyingOrderIdRef.current !== targetOrder) {
+      verifyingOrderIdRef.current = targetOrder;
       verifyCashfreeOrder(targetOrder);
     }
   }, [searchParams]);
@@ -1694,6 +1705,27 @@ function CheckoutContent() {
       });
 
       const orderData = await res.json();
+      if (res.status === 401 || orderData?.code === "AUTH_REQUIRED") {
+        setLoading(false);
+        try {
+          localStorage.removeItem("zp_user_session");
+        } catch {}
+        const cleanContact = cleanPhoneDigits(phone);
+        openAuthModal(
+          "login",
+          "Sign in required: Please verify with WhatsApp to place your order 🛍️",
+          undefined,
+          (loggedInUser) => {
+            if (loggedInUser?.phone && !phone) setPhone(cleanPhoneDigits(loggedInUser.phone));
+            if (loggedInUser?.name && !name) setName(loggedInUser.name);
+          },
+          {
+            initialPhone: cleanContact || undefined,
+            autoSendOtp: cleanContact.length === 10,
+          }
+        );
+        return;
+      }
       if (!orderData.success || (!orderData.payUrl && !orderData.settlerPayUrl)) {
         setErrorMessage(orderData.error || "Failed to initialize payment gateway. Please try again.");
         setLoading(false);
@@ -2235,7 +2267,7 @@ function CheckoutContent() {
               <span className="font-bold text-stone-900">
                 {isCod
                   ? `Cash on Delivery (₹${advancePaid} Advance Paid Online)`
-                  : "Online Prepaid (Cashfree Verified)"}
+                  : "Online Prepaid (PyDart Pay Verified)"}
               </span>
             </div>
 
@@ -2343,6 +2375,7 @@ function CheckoutContent() {
                     sessionStorage.removeItem("zupe_confirmed_order");
                   } catch {}
                 }
+                orderConfirmedInSessionRef.current = false;
                 setOrderComplete(false);
                 router.push("/");
               }}

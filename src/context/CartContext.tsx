@@ -92,6 +92,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const hasLoadedRemoteRef = React.useRef(false);
+  const cartClearVersionRef = React.useRef(0);
+  const initAbortRef = React.useRef<AbortController | null>(null);
   const [outOfStockItemIds, setOutOfStockItemIds] = useState<string[]>([]);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState<number>(0);
   const [standardShippingFee, setStandardShippingFee] = useState<number>(49);
@@ -168,18 +170,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     let isMounted = true;
     if (authLoading) return;
 
+    const startClearVersion = cartClearVersionRef.current;
+    const controller = new AbortController();
+    initAbortRef.current = controller;
+
     async function initCart() {
+      // If we just landed on a payment return callback or have a fresh confirmed order,
+      // do not resurrect stale D1 cart rows while verification is clearing the cart.
+      const isPaymentReturnOrConfirmed = (() => {
+        if (typeof window === "undefined") return false;
+        try {
+          const sp = new URLSearchParams(window.location.search);
+          if (sp.get("cf_order_id") || sp.get("pydart_order_id") || sp.get("order_id")) {
+            return true;
+          }
+          const rawConf = sessionStorage.getItem("zupe_confirmed_order");
+          if (rawConf) {
+            const parsedConf = JSON.parse(rawConf);
+            if (parsedConf?.confirmedAt && Date.now() - Number(parsedConf.confirmedAt) < 120_000) {
+              return true;
+            }
+          }
+        } catch {}
+        return false;
+      })();
+
       if (!user) {
         if (isMounted) {
-          try {
-            const savedGuestCart = localStorage.getItem(GUEST_CART_KEY);
-            if (savedGuestCart) {
-              const parsed = JSON.parse(savedGuestCart);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                setCart(parsed);
+          if (!isPaymentReturnOrConfirmed && cartClearVersionRef.current === startClearVersion) {
+            try {
+              const savedGuestCart = localStorage.getItem(GUEST_CART_KEY);
+              if (savedGuestCart) {
+                const parsed = JSON.parse(savedGuestCart);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  setCart(parsed);
+                }
               }
-            }
-          } catch (e) {}
+            } catch (e) {}
+          }
+          hasLoadedRemoteRef.current = true;
+          setIsInitialized(true);
+        }
+        return;
+      }
+
+      if (isPaymentReturnOrConfirmed) {
+        if (isMounted) {
           hasLoadedRemoteRef.current = true;
           setIsInitialized(true);
         }
@@ -187,8 +223,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const res = await fetch(`/api/cart?userId=${encodeURIComponent(user.id)}`);
+        const res = await fetch(`/api/cart?userId=${encodeURIComponent(user.id)}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         const data = await res.json();
+        if (!isMounted || cartClearVersionRef.current !== startClearVersion) {
+          return;
+        }
         let remoteItems: CartItem[] = [];
         if (data.success && Array.isArray(data.items)) {
           remoteItems = data.items;
@@ -259,12 +301,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem(GUEST_CART_KEY, JSON.stringify(merged));
         } catch (e) {}
 
-        if (isMounted) {
+        if (isMounted && cartClearVersionRef.current === startClearVersion) {
           hasLoadedRemoteRef.current = true;
           setCart(merged);
         }
-      } catch (err) {
-        console.warn("Could not sync user cart:", err);
+      } catch (err: any) {
+        if (err?.name !== "AbortError") {
+          console.warn("Could not sync user cart:", err);
+        }
       } finally {
         if (isMounted) {
           hasLoadedRemoteRef.current = true;
@@ -274,7 +318,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     initCart();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [user, authLoading]);
 
   useEffect(() => {
@@ -533,6 +580,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearCart = () => {
+    cartClearVersionRef.current += 1;
+    if (initAbortRef.current) {
+      try {
+        initAbortRef.current.abort();
+      } catch {}
+    }
     setCart([]);
     try {
       localStorage.removeItem(GUEST_CART_KEY);
