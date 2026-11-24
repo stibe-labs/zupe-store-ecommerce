@@ -1,5 +1,8 @@
 import { executeD1Query } from "@/lib/d1";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
+import { resolveAuthoritativeStock } from "@/lib/stockResolution";
+
+export { resolveAuthoritativeStock };
 
 export interface StockChangeItem {
   product_id?: string;
@@ -21,8 +24,15 @@ export function getMemoryStockOverride(
 export function setMemoryStockOverride(idOrSlug: string, stock: number, inStock?: number) {
   if (!idOrSlug) return;
   const norm = idOrSlug.toLowerCase().trim();
-  const safeStock = Math.max(0, stock);
-  const finalInStock = inStock !== undefined ? (Number(inStock) === 1 ? 1 : 0) : (safeStock > 0 ? 1 : 0);
+  const safeStock = Math.max(0, Math.floor(Number.isFinite(stock) ? stock : 0));
+  const finalInStock =
+    safeStock <= 0
+      ? 0
+      : inStock !== undefined
+      ? Number(inStock) === 1
+        ? 1
+        : 0
+      : 1;
   memoryStockOverrides.set(norm, { stock_count: safeStock, in_stock: finalInStock });
 }
 
@@ -91,21 +101,27 @@ export async function validateOrderStock(
 
     const displayName = it.name || d1Prod?.name || defaultProd?.name || rawId || "Product";
 
-    // Determine authoritative in_stock and stock_count
-    let inStock = 1;
-    let stockCount = 50;
+    // Determine authoritative in_stock and stock_count (D1 is authoritative when present)
+    const resolved = resolveAuthoritativeStock({
+      d1Stock:
+        d1Prod && d1Prod.stock_count !== undefined && d1Prod.stock_count !== null
+          ? Number(d1Prod.stock_count)
+          : null,
+      d1InStock:
+        d1Prod && d1Prod.in_stock !== undefined && d1Prod.in_stock !== null
+          ? Number(d1Prod.in_stock)
+          : null,
+      memOverride,
+      defaultStock: defaultProd ? Number(defaultProd.stock_count ?? 50) : 50,
+      defaultInStock: defaultProd?.in_stock !== undefined ? Number(defaultProd.in_stock) : 1,
+    });
+    const inStock = resolved.in_stock;
+    const stockCount = resolved.stock_count;
 
+    // Keep isolate memory synchronized with authoritative D1 state
     if (d1Prod) {
-      inStock = d1Prod.in_stock !== undefined && d1Prod.in_stock !== null ? Number(d1Prod.in_stock) : 1;
-      stockCount = d1Prod.stock_count !== undefined && d1Prod.stock_count !== null ? Number(d1Prod.stock_count) : 50;
-    } else if (defaultProd) {
-      inStock = defaultProd.in_stock !== undefined ? Number(defaultProd.in_stock) : 1;
-      stockCount = Number(defaultProd.stock_count ?? 50);
-    }
-
-    if (memOverride) {
-      if (memOverride.in_stock === 0) inStock = 0;
-      stockCount = Math.min(stockCount, memOverride.stock_count);
+      if (d1Prod.id) setMemoryStockOverride(String(d1Prod.id), stockCount, inStock);
+      if (d1Prod.slug) setMemoryStockOverride(String(d1Prod.slug), stockCount, inStock);
     }
 
     // Check if item is out of stock or insufficient quantity

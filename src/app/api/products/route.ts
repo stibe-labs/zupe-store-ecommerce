@@ -4,7 +4,11 @@ import { Product } from "@/types/product";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { getProductReviewStatsMap, getProductReviewStats } from "@/lib/reviewStore";
 import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/adminAuth";
-import { getMemoryStockOverride, setMemoryStockOverride } from "@/lib/inventoryService";
+import {
+  getMemoryStockOverride,
+  resolveAuthoritativeStock,
+  setMemoryStockOverride,
+} from "@/lib/inventoryService";
 
 async function checkAdminAuth(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
@@ -68,26 +72,16 @@ function formatDbProduct(p: any, reviewStatsMap?: Map<string, { count: number; r
 
   const stockOverride = getMemoryStockOverride(p.id || "") || getMemoryStockOverride(p.slug || "");
   const d1Stock = p.stock_count !== undefined && p.stock_count !== null ? Number(p.stock_count) : null;
-  const baseStock = d1Stock !== null ? d1Stock : Number(defaultFound?.stock_count ?? 50);
-  const finalStock = stockOverride !== null && d1Stock !== null
-    ? Math.min(d1Stock, stockOverride.stock_count)
-    : (stockOverride ? stockOverride.stock_count : baseStock);
-
   const d1InStock = p.in_stock !== undefined && p.in_stock !== null ? Number(p.in_stock) : null;
-  let finalInStock = 1;
-  if (finalStock <= 0) {
-    finalInStock = 0;
-  } else if (stockOverride !== null && stockOverride.in_stock === 0) {
-    finalInStock = 0;
-  } else if (d1InStock !== null && d1InStock === 0) {
-    finalInStock = 0;
-  } else if (d1InStock !== null) {
-    finalInStock = d1InStock;
-  } else if (stockOverride !== null) {
-    finalInStock = stockOverride.in_stock;
-  } else if (defaultFound?.in_stock !== undefined) {
-    finalInStock = Number(defaultFound.in_stock);
-  }
+  const resolvedStock = resolveAuthoritativeStock({
+    d1Stock,
+    d1InStock,
+    memOverride: stockOverride,
+    defaultStock: Number(defaultFound?.stock_count ?? 50),
+    defaultInStock: defaultFound?.in_stock !== undefined ? Number(defaultFound.in_stock) : 1,
+  });
+  const finalStock = resolvedStock.stock_count;
+  const finalInStock = resolvedStock.in_stock;
 
   const isIronProduct = p.id === "mini-portable-steam-iron" || p.slug?.includes("iron");
   const posterImg = p.poster_image?.trim() || defaultFound?.poster_image?.trim() || "";
@@ -216,7 +210,11 @@ export async function GET(req: NextRequest) {
         const formatted = formatDbProduct(d1Results[0], reviewStatsMap);
         return NextResponse.json(
           { success: true, product: formatted, source: "d1" },
-          { headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" } }
+          {
+            headers: {
+              "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+            },
+          }
         );
       }
 
@@ -384,15 +382,21 @@ export async function POST(req: NextRequest) {
         ? Number(existingProd.cost_price)
         : Math.round(priceNum * 0.42);
 
-    const stockNum =
-      stock_count !== undefined ? Number(stock_count) : existingProd?.stock_count ?? 50;
+    const rawStockNum =
+      stock_count !== undefined && stock_count !== ""
+        ? Number(stock_count)
+        : Number(existingProd?.stock_count ?? 50);
+    const stockNum = Number.isFinite(rawStockNum) ? Math.max(0, Math.floor(rawStockNum)) : 0;
 
-    const inStockNum =
+    const requestedInStock =
       in_stock !== undefined
-        ? Number(in_stock)
+        ? Number(in_stock) === 1
+          ? 1
+          : 0
         : stockNum > 0
         ? 1
         : 0;
+    const inStockNum = stockNum <= 0 ? 0 : requestedInStock;
 
     const prodId = id || existingProd?.id || `prod-${Date.now()}`;
     const prodSlug =
@@ -511,9 +515,9 @@ export async function POST(req: NextRequest) {
       const howToUseJson = newProd.how_to_use ? JSON.stringify(newProd.how_to_use) : null;
       const videoIdsJson = newProd.video_ids ? JSON.stringify(newProd.video_ids) : null;
 
-      const runSaveQueries = async () => {
+      const runSaveQueries = async (): Promise<boolean> => {
         if (existingRows && existingRows.length > 0) {
-          await executeD1Query(
+          const updateRes = await executeD1Query(
             `UPDATE products 
              SET slug = ?, name = ?, subtitle = ?, category = ?, subcategory = ?, tagline = ?, description = ?,
                  price = ?, mrp = ?, offer_price = ?, cost_price = ?, stock_count = ?, volume = ?,
@@ -556,8 +560,9 @@ export async function POST(req: NextRequest) {
               existingRows[0].id,
             ]
           );
+          return updateRes !== null;
         } else {
-          await executeD1Query(
+          const insertRes = await executeD1Query(
             `INSERT INTO products (
                id, slug, name, subtitle, category, subcategory, tagline, description,
                price, mrp, offer_price, cost_price, stock_count, volume,
@@ -601,43 +606,45 @@ export async function POST(req: NextRequest) {
               videoIdsJson,
             ]
           );
+          return insertRes !== null;
         }
       };
 
-      try {
-        await runSaveQueries();
-      } catch (initialErr: any) {
-        const errMsg = String(initialErr?.message || "").toLowerCase();
-        let migrated = false;
-        if (errMsg.includes("video_ids")) {
-          try {
-            await executeD1Query("ALTER TABLE products ADD COLUMN video_ids TEXT;");
-            migrated = true;
-          } catch (migErr) {
-            console.warn("Could not add video_ids column:", migErr);
-          }
+      let savedToD1 = await runSaveQueries();
+      if (!savedToD1) {
+        // Attempt idempotent schema self-healing for any missing columns before retrying
+        const missingColumnMigrations = [
+          "ALTER TABLE products ADD COLUMN subcategory TEXT;",
+          "ALTER TABLE products ADD COLUMN video_ids TEXT;",
+          "ALTER TABLE products ADD COLUMN how_to_use TEXT;",
+          "ALTER TABLE products ADD COLUMN stock_count INTEGER DEFAULT 0;",
+          "ALTER TABLE products ADD COLUMN in_stock INTEGER DEFAULT 1;",
+        ];
+        for (const migrationSql of missingColumnMigrations) {
+          await executeD1Query(migrationSql).catch(() => {});
         }
-        if (errMsg.includes("how_to_use")) {
-          try {
-            await executeD1Query("ALTER TABLE products ADD COLUMN how_to_use TEXT;");
-            migrated = true;
-          } catch (migErr) {
-            console.warn("Could not add how_to_use column:", migErr);
-          }
-        }
-
-        if (migrated) {
-          try {
-            await runSaveQueries();
-          } catch (retryErr) {
-            console.warn("Retry after adding missing column(s) failed:", retryErr);
-          }
-        } else {
-          throw initialErr;
-        }
+        savedToD1 = await runSaveQueries();
       }
-    } catch (d1Err) {
+
+      if (!savedToD1) {
+        console.error("[Products API] D1 persistence failed for product:", newProd.id);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to persist product update to Cloudflare D1 database. Please try again.",
+          },
+          { status: 500 }
+        );
+      }
+    } catch (d1Err: any) {
       console.error("Could not save to D1:", d1Err);
+      return NextResponse.json(
+        {
+          success: false,
+          error: d1Err?.message || "Database error while saving product.",
+        },
+        { status: 500 }
+      );
     }
 
     // Synchronize memory stock overrides immediately

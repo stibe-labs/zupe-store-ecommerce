@@ -344,6 +344,16 @@ export default function AdminProductsPage() {
 
   const toggleStockStatus = async (prod: Product) => {
     const newInStock = prod.in_stock === 1 ? 0 : 1;
+    const currentUnits = Number(prod.stock_count) || 0;
+    if (newInStock === 1 && currentUnits <= 0) {
+      setActionMessage({
+        text: `"${prod.name}" has 0 units in stock — click Edit → Pricing & Stock to add inventory units first.`,
+        type: "error",
+      });
+      setTimeout(() => setActionMessage(null), 4500);
+      return;
+    }
+
     // Optimistic UI update
     setProducts((prev) =>
       prev.map((p) => (p.id === prod.id ? { ...p, in_stock: newInStock } : p))
@@ -368,9 +378,17 @@ export default function AdminProductsPage() {
         });
         setTimeout(() => setActionMessage(null), 3500);
       } else {
+        setActionMessage({
+          text: data.error || "Failed to update stock status",
+          type: "error",
+        });
         fetchProducts();
       }
-    } catch (err) {
+    } catch (err: any) {
+      setActionMessage({
+        text: err?.message || "Network error updating stock status",
+        type: "error",
+      });
       fetchProducts();
     }
   };
@@ -2271,9 +2289,20 @@ export default function AdminProductsPage() {
                       </label>
                       <input
                         type="number"
+                        min={0}
                         required
                         value={formStock}
-                        onChange={(e) => setFormStock(e.target.value)}
+                        onChange={(e) => {
+                          const nextVal = e.target.value;
+                          const prevNum = Number(formStock) || 0;
+                          const nextNum = Number(nextVal) || 0;
+                          setFormStock(nextVal);
+                          if (nextNum <= 0) {
+                            setFormInStock(false);
+                          } else if (prevNum <= 0 && nextNum > 0) {
+                            setFormInStock(true);
+                          }
+                        }}
                         placeholder="92"
                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
                       />
