@@ -963,10 +963,10 @@ export default function ProductDetailPage() {
 
                     const badgeStyle = tier.badge
                       ? tier.badge.toLowerCase().includes("popular")
-                        ? "bg-[#F95721] text-white"
+                        ? "bg-[#95CF42] text-neutral-950 font-black"
                         : tier.badge.toLowerCase().includes("deal")
-                        ? "bg-[#E53E29] text-white"
-                        : "bg-[#23272F] text-white"
+                        ? "bg-[#2D4518] text-[#E5F2D0] border border-[#6B9E3A]/40 font-black"
+                        : "bg-[#111111] text-white font-extrabold"
                       : "";
 
                     return (
@@ -975,14 +975,14 @@ export default function ProductDetailPage() {
                         onClick={() => setQuantity(tier.qty)}
                         className={`relative p-3.5 sm:p-4 rounded-2xl transition-all cursor-pointer flex items-center justify-between gap-3 ${
                           isSelected
-                            ? "border-2 border-[#F95721] bg-[#FFFBF8] shadow-xs"
-                            : "border border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50/60"
+                            ? "border-2 border-[#6B9E3A] bg-[#F2F8EB] shadow-xs ring-1 ring-[#6B9E3A]/20"
+                            : "border border-neutral-200 bg-white hover:border-neutral-300 hover:bg-[#FBFBFC]"
                         }`}
                       >
                         {/* Floating Reference Badge at Top-Right Border */}
                         {tier.badge && (
                           <span
-                            className={`absolute -top-2.5 right-5 sm:right-6 z-10 px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-xs select-none ${badgeStyle}`}
+                            className={`absolute -top-2.5 right-5 sm:right-6 z-10 px-3 py-0.5 rounded-full text-[10px] uppercase tracking-wider shadow-xs select-none ${badgeStyle}`}
                           >
                             {tier.badge}
                           </span>
@@ -990,15 +990,15 @@ export default function ProductDetailPage() {
 
                         {/* Left: Radio Selector + Title + Tag */}
                         <div className="flex items-center gap-3 min-w-0">
-                          {/* Radio circle matching reference */}
+                          {/* Radio circle matching brand theme */}
                           <div
                             className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                               isSelected
-                                ? "border-2 border-[#F95721] bg-white"
+                                ? "border-2 border-[#6B9E3A] bg-white"
                                 : "border-2 border-neutral-300 bg-white"
                             }`}
                           >
-                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#F95721]" />}
+                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#6B9E3A]" />}
                           </div>
 
                           {/* Title & Tag */}
@@ -1009,14 +1009,14 @@ export default function ProductDetailPage() {
                               </span>
 
                               {tagText && (
-                                <span className="border border-[#F97316]/70 text-[#EA580C] bg-[#FFF7ED] rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-tight">
+                                <span className="border border-[#BBDC92] text-[#284214] bg-[#E5F2D0]/70 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-tight">
                                   {tagText}
                                 </span>
                               )}
                             </div>
 
                             {savings > 0 && (
-                              <div className="text-xs font-bold text-[#008060] mt-0.5">
+                              <div className="text-xs font-bold text-[#3B581C] mt-0.5">
                                 You save ₹{savings.toLocaleString("en-IN")}
                               </div>
                             )}
@@ -1025,11 +1025,7 @@ export default function ProductDetailPage() {
 
                         {/* Right: Total Price */}
                         <div className="text-right shrink-0">
-                          <div
-                            className={`font-mograph text-base sm:text-lg font-extrabold ${
-                              savings > 0 ? "text-[#E53E29]" : "text-neutral-950"
-                            }`}
-                          >
+                          <div className="font-mograph text-base sm:text-lg font-extrabold text-neutral-950">
                             ₹{tierTotal.toLocaleString("en-IN")}
                           </div>
                           {savings > 0 && (
