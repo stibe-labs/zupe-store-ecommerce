@@ -41,3 +41,8 @@ docs/rzp-key.csv
 *.tsbuildinfo
 scratch/
 cookies.txt
+
+# Local customer / database exports (never commit PII)
+turkiyejam_*.csv
+turkiyejam_*.xlsx
+turkiyejam-*.pdf
