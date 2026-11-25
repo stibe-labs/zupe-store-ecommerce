@@ -50,10 +50,23 @@ test("extractPyDartOrderIdFromUrl handles both pydart.com and turkiyejam.com URL
   assert.equal(extractPyDartOrderIdFromUrl("/pay/ord_123456"), "ord_123456");
 });
 
+import {
+  TURKIYE_JAM_ENABLED_PYDART_RAILS,
+  isPyDartRailEnabled,
+} from "../src/lib/pydartPay.ts";
+
 test("formatBankDisplayName cleans verbose suffixes cleanly", () => {
   assert.equal(formatBankDisplayName("Bank of Baroda - Retail Banking"), "Bank of Baroda");
   assert.equal(
     formatBankDisplayName("PNB (Erstwhile-Oriental Bank of Commerce)"),
     "PNB (Oriental Bank of Commerce)"
   );
+});
+
+test("Turkiye Jam PyDart Pay rail config enforces UPI-only mode", () => {
+  assert.deepEqual([...TURKIYE_JAM_ENABLED_PYDART_RAILS], ["upi"]);
+  assert.equal(isPyDartRailEnabled("upi"), true);
+  assert.equal(isPyDartRailEnabled("netbanking"), false);
+  assert.equal(isPyDartRailEnabled("card"), false);
+  assert.equal(isPyDartRailEnabled("van"), false);
 });

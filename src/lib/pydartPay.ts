@@ -11,6 +11,22 @@ export interface PyDartPayConfig {
   webhookSecret: string;
 }
 
+export type PyDartPaymentRail = "upi" | "netbanking" | "card" | "van";
+
+/**
+ * Authoritative Turkiye Jam payment rail allowlist for PyDart Pay checkout.
+ * Currently set to UPI-only (`["upi"]`). To re-enable NetBanking or Cards later,
+ * add `"netbanking"` and/or `"card"` to this single tuple.
+ */
+export const TURKIYE_JAM_ENABLED_PYDART_RAILS: readonly PyDartPaymentRail[] = ["upi"] as const;
+
+export function isPyDartRailEnabled(
+  rail: PyDartPaymentRail,
+  allowedRails: readonly PyDartPaymentRail[] = TURKIYE_JAM_ENABLED_PYDART_RAILS
+): boolean {
+  return allowedRails.includes(rail);
+}
+
 /**
  * Resolves a runtime environment variable from Cloudflare Workers bindings first,
  * then falls back to Node.js `process.env` (never logging or exposing raw secret values).
@@ -186,7 +202,7 @@ function mapPyDartOrderDataToVerification(data: any): PyDartOrderVerification {
     amountPaise,
     amountRupees,
     paymentId,
-    paymentMethod: String(data?.payment_method || "UPI / Online"),
+    paymentMethod: String(data?.payment_method || "UPI"),
     upstreamProvider: String(data?.upstream_provider || "razorpay"),
     failureMessage:
       rawStatus === "failed" || rawStatus === "expired"

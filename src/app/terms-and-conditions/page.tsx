@@ -62,7 +62,7 @@ export default function TermsAndConditionsPage() {
       content: (
         <div className="space-y-3">
           <p>
-            All prices displayed on Turkiye Jam are in INR (₹) inclusive of all applicable taxes. We reserve the right to adjust pricing, promotional discounts, or bundle offers. Payments can be completed online via UPI, Cards, Netbanking, or via Cash on Delivery (COD) across India.
+            All prices displayed on Turkiye Jam are in INR (₹) inclusive of all applicable taxes. We reserve the right to adjust pricing, promotional discounts, or bundle offers. Payments can be completed online via UPI (Google Pay, PhonePe, Paytm, BHIM &amp; all UPI apps) or via Cash on Delivery (COD) across India.
           </p>
           <p className="bg-red-50/60 border border-red-100 rounded-xl p-3 text-red-950 font-medium text-sm">
             Turkiye Jam ensures that all payment transactions are encrypted and processed safely through verified RBI-compliant gateways.

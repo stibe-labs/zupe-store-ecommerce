@@ -1925,7 +1925,7 @@ function CheckoutContent() {
               <div>
                 <h2 className="text-base font-semibold text-[#1B1714]">Payment method</h2>
                 <p className="text-xs text-[#655B53] mt-0.5">
-                  Opens the PyDart Pay checkout popup right here — UPI, cards, and NetBanking.
+                  Opens the PyDart Pay UPI checkout popup right here — fast &amp; direct.
                 </p>
               </div>
 
@@ -1957,14 +1957,14 @@ function CheckoutContent() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-sm font-semibold text-[#1B1714]">
-                            Pay online (UPI, Cards, NetBanking)
+                            Pay online via UPI
                           </span>
                           <span className="text-[11px] font-medium text-[#116A4B] bg-[#ECF7F2] px-2 py-0.5 rounded-md">
                             {isFreeDelivery ? "Free express delivery" : "Fastest dispatch"}
                           </span>
                         </div>
                         <p className="text-xs text-[#655B53] mt-1">
-                          Google Pay, PhonePe, Paytm, BHIM, debit &amp; credit cards. 2–4 business days.
+                          Google Pay, PhonePe, Paytm, BHIM &amp; all UPI apps. 2–4 business days.
                         </p>
                       </div>
                     </div>
@@ -2159,7 +2159,7 @@ function CheckoutContent() {
                   }}
                   className="w-full min-h-[46px] px-4 rounded-xl bg-[#6E1625] hover:bg-[#54101C] text-white text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
-                  <CreditCard className="w-4 h-4" />
+                  <Lock className="w-4 h-4" />
                   <span>Try payment again</span>
                 </button>
 

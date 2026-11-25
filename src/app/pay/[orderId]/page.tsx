@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Secure Payment · Turkiye Jam",
-  description: "Complete your Turkiye Jam order via UPI, NetBanking, or Credit/Debit Card.",
+  description: "Complete your Turkiye Jam order instantly via UPI (Google Pay, PhonePe, Paytm, BHIM).",
   robots: { index: false, follow: false },
 };
 

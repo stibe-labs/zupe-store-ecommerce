@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPyDartPayConfig } from "@/lib/pydartPay";
+import { getPyDartPayConfig, isPyDartRailEnabled } from "@/lib/pydartPay";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +37,40 @@ export async function GET(
       signal: AbortSignal.timeout(6000),
     });
     const text = await res.text();
+    if (res.ok && incomingUrl.searchParams.get("full") === "1") {
+      try {
+        const parsed = JSON.parse(text) as {
+          status?: string;
+          data?: {
+            order?: Record<string, unknown>;
+            netbanking_banks?: unknown;
+            card_networks?: unknown;
+            smart_collect_enabled?: unknown;
+          };
+        };
+        if (parsed?.data) {
+          if (!isPyDartRailEnabled("netbanking")) {
+            delete parsed.data.netbanking_banks;
+          }
+          if (!isPyDartRailEnabled("card")) {
+            delete parsed.data.card_networks;
+            if (parsed.data.order) {
+              parsed.data.order.razorpay_key_id = null;
+              parsed.data.order.razorpay_account_id = null;
+            }
+          }
+          if (!isPyDartRailEnabled("van")) {
+            parsed.data.smart_collect_enabled = false;
+          }
+          return NextResponse.json(parsed, {
+            status: res.status,
+            headers: { "Cache-Control": "no-store" },
+          });
+        }
+      } catch {
+        // Fall through to raw upstream response
+      }
+    }
     return new NextResponse(text, {
       status: res.status,
       headers: {

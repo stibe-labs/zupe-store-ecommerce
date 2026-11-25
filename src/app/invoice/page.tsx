@@ -272,7 +272,7 @@ function InvoiceContent() {
               <p className="text-slate-600">
                 Payment Mode:{" "}
                 <span className="font-semibold text-slate-900">
-                  {isCod ? (advancePaid > 0 ? "Cash on Delivery (Advance Paid)" : "Cash on Delivery (COD)") : "Prepaid Online (UPI / Netbanking)"}
+                  {isCod ? (advancePaid > 0 ? "Cash on Delivery (Advance Paid)" : "Cash on Delivery (COD)") : "Prepaid Online (UPI)"}
                 </span>
               </p>
               <p className="text-slate-600">

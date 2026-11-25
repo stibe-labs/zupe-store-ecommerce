@@ -29,6 +29,11 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import {
+  TURKIYE_JAM_ENABLED_PYDART_RAILS,
+  isPyDartRailEnabled,
+  type PyDartPaymentRail,
+} from "@/lib/pydartPay";
+import {
   DEFAULT_ENABLED_CARD_NETWORKS,
   detectCardNetwork,
   escapeHtml,
@@ -133,6 +138,7 @@ export interface PyDartNativeCheckoutProps {
   pydartOrderId: string;
   variant?: "modal" | "standalone";
   initialAuthFailed?: boolean;
+  enabledRails?: readonly PyDartPaymentRail[];
   onPaid?: (details: {
     pydartOrderId: string;
     merchantOrderId: string;
@@ -181,13 +187,20 @@ export function PyDartNativeCheckout({
   pydartOrderId,
   variant = "modal",
   initialAuthFailed = false,
+  enabledRails = TURKIYE_JAM_ENABLED_PYDART_RAILS,
   onPaid,
   onSwitchToCod,
 }: PyDartNativeCheckoutProps) {
+  const upiEnabled = isPyDartRailEnabled("upi", enabledRails);
+  const netbankingEnabled = isPyDartRailEnabled("netbanking", enabledRails);
+  const cardEnabled = isPyDartRailEnabled("card", enabledRails);
+  const vanEnabled = isPyDartRailEnabled("van", enabledRails);
+  const isUpiOnly = enabledRails.length === 1 && upiEnabled;
+
   const [bundle, setBundle] = useState<CheckoutPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"upi" | "netbanking" | "card" | "van">("upi");
+  const [activeTab, setActiveTab] = useState<PyDartPaymentRail>(enabledRails[0] ?? "upi");
   const [showExtendedUpi, setShowExtendedUpi] = useState(false);
   const [upiRefreshing, setUpiRefreshing] = useState(false);
   const [upiSecondsLeft, setUpiSecondsLeft] = useState<number | null>(null);
@@ -212,7 +225,9 @@ export function PyDartNativeCheckout({
   const [waitingMessage, setWaitingMessage] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(
     initialAuthFailed
-      ? "Bank authorization was not completed. Please retry or choose another payment method."
+      ? isUpiOnly
+        ? "Payment was not completed. Please retry via UPI or switch to COD."
+        : "Bank authorization was not completed. Please retry or choose another payment method."
       : null
   );
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -605,10 +620,10 @@ export function PyDartNativeCheckout({
   }, [rzpOrderId, rzpEnv, rzpProvider, rzpKeyId, rzpAccountId, orderStatus]);
 
   useEffect(() => {
-    if (activeTab === "card" && orderStatus === "processing") {
+    if (cardEnabled && activeTab === "card" && orderStatus === "processing") {
       initializeRazorpaySdk();
     }
-  }, [activeTab, orderStatus, initializeRazorpaySdk]);
+  }, [cardEnabled, activeTab, orderStatus, initializeRazorpaySdk]);
 
   const cardNetworks = bundle?.card_networks ?? DEFAULT_ENABLED_CARD_NETWORKS;
   const netbankingBanks = bundle?.netbanking_banks ?? [];
@@ -949,11 +964,13 @@ export function PyDartNativeCheckout({
   if (loading) {
     return (
       <div className="p-5 space-y-4">
-        <div className="grid grid-cols-3 gap-2">
-          <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
-          <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
-          <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
-        </div>
+        {!isUpiOnly && (
+          <div className="grid grid-cols-3 gap-2">
+            <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
+            <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
+            <div className="h-10 rounded-xl bg-stone-100 animate-pulse" />
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-2.5">
           <div className="h-12 rounded-xl bg-stone-100 animate-pulse" />
           <div className="h-12 rounded-xl bg-stone-100 animate-pulse" />
@@ -962,7 +979,7 @@ export function PyDartNativeCheckout({
         </div>
         <div className="mx-auto h-40 w-40 rounded-2xl bg-stone-100 animate-pulse" />
         <p className="text-center text-xs text-[#655B53]">
-          Loading UPI, NetBanking &amp; Card options…
+          {isUpiOnly ? "Loading UPI payment options…" : "Loading UPI, NetBanking & Card options…"}
         </p>
       </div>
     );
@@ -1035,12 +1052,15 @@ export function PyDartNativeCheckout({
     );
   }
 
-  const tabs: Array<{ id: "upi" | "netbanking" | "card" | "van"; label: string }> = [
-    { id: "upi", label: "UPI" },
-    { id: "netbanking", label: "NetBanking" },
-    { id: "card", label: "Cards" },
-  ];
-  if (showVanTab) tabs.push({ id: "van", label: "NEFT / IMPS" });
+  const tabs: Array<{ id: PyDartPaymentRail; label: string }> = [];
+  if (upiEnabled) tabs.push({ id: "upi", label: "UPI" });
+  if (netbankingEnabled) tabs.push({ id: "netbanking", label: "NetBanking" });
+  if (cardEnabled) tabs.push({ id: "card", label: "Cards" });
+  if (vanEnabled && showVanTab) tabs.push({ id: "van", label: "NEFT / IMPS" });
+
+  const resolvedActiveTab: PyDartPaymentRail = tabs.some((t) => t.id === activeTab)
+    ? activeTab
+    : (tabs[0]?.id ?? "upi");
 
   const qrSize = upi?.qrMatrix?.length ?? 0;
   const qrViewBox = qrSize + 4;
@@ -1106,57 +1126,59 @@ export function PyDartNativeCheckout({
         </div>
       )}
 
-      {/* Payment Rail Tabs */}
-      <div
-        role="tablist"
-        aria-label="Choose payment method"
-        className={`grid gap-1 rounded-xl bg-stone-100 p-1 ${
-          tabs.length === 4 ? "grid-cols-4" : "grid-cols-3"
-        }`}
-      >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            role="tab"
-            type="button"
-            aria-selected={activeTab === tab.id}
-            onClick={() => {
-              setErrorBanner(null);
-              setActiveTab(tab.id);
-            }}
-            className={`flex min-h-[42px] cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold transition-colors duration-100 ${
-              activeTab === tab.id
-                ? "bg-white text-[#1B1714] shadow-[0_1px_3px_rgba(27,23,20,0.1)]"
-                : "text-[#655B53] hover:text-[#1B1714]"
-            }`}
-          >
-            {tab.id === "upi" ? (
-              <>
-                <UpiMark className="h-3.5 w-auto" />
-                <span className="sr-only">UPI</span>
-              </>
-            ) : tab.id === "netbanking" ? (
-              <>
-                <Landmark className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="truncate">NetBanking</span>
-              </>
-            ) : tab.id === "card" ? (
-              <>
-                <CreditCard className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="truncate">Cards</span>
-              </>
-            ) : (
-              <>
-                <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="truncate">NEFT / IMPS</span>
-              </>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Payment Rail Tabs (Hidden automatically in UPI-only single-rail mode) */}
+      {tabs.length > 1 && (
+        <div
+          role="tablist"
+          aria-label="Choose payment method"
+          className={`grid gap-1 rounded-xl bg-stone-100 p-1 ${
+            tabs.length === 4 ? "grid-cols-4" : tabs.length === 2 ? "grid-cols-2" : "grid-cols-3"
+          }`}
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              role="tab"
+              type="button"
+              aria-selected={resolvedActiveTab === tab.id}
+              onClick={() => {
+                setErrorBanner(null);
+                setActiveTab(tab.id);
+              }}
+              className={`flex min-h-[42px] cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold transition-colors duration-100 ${
+                resolvedActiveTab === tab.id
+                  ? "bg-white text-[#1B1714] shadow-[0_1px_3px_rgba(27,23,20,0.1)]"
+                  : "text-[#655B53] hover:text-[#1B1714]"
+              }`}
+            >
+              {tab.id === "upi" ? (
+                <>
+                  <UpiMark className="h-3.5 w-auto" />
+                  <span className="sr-only">UPI</span>
+                </>
+              ) : tab.id === "netbanking" ? (
+                <>
+                  <Landmark className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">NetBanking</span>
+                </>
+              ) : tab.id === "card" ? (
+                <>
+                  <CreditCard className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">Cards</span>
+                </>
+              ) : (
+                <>
+                  <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">NEFT / IMPS</span>
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* TAB 1: UPI APPS (ALL 19 AUTHENTIC LOGOS) + LIVE DYNAMIC QR */}
-      {activeTab === "upi" && (
+      {upiEnabled && resolvedActiveTab === "upi" && (
         <div className="space-y-4">
           {primaryUpiApps.length > 0 && (
             <div>
@@ -1294,7 +1316,7 @@ export function PyDartNativeCheckout({
       )}
 
       {/* TAB 2: DIRECT-TO-BANK NETBANKING (AUTHENTIC INDIAN BANK LOGOS + SEARCH) */}
-      {activeTab === "netbanking" && (
+      {netbankingEnabled && resolvedActiveTab === "netbanking" && (
         <div className="space-y-3.5">
           {popularBanks.length > 0 && (
             <div>
@@ -1411,7 +1433,7 @@ export function PyDartNativeCheckout({
       )}
 
       {/* TAB 3: FIRST-PARTY WHITE-LABEL CARDS (STABLE INPUTS + ZERO RE-MOUNTING) */}
-      {activeTab === "card" && (
+      {cardEnabled && resolvedActiveTab === "card" && (
         <form
           onSubmit={handleCardSubmit}
           noValidate
@@ -1616,7 +1638,7 @@ export function PyDartNativeCheckout({
       )}
 
       {/* TAB 4: BANK TRANSFER (REAL SMART COLLECT ONLY) */}
-      {activeTab === "van" && showVanTab && (
+      {vanEnabled && resolvedActiveTab === "van" && showVanTab && (
         <div className="space-y-3 rounded-2xl border border-stone-200 bg-[#FBF8F3] p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-[#1B1714]">Bank Transfer</p>

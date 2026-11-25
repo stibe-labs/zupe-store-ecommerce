@@ -1,28 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPyDartPayConfig } from "@/lib/pydartPay";
+import { getPyDartPayConfig, isPyDartRailEnabled, type PyDartPaymentRail } from "@/lib/pydartPay";
 
 export const dynamic = "force-dynamic";
 
 const ORDER_ID_RE = /^[a-zA-Z0-9_-]{4,64}$/;
-const ALLOWED_ACTIONS = new Set([
-  "upi-session",
-  "netbanking-session",
-  "bank-transfer-session",
-]);
+const ACTION_TO_RAIL: Record<string, PyDartPaymentRail> = {
+  "upi-session": "upi",
+  "netbanking-session": "netbanking",
+  "bank-transfer-session": "van",
+};
 
 /**
  * Same-origin proxy for PyDart Pay public checkout rail sessions
- * (`upi-session`, `netbanking-session`, `bank-transfer-session`).
+ * (`upi-session`, `netbanking-session`, `bank-transfer-session`),
+ * enforcing Turkiye Jam's active payment rail allowlist (`TURKIYE_JAM_ENABLED_PYDART_RAILS`).
  */
 export async function POST(
   req: NextRequest,
   context: { params: Promise<{ orderId: string; action: string }> }
 ) {
   const { orderId, action } = await context.params;
-  if (!ORDER_ID_RE.test(orderId) || !ALLOWED_ACTIONS.has(action)) {
+  const requiredRail = ACTION_TO_RAIL[action];
+  if (!ORDER_ID_RE.test(orderId) || !requiredRail) {
     return NextResponse.json(
       { status: "ERROR", error: { code: "ERR_INVALID_REQUEST", message: "Invalid checkout action." } },
       { status: 400 }
+    );
+  }
+
+  if (!isPyDartRailEnabled(requiredRail)) {
+    return NextResponse.json(
+      {
+        status: "ERROR",
+        error: {
+          code: "ERR_PAYMENT_METHOD_DISABLED",
+          message: "Only UPI payments are currently enabled for this store.",
+        },
+      },
+      { status: 403 }
     );
   }
 

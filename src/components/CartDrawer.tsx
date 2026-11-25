@@ -419,7 +419,7 @@ export function CartDrawer() {
                     <div className="flex items-start gap-2.5">
                       <ShieldCheck className="w-4 h-4 text-[#116A4B] shrink-0 mt-0.5" />
                       <p className="leading-relaxed">
-                        Pay securely via UPI, cards, NetBanking, or Cash on Delivery at checkout.
+                        Pay securely via UPI (Google Pay, PhonePe, Paytm, BHIM) or Cash on Delivery at checkout.
                       </p>
                     </div>
                   </div>

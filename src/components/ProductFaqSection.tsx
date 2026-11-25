@@ -44,7 +44,7 @@ const DEFAULT_FAQS: FaqItem[] = [
     id: 6,
     question: "What payment methods do you accept?",
     answer:
-      "We accept all major payment methods including UPI (Google Pay, PhonePe, Paytm, BHIM), Credit/Debit Cards (Visa, Mastercard, RuPay), Net Banking, and Cash on Delivery.",
+      "We accept instant UPI payments (Google Pay, PhonePe, Paytm, BHIM & all UPI apps) and Cash on Delivery.",
   },
   {
     id: 7,

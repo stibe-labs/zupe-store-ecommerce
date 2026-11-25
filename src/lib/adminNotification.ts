@@ -88,7 +88,7 @@ export async function notifyAdminNewOrder(
     const fullAddress = addressParts.length > 0 ? addressParts.join(", ") : "Address in order details";
 
     const isCod = (data.paymentMethod || "").toLowerCase().includes("cash on delivery") || (data.paymentMethod || "").toLowerCase() === "cod";
-    const paymentLabel = isCod ? "Cash on Delivery (COD)" : "Online Prepaid (UPI / Cards)";
+    const paymentLabel = isCod ? "Cash on Delivery (COD)" : "Online Prepaid (UPI)";
 
     let paymentBreakdown = `💰 *Total Amount:* ₹${formatRupees(data.totalAmount)} (${paymentLabel})`;
     if (isCod && typeof data.advancePaid === "number" && data.advancePaid > 0) {
@@ -228,7 +228,7 @@ export async function notifyAdminPaymentReceived(
 📦 *Order / Invoice:* ${reference}
 👤 *Paid By:* ${customerName}
 📞 *Phone:* ${displayPhone}
-💳 *Payment Mode:* ${data.paymentMethod || "UPI / Cards"}
+💳 *Payment Mode:* ${data.paymentMethod || "UPI"}
 🏦 *Transaction / Bank Ref:* ${data.bankReference || "Verified by Banking Rails"}
 🕒 *Time:* ${getIstTimeString()} IST${breakdownNote}
 
