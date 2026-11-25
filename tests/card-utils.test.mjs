@@ -4,6 +4,7 @@ import {
   DEFAULT_ENABLED_CARD_NETWORKS,
   detectCardNetwork,
   extractPyDartOrderIdFromUrl,
+  formatBankDisplayName,
   formatCardExpiryDisplay,
   formatCardNumberDisplay,
   isValidLuhn,
@@ -47,4 +48,12 @@ test("extractPyDartOrderIdFromUrl handles both pydart.com and turkiyejam.com URL
     "ord_5aa8f57e0c3cb111ec"
   );
   assert.equal(extractPyDartOrderIdFromUrl("/pay/ord_123456"), "ord_123456");
+});
+
+test("formatBankDisplayName cleans verbose suffixes cleanly", () => {
+  assert.equal(formatBankDisplayName("Bank of Baroda - Retail Banking"), "Bank of Baroda");
+  assert.equal(
+    formatBankDisplayName("PNB (Erstwhile-Oriental Bank of Commerce)"),
+    "PNB (Oriental Bank of Commerce)"
+  );
 });

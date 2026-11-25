@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ExternalLink, Lock, ShieldCheck, X, AlertCircle, Loader2 } from "lucide-react";
+import { ExternalLink, Lock, ShieldCheck, X, Loader2 } from "lucide-react";
 import { extractPyDartOrderIdFromUrl } from "@/lib/cardUtils";
 import { PyDartNativeCheckout } from "@/components/checkout/PyDartNativeCheckout";
 
@@ -32,9 +32,19 @@ export function PaymentPopupModal({
 }: PaymentPopupModalProps) {
   const prefersReducedMotion = useReducedMotion();
   const [checkingOnClose, setCheckingOnClose] = useState(false);
-  const [inlineError, setInlineError] = useState<string | null>(null);
   const confirmedRef = useRef(false);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  // Ref-stabilize parent callbacks so parent re-renders never cause polling/focus resets or child reloads
+  const onPaymentConfirmedRef = useRef(onPaymentConfirmed);
+  onPaymentConfirmedRef.current = onPaymentConfirmed;
+  const onDismissUnpaidRef = useRef(onDismissUnpaid);
+  onDismissUnpaidRef.current = onDismissUnpaid;
+  const onSwitchToCodRef = useRef(onSwitchToCod);
+  onSwitchToCodRef.current = onSwitchToCod;
+
+  const activeOrderId = paymentOrder?.orderId ?? "";
+  const activeIsCod = Boolean(paymentOrder?.isCod);
 
   const resolvedPyDartOrderId = useMemo(() => {
     if (!paymentOrder) return "";
@@ -42,7 +52,7 @@ export function PaymentPopupModal({
       paymentOrder.pydartOrderId?.trim() ||
       extractPyDartOrderIdFromUrl(paymentOrder.payUrl)
     );
-  }, [paymentOrder]);
+  }, [paymentOrder?.pydartOrderId, paymentOrder?.payUrl]);
 
   const fullPageUrl = useMemo(() => {
     if (resolvedPyDartOrderId) {
@@ -51,15 +61,16 @@ export function PaymentPopupModal({
     return paymentOrder?.payUrl || "";
   }, [resolvedPyDartOrderId, paymentOrder?.payUrl]);
 
+  // Reset modal state strictly once per newly opened orderId
   useEffect(() => {
-    if (!paymentOrder) return;
+    if (!activeOrderId) return;
     confirmedRef.current = false;
     setCheckingOnClose(false);
-    setInlineError(null);
-  }, [paymentOrder?.orderId]);
+  }, [activeOrderId]);
 
+  // Lock background scroll & set initial modal focus once per orderId (never steal focus while typing!)
   useEffect(() => {
-    if (!paymentOrder || typeof document === "undefined") return;
+    if (!activeOrderId || typeof document === "undefined") return;
     const prevOverflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
     const timer = setTimeout(() => closeButtonRef.current?.focus(), 60);
@@ -67,18 +78,14 @@ export function PaymentPopupModal({
       clearTimeout(timer);
       document.documentElement.style.overflow = prevOverflow;
     };
-  }, [paymentOrder]);
+  }, [activeOrderId]);
 
-  const triggerConfirmedOnce = useCallback(
-    (orderId: string) => {
-      if (confirmedRef.current) return;
-      confirmedRef.current = true;
-      onPaymentConfirmed(orderId);
-    },
-    [onPaymentConfirmed]
-  );
+  const triggerConfirmedOnce = useCallback((orderId: string) => {
+    if (confirmedRef.current) return;
+    confirmedRef.current = true;
+    onPaymentConfirmedRef.current(orderId);
+  }, []);
 
-  // Authoritative Turkiye Jam server status probe (confirms order + triggers WhatsApp confirmation)
   const checkServerPaymentStatus = useCallback(async (orderId: string): Promise<boolean> => {
     try {
       const res = await fetch(
@@ -97,25 +104,19 @@ export function PaymentPopupModal({
   }, []);
 
   const handleRequestClose = useCallback(async () => {
-    if (!paymentOrder || checkingOnClose || confirmedRef.current) return;
+    if (!activeOrderId || checkingOnClose || confirmedRef.current) return;
     setCheckingOnClose(true);
-    const alreadyPaid = await checkServerPaymentStatus(paymentOrder.orderId);
+    const alreadyPaid = await checkServerPaymentStatus(activeOrderId);
     setCheckingOnClose(false);
     if (alreadyPaid) {
-      triggerConfirmedOnce(paymentOrder.orderId);
+      triggerConfirmedOnce(activeOrderId);
       return;
     }
-    onDismissUnpaid(paymentOrder.orderId, "Customer closed payment popup");
-  }, [
-    paymentOrder,
-    checkingOnClose,
-    checkServerPaymentStatus,
-    triggerConfirmedOnce,
-    onDismissUnpaid,
-  ]);
+    onDismissUnpaidRef.current(activeOrderId, "Customer closed payment popup");
+  }, [activeOrderId, checkingOnClose, checkServerPaymentStatus, triggerConfirmedOnce]);
 
   useEffect(() => {
-    if (!paymentOrder) return;
+    if (!activeOrderId) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -124,19 +125,17 @@ export function PaymentPopupModal({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [paymentOrder, handleRequestClose]);
+  }, [activeOrderId, handleRequestClose]);
 
-  // Background polling + visibility/focus reconciliation
   useEffect(() => {
-    if (!paymentOrder) return;
-    const targetId = paymentOrder.orderId;
+    if (!activeOrderId) return;
     let active = true;
 
     const pollOnce = async () => {
       if (!active || confirmedRef.current) return;
-      const paid = await checkServerPaymentStatus(targetId);
+      const paid = await checkServerPaymentStatus(activeOrderId);
       if (active && paid) {
-        triggerConfirmedOnce(targetId);
+        triggerConfirmedOnce(activeOrderId);
       }
     };
 
@@ -156,15 +155,20 @@ export function PaymentPopupModal({
       window.removeEventListener("focus", onFocusOrVisible);
       document.removeEventListener("visibilitychange", onFocusOrVisible);
     };
-  }, [paymentOrder, checkServerPaymentStatus, triggerConfirmedOnce]);
+  }, [activeOrderId, checkServerPaymentStatus, triggerConfirmedOnce]);
 
-  const handleNativePaid = useCallback(async () => {
-    if (!paymentOrder) return;
-    setInlineError(null);
-    // Trigger server-side order verification immediately so D1 & WhatsApp receipt sync right away
-    await checkServerPaymentStatus(paymentOrder.orderId);
-    triggerConfirmedOnce(paymentOrder.orderId);
-  }, [paymentOrder, checkServerPaymentStatus, triggerConfirmedOnce]);
+  const handleNativePaid = useCallback(() => {
+    if (!activeOrderId) return;
+    void (async () => {
+      await checkServerPaymentStatus(activeOrderId);
+      triggerConfirmedOnce(activeOrderId);
+    })();
+  }, [activeOrderId, checkServerPaymentStatus, triggerConfirmedOnce]);
+
+  const handleSwitchCod = useCallback(() => {
+    if (!activeOrderId || activeIsCod) return;
+    onSwitchToCodRef.current?.(activeOrderId);
+  }, [activeOrderId, activeIsCod]);
 
   return (
     <AnimatePresence>
@@ -174,15 +178,17 @@ export function PaymentPopupModal({
           role="dialog"
           aria-modal="true"
           aria-label="Turkiye Jam Secure Payment"
+          data-lenis-prevent
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: prefersReducedMotion ? 0 : 0.2, ease: MODAL_EASE }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.18, ease: MODAL_EASE }}
           onClick={() => void handleRequestClose()}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#120E0C]/65 backdrop-blur-[4px] p-0 sm:p-4"
         >
           <motion.div
             key="pydart-payment-sheet"
+            data-lenis-prevent
             initial={
               prefersReducedMotion
                 ? { opacity: 1 }
@@ -199,7 +205,7 @@ export function PaymentPopupModal({
                 : { opacity: 0, scale: 0.97, y: 12 }
             }
             transition={{
-              duration: prefersReducedMotion ? 0 : 0.24,
+              duration: prefersReducedMotion ? 0 : 0.22,
               ease: MODAL_EASE,
             }}
             onClick={(e) => e.stopPropagation()}
@@ -264,33 +270,14 @@ export function PaymentPopupModal({
               </div>
             </div>
 
-            {/* Optional Non-Blocking Failure Banner with COD Switch */}
-            {inlineError && (
-              <div className="px-4 py-2.5 bg-rose-50 border-b border-rose-200 flex items-center justify-between gap-2 text-xs text-rose-900 shrink-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                  <span className="truncate">{inlineError}</span>
-                </div>
-                {!paymentOrder.isCod && onSwitchToCod && (
-                  <button
-                    type="button"
-                    onClick={() => onSwitchToCod(paymentOrder.orderId)}
-                    className="text-xs font-semibold text-[#6E1625] hover:underline shrink-0 cursor-pointer"
-                  >
-                    Switch to COD
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* First-Party Native PyDart Pay Checkout (runs directly on turkiyejam.com!) */}
-            <div className="flex-1 overflow-y-auto bg-white">
+            {/* First-Party Native PyDart Pay Checkout (scroll-isolated via data-lenis-prevent) */}
+            <div data-lenis-prevent className="flex-1 overflow-y-auto bg-white">
               {resolvedPyDartOrderId ? (
                 <PyDartNativeCheckout
                   pydartOrderId={resolvedPyDartOrderId}
                   variant="modal"
-                  onPaid={() => void handleNativePaid()}
-                  onPaymentError={(reason) => setInlineError(reason)}
+                  onPaid={handleNativePaid}
+                  onSwitchToCod={!paymentOrder.isCod && onSwitchToCod ? handleSwitchCod : undefined}
                 />
               ) : (
                 <div className="p-6 text-center text-xs text-[#655B53]">

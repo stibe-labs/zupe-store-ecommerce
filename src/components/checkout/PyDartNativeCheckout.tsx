@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -30,6 +38,16 @@ import {
   validateCardInput,
   type EnabledCardNetworks,
 } from "@/lib/cardUtils";
+import {
+  AmexLogo,
+  BankBrandIcon,
+  MastercardLogo,
+  RuPayLogo,
+  UpiAppBrandIcon,
+  UpiMark,
+  VisaLogo,
+  formatBankDisplayName,
+} from "@/components/checkout/PaymentBrandLogos";
 
 interface UpiDeepLinkApp {
   id: string;
@@ -121,26 +139,26 @@ export interface PyDartNativeCheckoutProps {
     utr?: string | null;
     receiptNumber?: string | null;
   }) => void;
-  onPaymentError?: (reason: string) => void;
+  onSwitchToCod?: () => void;
 }
 
 const POPULAR_BANK_PRIORITY = [
-  { code: "HDFC", short: "HDFC", accent: "#004C8F" },
-  { code: "ICIC", short: "ICICI", accent: "#B02A30" },
-  { code: "SBIN", short: "SBI", accent: "#1D4ED8" },
-  { code: "UTIB", short: "Axis", accent: "#97144D" },
-  { code: "KKBK", short: "Kotak", accent: "#ED1C24" },
-  { code: "FDRL", short: "Federal", accent: "#0055A5" },
-  { code: "BARB_R", short: "BOB", accent: "#EA580C" },
-  { code: "PUNB_R", short: "PNB", accent: "#881337" },
-  { code: "UBIN", short: "Union Bank", accent: "#0369A1" },
-  { code: "IDFB", short: "IDFC FIRST", accent: "#991B1B" },
-  { code: "INDB", short: "IndusInd", accent: "#7F1D1D" },
-  { code: "YESB", short: "Yes Bank", accent: "#1E40AF" },
-  { code: "SIBL", short: "South Indian", accent: "#B91C1C" },
-  { code: "IDIB", short: "Indian Bank", accent: "#1D4ED8" },
-  { code: "IOBA", short: "IOB", accent: "#0F766E" },
-  { code: "IBKL", short: "IDBI", accent: "#047857" },
+  { code: "HDFC", short: "HDFC" },
+  { code: "ICIC", short: "ICICI" },
+  { code: "SBIN", short: "SBI" },
+  { code: "UTIB", short: "Axis" },
+  { code: "KKBK", short: "Kotak" },
+  { code: "FDRL", short: "Federal" },
+  { code: "BARB_R", short: "Bank of Baroda" },
+  { code: "PUNB_R", short: "PNB" },
+  { code: "UBIN", short: "Union Bank" },
+  { code: "IDFB", short: "IDFC FIRST" },
+  { code: "INDB", short: "IndusInd" },
+  { code: "YESB", short: "Yes Bank" },
+  { code: "SIBL", short: "South Indian" },
+  { code: "IDIB", short: "Indian Bank" },
+  { code: "IOBA", short: "IOB" },
+  { code: "IBKL", short: "IDBI" },
 ] as const;
 
 function formatAmountInr(paise: number, formatted?: string): string {
@@ -159,82 +177,12 @@ function formatCountdown(seconds: number): string {
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
-function CardNetworkPill({ network }: { network: "visa" | "mastercard" | "rupay" | "amex" }) {
-  if (network === "visa") {
-    return (
-      <span className="inline-flex h-5 items-center rounded border border-stone-200 bg-white px-1.5 text-[10px] font-black italic tracking-wide text-[#1A1F71]">
-        VISA
-      </span>
-    );
-  }
-  if (network === "mastercard") {
-    return (
-      <span
-        aria-label="Mastercard"
-        className="inline-flex h-5 items-center rounded border border-stone-200 bg-white px-1.5"
-      >
-        <span className="inline-block h-3 w-3 rounded-full bg-[#EB001B]" />
-        <span className="-ml-1 inline-block h-3 w-3 rounded-full bg-[#F79E1B]/90" />
-      </span>
-    );
-  }
-  if (network === "rupay") {
-    return (
-      <span className="inline-flex h-5 items-center gap-0.5 rounded border border-stone-200 bg-white px-1.5 text-[10px] font-extrabold italic text-[#1D3268]">
-        RuPay
-        <span className="inline-block h-2 w-1 bg-[#097939] -skew-x-12" />
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex h-5 items-center rounded bg-[#006FCF] px-1.5 text-[9px] font-extrabold tracking-wide text-white">
-      AMEX
-    </span>
-  );
-}
-
-function UpiAppBadge({ appId, name }: { appId: string; name: string }) {
-  if (appId === "gpay") {
-    return (
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-[12px] font-black text-[#4285F4]">
-        G
-      </span>
-    );
-  }
-  if (appId === "phonepe") {
-    return (
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#5F259F] text-[12px] font-extrabold text-white">
-        पे
-      </span>
-    );
-  }
-  if (appId === "paytm") {
-    return (
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-[9px] font-extrabold text-[#002970]">
-        Paytm
-      </span>
-    );
-  }
-  if (appId === "bhim") {
-    return (
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white text-[10px] font-extrabold text-[#008B47]">
-        BHIM
-      </span>
-    );
-  }
-  return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-stone-800 text-[10px] font-bold text-white">
-      {name.slice(0, 2).toUpperCase()}
-    </span>
-  );
-}
-
 export function PyDartNativeCheckout({
   pydartOrderId,
   variant = "modal",
   initialAuthFailed = false,
   onPaid,
-  onPaymentError,
+  onSwitchToCod,
 }: PyDartNativeCheckoutProps) {
   const [bundle, setBundle] = useState<CheckoutPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -264,11 +212,16 @@ export function PyDartNativeCheckout({
   const [waitingMessage, setWaitingMessage] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(
     initialAuthFailed
-      ? "Bank authorization was not completed. Please retry or pick another payment method."
+      ? "Bank authorization was not completed. Please retry or choose another payment method."
       : null
   );
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [vanGenerating, setVanGenerating] = useState(false);
+
+  // Ref-stabilized parent callbacks so parent re-renders NEVER trigger checkout reloads or unmount inputs!
+  const onPaidRef = useRef(onPaid);
+  onPaidRef.current = onPaid;
+  const loadedOrderIdRef = useRef<string | null>(null);
 
   const rzpInstanceRef = useRef<RazorpayCustomInstance | null>(null);
   const bankWinRef = useRef<Window | null>(null);
@@ -315,7 +268,7 @@ export function PyDartNativeCheckout({
       );
       if (!notifiedPaidRef.current) {
         notifiedPaidRef.current = true;
-        onPaid?.({
+        onPaidRef.current?.({
           pydartOrderId: orderData.id,
           merchantOrderId: orderData.merchant_order_id,
           utr: orderData.utr,
@@ -323,65 +276,75 @@ export function PyDartNativeCheckout({
         });
       }
     },
-    [onPaid]
+    []
   );
 
-  // Initial load of full PyDart Pay checkout bundle via same-origin proxy
-  const loadFullCheckout = useCallback(async () => {
-    if (!pydartOrderId) return;
-    setLoading(true);
-    setLoadError(null);
-    try {
-      const res = await fetch(
-        `/api/pydart/checkout/${encodeURIComponent(pydartOrderId)}?full=1`,
-        { cache: "no-store" }
-      );
-      const json = (await res.json().catch(() => null)) as {
-        status?: string;
-        data?: CheckoutPayload;
-        error?: { message?: string };
-      } | null;
+  // Fetch full PyDart Pay checkout bundle strictly ONCE per unique pydartOrderId
+  const loadFullCheckout = useCallback(
+    async (force = false) => {
+      if (!pydartOrderId) return;
+      if (!force && loadedOrderIdRef.current === pydartOrderId) return;
+      loadedOrderIdRef.current = pydartOrderId;
 
-      if (!res.ok || json?.status !== "SUCCESS" || !json.data?.order) {
-        setLoadError(json?.error?.message || "Could not load payment details. Please retry.");
-        return;
-      }
-
-      const data = json.data;
-      setBundle(data);
-      setCardholderName((prev) => prev || data.order.customer_name || "");
-
-      const banks = data.netbanking_banks ?? [];
-      if (banks.length > 0) {
-        const firstPopular = POPULAR_BANK_PRIORITY.find((p) =>
-          banks.some((b) => b.code === p.code)
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const res = await fetch(
+          `/api/pydart/checkout/${encodeURIComponent(pydartOrderId)}?full=1`,
+          { cache: "no-store" }
         );
-        setSelectedBankCode(firstPopular?.code ?? banks[0].code);
-      }
+        const json = (await res.json().catch(() => null)) as {
+          status?: string;
+          data?: CheckoutPayload;
+          error?: { message?: string };
+        } | null;
 
-      if (data.upi?.expiresAt) {
-        setUpiSecondsLeft(
-          Math.max(0, Math.floor((Date.parse(data.upi.expiresAt) - Date.now()) / 1000))
-        );
-      }
+        if (!res.ok || json?.status !== "SUCCESS" || !json.data?.order) {
+          loadedOrderIdRef.current = null;
+          setLoadError(json?.error?.message || "Could not load payment details. Please retry.");
+          return;
+        }
 
-      if (data.order.status === "paid") {
-        triggerPaidOnce(data.order);
+        const data = json.data;
+        setBundle(data);
+        setCardholderName((prev) => prev || data.order.customer_name || "");
+
+        const banks = data.netbanking_banks ?? [];
+        if (banks.length > 0) {
+          const firstPopular = POPULAR_BANK_PRIORITY.find((p) =>
+            banks.some((b) => b.code === p.code)
+          );
+          setSelectedBankCode(firstPopular?.code ?? banks[0].code);
+        }
+
+        if (data.upi?.expiresAt) {
+          setUpiSecondsLeft(
+            Math.max(0, Math.floor((Date.parse(data.upi.expiresAt) - Date.now()) / 1000))
+          );
+        }
+
+        if (data.order.status === "paid") {
+          triggerPaidOnce(data.order);
+        }
+      } catch {
+        loadedOrderIdRef.current = null;
+        setLoadError("Network error while loading payment options. Please retry.");
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setLoadError("Network error while loading payment options. Please retry.");
-    } finally {
-      setLoading(false);
-    }
-  }, [pydartOrderId, triggerPaidOnce]);
+    },
+    [pydartOrderId, triggerPaidOnce]
+  );
 
   useEffect(() => {
-    notifiedPaidRef.current = false;
-    rzpInstanceRef.current = null;
-    void loadFullCheckout();
-  }, [loadFullCheckout]);
+    if (loadedOrderIdRef.current !== pydartOrderId) {
+      notifiedPaidRef.current = false;
+      rzpInstanceRef.current = null;
+      void loadFullCheckout(false);
+    }
+  }, [pydartOrderId, loadFullCheckout]);
 
-  // Wipe sensitive card inputs & intervals on unmount
+  // Wipe sensitive card inputs & clear timers on unmount
   useEffect(() => {
     return () => {
       if (bankWinPollRef.current) clearInterval(bankWinPollRef.current);
@@ -414,13 +377,14 @@ export function PyDartNativeCheckout({
   }, [pydartOrderId, triggerPaidOnce]);
 
   // Background polling + visibility/focus reconciliation while order is processing
+  const orderStatus = bundle?.order.status;
   useEffect(() => {
-    if (!bundle || bundle.order.status !== "processing") return;
+    if (orderStatus !== "processing") return;
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") {
         void syncLiveStatusNow();
       }
-    }, waitingMessage ? 2800 : 4200);
+    }, waitingMessage ? 2800 : 4500);
 
     const onVisible = () => {
       if (document.visibilityState === "visible") {
@@ -434,26 +398,26 @@ export function PyDartNativeCheckout({
       window.removeEventListener("focus", onVisible);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [bundle, waitingMessage, syncLiveStatusNow]);
+  }, [orderStatus, waitingMessage, syncLiveStatusNow]);
 
   // UPI QR countdown ticker
+  const upiExpiresAt = bundle?.upi?.expiresAt;
   useEffect(() => {
-    const expiresAt = bundle?.upi?.expiresAt;
-    if (!expiresAt || bundle?.order.status === "paid") return;
+    if (!upiExpiresAt || orderStatus === "paid") return;
     const tick = () => {
-      setUpiSecondsLeft(Math.max(0, Math.floor((Date.parse(expiresAt) - Date.now()) / 1000)));
+      setUpiSecondsLeft(Math.max(0, Math.floor((Date.parse(upiExpiresAt) - Date.now()) / 1000)));
     };
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [bundle?.upi?.expiresAt, bundle?.order.status]);
+  }, [upiExpiresAt, orderStatus]);
 
-  // Listen for Bank/3DS completion message from PyDart Pay callback popup
+  // Listen for Bank/3DS completion message from same-origin or PyDart Pay callback popup
   useEffect(() => {
     const handlePopupMessage = (event: MessageEvent) => {
       if (
-        event.origin !== "https://pydart.com" &&
-        event.origin !== window.location.origin
+        event.origin !== window.location.origin &&
+        event.origin !== "https://pydart.com"
       ) {
         return;
       }
@@ -477,19 +441,18 @@ export function PyDartNativeCheckout({
 
       if (msg.status === "failed") {
         setWaitingMessage(null);
-        const reason =
-          msg.error || "Bank authorization was declined or cancelled. Try again or pay via UPI.";
-        setErrorBanner(reason);
-        onPaymentError?.(reason);
+        setErrorBanner(
+          msg.error || "Bank authorization was declined or cancelled. Try again or pay via UPI."
+        );
       }
       void syncLiveStatusNow();
     };
 
     window.addEventListener("message", handlePopupMessage);
     return () => window.removeEventListener("message", handlePopupMessage);
-  }, [pydartOrderId, onPaymentError, syncLiveStatusNow]);
+  }, [pydartOrderId, syncLiveStatusNow]);
 
-  // Razorpay Custom Checkout (`razorpay.js`) callbacks via refs to avoid stale closures
+  // Razorpay Custom Checkout (`razorpay.js`) callbacks via refs
   const cardSuccessRef = useRef<
     (resp: {
       razorpay_payment_id?: string;
@@ -562,17 +525,22 @@ export function PyDartNativeCheckout({
       resp?.error?.description ||
       "Card payment could not be completed. Please check your details or pay via UPI.";
     setErrorBanner(reason);
-    onPaymentError?.(reason);
   };
 
-  // Lazy-load headless `razorpay.js` directly on `turkiyejam.com` origin when Cards tab opens!
+  // Lazy-load headless `razorpay.js` directly on `turkiyejam.com` with 100% same-origin callback_url
+  const rzpOrderId = bundle?.order.id;
+  const rzpKeyId = bundle?.order.razorpay_key_id;
+  const rzpAccountId = bundle?.order.razorpay_account_id;
+  const rzpEnv = bundle?.order.environment;
+  const rzpProvider = bundle?.order.upstream_provider;
+
   const initializeRazorpaySdk = useCallback(() => {
     if (
-      !bundle ||
-      bundle.order.environment !== "live" ||
-      bundle.order.upstream_provider !== "razorpay" ||
-      !bundle.order.razorpay_key_id ||
-      bundle.order.status !== "processing"
+      !rzpOrderId ||
+      rzpEnv !== "live" ||
+      rzpProvider !== "razorpay" ||
+      !rzpKeyId ||
+      orderStatus !== "processing"
     ) {
       return;
     }
@@ -587,17 +555,18 @@ export function PyDartNativeCheckout({
         return;
       }
       try {
-        const callbackUrl = `https://pydart.com/api/v1/checkout/${encodeURIComponent(
-          bundle.order.id
-        )}/callback?mode=popup&return_origin=${encodeURIComponent(window.location.origin)}`;
+        // 100% same-origin callback_url on turkiyejam.com — zero pydart.com URL sent to Razorpay!
+        const callbackUrl = `${window.location.origin}/api/pydart/checkout/${encodeURIComponent(
+          rzpOrderId
+        )}/callback?mode=popup`;
         const opts: Record<string, unknown> = {
-          key: bundle.order.razorpay_key_id,
+          key: rzpKeyId,
           image: `${window.location.origin}/apple-touch-icon.png`,
           callback_url: callbackUrl,
           redirect: false,
         };
-        if (bundle.order.razorpay_account_id) {
-          opts.account_id = bundle.order.razorpay_account_id;
+        if (rzpAccountId) {
+          opts.account_id = rzpAccountId;
         }
         const instance = new window.Razorpay(opts);
         instance.on("payment.success", (r) => void cardSuccessRef.current(r));
@@ -633,13 +602,13 @@ export function PyDartNativeCheckout({
     script.onload = bind;
     script.onerror = () => setRzpSdkState("error");
     document.body.appendChild(script);
-  }, [bundle]);
+  }, [rzpOrderId, rzpEnv, rzpProvider, rzpKeyId, rzpAccountId, orderStatus]);
 
   useEffect(() => {
-    if (activeTab === "card" && bundle?.order.status === "processing") {
+    if (activeTab === "card" && orderStatus === "processing") {
       initializeRazorpaySdk();
     }
-  }, [activeTab, bundle, initializeRazorpaySdk]);
+  }, [activeTab, orderStatus, initializeRazorpaySdk]);
 
   const cardNetworks = bundle?.card_networks ?? DEFAULT_ENABLED_CARD_NETWORKS;
   const netbankingBanks = bundle?.netbanking_banks ?? [];
@@ -660,10 +629,10 @@ export function PyDartNativeCheckout({
     );
   }, [netbankingBanks, bankSearchQuery]);
 
-  const selectedBankName = useMemo(
-    () => netbankingBanks.find((b) => b.code === selectedBankCode)?.name ?? "Selected Bank",
-    [netbankingBanks, selectedBankCode]
-  );
+  const selectedBankDisplayName = useMemo(() => {
+    const found = netbankingBanks.find((b) => b.code === selectedBankCode);
+    return found ? formatBankDisplayName(found.name) : "Selected Bank";
+  }, [netbankingBanks, selectedBankCode]);
 
   const primaryUpiApps = useMemo(
     () => (bundle?.upi?.apps ?? []).filter((a) => a.tier === "primary"),
@@ -744,7 +713,6 @@ export function PyDartNativeCheckout({
     setErrorBanner(null);
     setPendingAction("netbanking");
 
-    // Open named bank window SYNCHRONOUSLY inside user click gesture (no `noopener`)
     const winName = `pydart_bank_${Date.now()}`;
     const authWin = window.open(
       "about:blank",
@@ -754,7 +722,7 @@ export function PyDartNativeCheckout({
     if (authWin) {
       bankWinRef.current = authWin;
       try {
-        const safeBank = escapeHtml(selectedBankName);
+        const safeBank = escapeHtml(selectedBankDisplayName);
         authWin.document.open();
         authWin.document.write(
           `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Connecting to ${safeBank} · PyDart Pay</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FBF8F3;color:#1B1714;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-align:center;padding:24px}.box{max-width:340px;background:#fff;border:1px solid #E7E1D8;border-radius:18px;padding:26px 22px}.spin{width:34px;height:34px;border:3px solid #E7E1D8;border-top-color:#6E1625;border-radius:50%;margin:0 auto 14px;animation:s .8s linear infinite}@keyframes s{to{transform:rotate(360deg)}}h1{margin:0 0 6px;font-size:16px;font-weight:700}p{margin:0;font-size:12px;color:#655B53;line-height:1.5}</style></head><body><div class="box"><div class="spin"></div><h1>Connecting to ${safeBank}</h1><p>Opening your bank’s official NetBanking login page…</p></div></body></html>`
@@ -799,7 +767,7 @@ export function PyDartNativeCheckout({
 
       const { redirect_method, redirect_url, form_fields } = json.data;
       setWaitingMessage(
-        `Complete your login on ${selectedBankName}’s portal. Confirmation will appear here automatically.`
+        `Complete login on ${selectedBankDisplayName}’s portal. Confirmation will appear here automatically.`
       );
 
       if (authWin && !authWin.closed) {
@@ -862,6 +830,14 @@ export function PyDartNativeCheckout({
     }
   };
 
+  // Smooth Backspace handling across " / " separator in MM / YY input
+  const handleExpiryKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && cardExpiry.endsWith(" / ")) {
+      e.preventDefault();
+      setCardExpiry(cardExpiry.slice(0, -4));
+    }
+  };
+
   const handleCardSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!bundle || pendingAction) return;
@@ -887,7 +863,7 @@ export function PyDartNativeCheckout({
 
     if (!rzpInstanceRef.current) {
       initializeRazorpaySdk();
-      setErrorBanner("Preparing secure card connection. Please tap Pay again in a second.");
+      setErrorBanner("Connecting to card network… please tap Pay again in a second.");
       return;
     }
 
@@ -897,7 +873,6 @@ export function PyDartNativeCheckout({
     );
 
     try {
-      // Called SYNCHRONOUSLY inside user submit event from https://turkiyejam.com origin!
       const payload: Record<string, unknown> = {
         amount: bundle.order.amount_paise,
         currency: bundle.order.currency || "INR",
@@ -971,7 +946,6 @@ export function PyDartNativeCheckout({
     copyTimerRef.current = setTimeout(() => setCopiedField(null), 2000);
   };
 
-  // Loading Skeleton
   if (loading) {
     return (
       <div className="p-5 space-y-4">
@@ -986,7 +960,7 @@ export function PyDartNativeCheckout({
           <div className="h-12 rounded-xl bg-stone-100 animate-pulse" />
           <div className="h-12 rounded-xl bg-stone-100 animate-pulse" />
         </div>
-        <div className="mx-auto h-44 w-44 rounded-2xl bg-stone-100 animate-pulse" />
+        <div className="mx-auto h-40 w-40 rounded-2xl bg-stone-100 animate-pulse" />
         <p className="text-center text-xs text-[#655B53]">
           Loading UPI, NetBanking &amp; Card options…
         </p>
@@ -1002,7 +976,7 @@ export function PyDartNativeCheckout({
         <p className="text-xs text-[#655B53]">{loadError || "Order not found."}</p>
         <button
           type="button"
-          onClick={() => void loadFullCheckout()}
+          onClick={() => void loadFullCheckout(true)}
           className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl bg-[#6E1625] px-5 text-xs font-semibold text-white"
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -1072,13 +1046,29 @@ export function PyDartNativeCheckout({
   const qrViewBox = qrSize + 4;
 
   return (
-    <div className={variant === "modal" ? "p-4 space-y-4" : "p-5 sm:p-6 space-y-5"}>
-      {/* Status / Waiting / Error Banners */}
+    <div className={variant === "modal" ? "p-4 space-y-4" : "p-4 sm:p-6 space-y-4"}>
+      {/* Standalone Order Payable Summary Strip */}
+      {variant === "standalone" && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-stone-200/80 bg-[#FBF8F3] px-4 py-3">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold text-[#1B1714]">{order.order_purpose}</p>
+            <p className="mt-0.5 truncate text-[11px] text-[#655B53]">
+              {order.customer_name} · <span className="font-mono">{order.merchant_order_id}</span>
+            </p>
+          </div>
+          <div className="shrink-0 text-right tabular-nums">
+            <p className="text-[10px] font-medium uppercase tracking-wide text-[#655B53]">Total</p>
+            <p className="text-lg font-bold text-[#1B1714]">₹{amountFormatted}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Waiting Banner */}
       {waitingMessage && (
         <div
           role="status"
           aria-live="polite"
-          className="flex items-center justify-between gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/80 px-3.5 py-2.5 text-xs text-emerald-950"
+          className="flex items-center justify-between gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/85 px-3.5 py-2.5 text-xs text-emerald-950"
         >
           <div className="flex items-center gap-2 min-w-0">
             <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-700" />
@@ -1094,13 +1084,25 @@ export function PyDartNativeCheckout({
         </div>
       )}
 
+      {/* Single Clean Error Banner (Zero Duplicate Stacked Boxes) */}
       {errorBanner && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs text-rose-900"
+          className="flex items-start justify-between gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs text-rose-900"
         >
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
-          <span>{errorBanner}</span>
+          <div className="flex items-start gap-2 min-w-0">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
+            <span className="leading-snug">{errorBanner}</span>
+          </div>
+          {onSwitchToCod && (
+            <button
+              type="button"
+              onClick={onSwitchToCod}
+              className="shrink-0 cursor-pointer rounded-lg border border-rose-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-[#6E1625] hover:bg-rose-50"
+            >
+              Switch to COD
+            </button>
+          )}
         </div>
       )}
 
@@ -1122,27 +1124,46 @@ export function PyDartNativeCheckout({
               setErrorBanner(null);
               setActiveTab(tab.id);
             }}
-            className={`flex min-h-[42px] cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold transition-all ${
+            className={`flex min-h-[42px] cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold transition-colors duration-100 ${
               activeTab === tab.id
-                ? "bg-white text-[#1B1714] shadow-xs"
+                ? "bg-white text-[#1B1714] shadow-[0_1px_3px_rgba(27,23,20,0.1)]"
                 : "text-[#655B53] hover:text-[#1B1714]"
             }`}
           >
-            {tab.id === "upi" && <QrCode className="h-3.5 w-3.5 shrink-0" />}
-            {tab.id === "netbanking" && <Landmark className="h-3.5 w-3.5 shrink-0" />}
-            {tab.id === "card" && <CreditCard className="h-3.5 w-3.5 shrink-0" />}
-            {tab.id === "van" && <Building2 className="h-3.5 w-3.5 shrink-0" />}
-            <span className="truncate">{tab.label}</span>
+            {tab.id === "upi" ? (
+              <>
+                <UpiMark className="h-3.5 w-auto" />
+                <span className="sr-only">UPI</span>
+              </>
+            ) : tab.id === "netbanking" ? (
+              <>
+                <Landmark className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">NetBanking</span>
+              </>
+            ) : tab.id === "card" ? (
+              <>
+                <CreditCard className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">Cards</span>
+              </>
+            ) : (
+              <>
+                <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="truncate">NEFT / IMPS</span>
+              </>
+            )}
           </button>
         ))}
       </div>
 
-      {/* TAB 1: UPI APPS + LIVE DYNAMIC QR */}
+      {/* TAB 1: UPI APPS (ALL 19 AUTHENTIC LOGOS) + LIVE DYNAMIC QR */}
       {activeTab === "upi" && (
         <div className="space-y-4">
           {primaryUpiApps.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-[#1B1714]">Pay with UPI App</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-[#1B1714]">Pay with UPI App</p>
+                <UpiMark className="h-3.5 w-auto opacity-85" />
+              </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {primaryUpiApps.map((app) => (
                   <button
@@ -1150,13 +1171,18 @@ export function PyDartNativeCheckout({
                     type="button"
                     disabled={upiRefreshing}
                     onClick={() => void handleUpiAppClick(app)}
-                    className="flex min-h-[48px] cursor-pointer items-center justify-between gap-2 rounded-xl border border-stone-200 bg-white px-3 text-left text-xs font-semibold text-[#1B1714] transition-all hover:border-stone-300 hover:bg-stone-50 active:scale-[0.98]"
+                    className="flex min-h-[50px] cursor-pointer items-center justify-between gap-2 rounded-xl border border-stone-200 bg-white px-3 text-left text-[13px] font-semibold text-[#1B1714] shadow-[0_1px_2px_rgba(27,23,20,0.03)] transition-colors hover:border-stone-300 hover:bg-stone-50 active:scale-[0.98]"
                   >
                     <span className="flex min-w-0 items-center gap-2.5">
-                      <UpiAppBadge appId={app.id} name={app.name} />
+                      <UpiAppBrandIcon
+                        appId={app.id}
+                        name={app.name}
+                        accentHex={app.accentHex}
+                        size={28}
+                      />
                       <span className="truncate">{app.name}</span>
                     </span>
-                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-stone-300" />
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-stone-300" aria-hidden="true" />
                   </button>
                 ))}
               </div>
@@ -1167,11 +1193,13 @@ export function PyDartNativeCheckout({
                     type="button"
                     aria-expanded={showExtendedUpi}
                     onClick={() => setShowExtendedUpi((v) => !v)}
-                    className="inline-flex min-h-[36px] cursor-pointer items-center gap-1 text-xs font-semibold text-[#655B53] hover:text-[#1B1714]"
+                    className="inline-flex min-h-[38px] cursor-pointer items-center gap-1 text-xs font-semibold text-[#655B53] hover:text-[#1B1714]"
                   >
-                    <span>{showExtendedUpi ? "Fewer UPI apps" : "More UPI apps"}</span>
+                    <span>{showExtendedUpi ? "Show fewer UPI apps" : "More UPI apps"}</span>
                     <ChevronDown
-                      className={`h-3.5 w-3.5 transition-transform ${showExtendedUpi ? "rotate-180" : ""}`}
+                      className={`h-3.5 w-3.5 transition-transform duration-150 ${
+                        showExtendedUpi ? "rotate-180" : ""
+                      }`}
                     />
                   </button>
                   {showExtendedUpi && (
@@ -1181,9 +1209,14 @@ export function PyDartNativeCheckout({
                           key={app.id}
                           type="button"
                           onClick={() => void handleUpiAppClick(app)}
-                          className="flex min-h-[42px] cursor-pointer items-center gap-2 rounded-xl border border-stone-200 bg-white px-3 text-xs font-medium text-[#1B1714] hover:bg-stone-50"
+                          className="flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-xl border border-stone-200 bg-white px-2.5 text-left text-xs font-medium text-[#1B1714] hover:border-stone-300 hover:bg-stone-50"
                         >
-                          <UpiAppBadge appId={app.id} name={app.name} />
+                          <UpiAppBrandIcon
+                            appId={app.id}
+                            name={app.name}
+                            accentHex={app.accentHex}
+                            size={24}
+                          />
                           <span className="truncate">{app.name}</span>
                         </button>
                       ))}
@@ -1196,7 +1229,7 @@ export function PyDartNativeCheckout({
 
           {/* Scannable Dynamic UPI QR */}
           <div className="rounded-2xl border border-stone-200/90 bg-[#FBF8F3] p-4">
-            <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-col items-center gap-3.5 sm:flex-row sm:items-center">
               <div className="flex h-36 w-36 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-white p-2 shadow-xs">
                 {upi?.qrMatrix && qrSize > 0 ? (
                   <svg
@@ -1241,7 +1274,7 @@ export function PyDartNativeCheckout({
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-0.5">
                   {upiSecondsLeft !== null && (
                     <span className="rounded-md border border-stone-200 bg-white px-2 py-1 font-mono text-[11px] font-semibold text-[#1B1714] tabular-nums">
-                      Expires {formatCountdown(upiSecondsLeft)}
+                      Valid {formatCountdown(upiSecondsLeft)}
                     </span>
                   )}
                   <button
@@ -1260,13 +1293,13 @@ export function PyDartNativeCheckout({
         </div>
       )}
 
-      {/* TAB 2: DIRECT-TO-BANK NETBANKING (39 LIVE BANKS + SEARCH) */}
+      {/* TAB 2: DIRECT-TO-BANK NETBANKING (AUTHENTIC INDIAN BANK LOGOS + SEARCH) */}
       {activeTab === "netbanking" && (
         <div className="space-y-3.5">
           {popularBanks.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-[#1B1714]">Popular Banks</p>
-              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div className="mt-2 grid grid-cols-2 gap-2">
                 {popularBanks.map((bank) => {
                   const selected = selectedBankCode === bank.code;
                   return (
@@ -1274,18 +1307,13 @@ export function PyDartNativeCheckout({
                       key={bank.code}
                       type="button"
                       onClick={() => setSelectedBankCode(bank.code)}
-                      className={`flex min-h-[46px] cursor-pointer items-center gap-2 rounded-xl border px-2.5 text-left text-xs font-semibold transition-all active:scale-[0.98] ${
+                      className={`flex min-h-[48px] cursor-pointer items-center gap-2.5 rounded-xl border px-3 text-left text-xs font-semibold transition-colors active:scale-[0.98] ${
                         selected
                           ? "border-[#6E1625] bg-[#FBF8F3] text-[#1B1714] ring-1 ring-[#6E1625]"
-                          : "border-stone-200 bg-white text-[#1B1714] hover:border-stone-300"
+                          : "border-stone-200 bg-white text-[#1B1714] hover:border-stone-300 hover:bg-stone-50"
                       }`}
                     >
-                      <span
-                        style={{ backgroundColor: bank.accent }}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-extrabold text-white"
-                      >
-                        {bank.short.slice(0, 2).toUpperCase()}
-                      </span>
+                      <BankBrandIcon code={bank.code} name={bank.name} size={28} />
                       <span className="truncate">{bank.short}</span>
                     </button>
                   );
@@ -1316,7 +1344,7 @@ export function PyDartNativeCheckout({
                 type="search"
                 value={bankSearchQuery}
                 onChange={(e) => setBankSearchQuery(e.target.value)}
-                placeholder="Search bank (Baroda, PNB, IDFC, South Indian…)"
+                placeholder={`Search ${netbankingBanks.length} supported banks…`}
                 className="min-h-[44px] w-full rounded-xl border border-stone-200 bg-white py-2 pr-3 pl-9 text-base font-medium text-[#1B1714] outline-none placeholder:text-stone-400 focus:border-[#6E1625] sm:text-xs"
               />
             </div>
@@ -1324,7 +1352,7 @@ export function PyDartNativeCheckout({
             <div
               role="listbox"
               aria-label="Supported NetBanking banks"
-              className="mt-2 max-h-[168px] divide-y divide-stone-100 overflow-y-auto rounded-xl border border-stone-200 bg-white"
+              className="mt-2 max-h-[184px] divide-y divide-stone-100 overflow-y-auto rounded-xl border border-stone-200 bg-white"
             >
               {filteredBanks.length === 0 ? (
                 <p className="px-3 py-4 text-center text-xs text-[#655B53]">
@@ -1340,13 +1368,16 @@ export function PyDartNativeCheckout({
                       role="option"
                       aria-selected={selected}
                       onClick={() => setSelectedBankCode(bank.code)}
-                      className={`flex min-h-[42px] w-full cursor-pointer items-center justify-between gap-2 px-3 text-left text-xs ${
+                      className={`flex min-h-[46px] w-full cursor-pointer items-center justify-between gap-2.5 px-3 text-left text-xs ${
                         selected
                           ? "bg-[#FBF8F3] font-semibold text-[#1B1714]"
                           : "font-medium text-[#3D352F] hover:bg-stone-50"
                       }`}
                     >
-                      <span className="truncate">{bank.name}</span>
+                      <span className="flex min-w-0 items-center gap-2.5">
+                        <BankBrandIcon code={bank.code} name={bank.name} size={26} />
+                        <span className="truncate">{formatBankDisplayName(bank.name)}</span>
+                      </span>
                       {selected && <Check className="h-4 w-4 shrink-0 text-[#116A4B]" />}
                     </button>
                   );
@@ -1360,18 +1391,18 @@ export function PyDartNativeCheckout({
             disabled={Boolean(pendingAction) || !selectedBankCode}
             onClick={() => void handleNetbankingPay()}
             style={{ backgroundColor: brandAccent }}
-            className="flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white shadow-xs transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-60"
+            className="flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white shadow-xs transition-opacity hover:opacity-95 active:scale-[0.98] disabled:opacity-60"
           >
             {pendingAction === "netbanking" ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Connecting to {selectedBankName}…</span>
+                <span>Connecting to {selectedBankDisplayName}…</span>
               </>
             ) : (
               <>
-                <Landmark className="h-4 w-4" />
+                <Landmark className="h-4 w-4 shrink-0" />
                 <span className="truncate">
-                  Pay ₹{amountFormatted} via {selectedBankName}
+                  Pay ₹{amountFormatted} via {selectedBankDisplayName}
                 </span>
               </>
             )}
@@ -1379,7 +1410,7 @@ export function PyDartNativeCheckout({
         </div>
       )}
 
-      {/* TAB 3: FIRST-PARTY WHITE-LABEL CARDS (RUNS DIRECTLY ON TURKIYEJAM.COM!) */}
+      {/* TAB 3: FIRST-PARTY WHITE-LABEL CARDS (STABLE INPUTS + ZERO RE-MOUNTING) */}
       {activeTab === "card" && (
         <form
           onSubmit={handleCardSubmit}
@@ -1392,10 +1423,10 @@ export function PyDartNativeCheckout({
               <p className="text-[11px] text-[#655B53]">Direct 3D-Secure bank OTP verification</p>
             </div>
             <div className="flex items-center gap-1.5">
-              {cardNetworks.visa && <CardNetworkPill network="visa" />}
-              {cardNetworks.mastercard && <CardNetworkPill network="mastercard" />}
-              {cardNetworks.rupay && <CardNetworkPill network="rupay" />}
-              {cardNetworks.amex && <CardNetworkPill network="amex" />}
+              {cardNetworks.visa && <VisaLogo className="h-5 w-auto" />}
+              {cardNetworks.mastercard && <MastercardLogo className="h-5 w-auto" />}
+              {cardNetworks.rupay && <RuPayLogo className="h-5 w-auto" />}
+              {cardNetworks.amex && <AmexLogo className="h-5 w-auto" />}
             </div>
           </div>
 
@@ -1407,6 +1438,7 @@ export function PyDartNativeCheckout({
               <input
                 ref={cardNumberRef}
                 id="tj-card-number"
+                name="cardnumber"
                 type="text"
                 inputMode="numeric"
                 autoComplete="cc-number"
@@ -1414,7 +1446,8 @@ export function PyDartNativeCheckout({
                 maxLength={23}
                 value={cardNumber}
                 onChange={(e) => {
-                  setCardNumber(formatCardNumberDisplay(e.target.value));
+                  const formatted = formatCardNumberDisplay(e.target.value);
+                  setCardNumber(formatted);
                   if (cardErrors.number) setCardErrors((p) => ({ ...p, number: undefined }));
                 }}
                 aria-invalid={Boolean(cardErrors.number)}
@@ -1425,11 +1458,14 @@ export function PyDartNativeCheckout({
                 }`}
               />
               <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
-                {detectedNetwork === "visa" ||
-                detectedNetwork === "mastercard" ||
-                detectedNetwork === "rupay" ||
-                detectedNetwork === "amex" ? (
-                  <CardNetworkPill network={detectedNetwork} />
+                {detectedNetwork === "visa" ? (
+                  <VisaLogo className="h-5 w-auto" />
+                ) : detectedNetwork === "mastercard" ? (
+                  <MastercardLogo className="h-5 w-auto" />
+                ) : detectedNetwork === "rupay" ? (
+                  <RuPayLogo className="h-5 w-auto" />
+                ) : detectedNetwork === "amex" ? (
+                  <AmexLogo className="h-5 w-auto" />
                 ) : (
                   <CreditCard className="h-4 w-4 text-stone-400" />
                 )}
@@ -1450,12 +1486,14 @@ export function PyDartNativeCheckout({
               <input
                 ref={cardExpiryRef}
                 id="tj-card-exp"
+                name="cc-exp"
                 type="text"
                 inputMode="numeric"
                 autoComplete="cc-exp"
                 placeholder="MM / YY"
                 maxLength={7}
                 value={cardExpiry}
+                onKeyDown={handleExpiryKeyDown}
                 onChange={(e) => {
                   setCardExpiry(formatCardExpiryDisplay(e.target.value));
                   if (cardErrors.expiry) setCardErrors((p) => ({ ...p, expiry: undefined }));
@@ -1481,6 +1519,7 @@ export function PyDartNativeCheckout({
               <input
                 ref={cardCvvRef}
                 id="tj-card-cvv"
+                name="cvc"
                 type="password"
                 inputMode="numeric"
                 autoComplete="cc-csc"
@@ -1513,6 +1552,7 @@ export function PyDartNativeCheckout({
             <input
               ref={cardNameRef}
               id="tj-card-name"
+              name="ccname"
               type="text"
               autoComplete="cc-name"
               placeholder="As printed on card"
@@ -1538,7 +1578,7 @@ export function PyDartNativeCheckout({
 
           {rzpSdkState === "error" && (
             <div className="flex items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-950">
-              <span>Card engine failed to load.</span>
+              <span>Card processor did not finish loading.</span>
               <button
                 type="button"
                 onClick={initializeRazorpaySdk}
@@ -1551,19 +1591,14 @@ export function PyDartNativeCheckout({
 
           <button
             type="submit"
-            disabled={Boolean(pendingAction) || rzpSdkState === "loading"}
+            disabled={Boolean(pendingAction)}
             style={{ backgroundColor: brandAccent }}
-            className="flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white shadow-xs transition-all hover:opacity-95 active:scale-[0.98] disabled:opacity-60"
+            className="flex min-h-[48px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white shadow-xs transition-opacity hover:opacity-95 active:scale-[0.98] disabled:opacity-60"
           >
             {pendingAction === "card_3ds" || pendingAction === "verifying_card" ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Verifying with your bank…</span>
-              </>
-            ) : rzpSdkState === "loading" ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Preparing secure card form…</span>
               </>
             ) : (
               <>
@@ -1573,9 +1608,9 @@ export function PyDartNativeCheckout({
             )}
           </button>
 
-          <p className="flex items-center justify-center gap-1.5 text-center text-[11px] text-[#655B53]">
+          <p className="flex items-center justify-center gap-1.5 text-[11px] text-[#655B53]">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#116A4B]" />
-            <span>256-bit TLS encrypted · Direct to your bank’s 3DS OTP</span>
+            <span>256-bit TLS encrypted · Bank 3DS OTP verified</span>
           </p>
         </form>
       )}

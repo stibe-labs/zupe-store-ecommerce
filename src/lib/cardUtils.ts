@@ -253,3 +253,12 @@ export function extractPyDartOrderIdFromUrl(payUrl?: string | null): string {
     return "";
   }
 }
+
+export function formatBankDisplayName(rawName: string): string {
+  return rawName
+    .replace(/\s*-\s*Retail Banking/gi, "")
+    .replace(/\s*-\s*Corporate Banking/gi, " (Corporate)")
+    .replace(/\(Erstwhile[- ]+/gi, "(")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
