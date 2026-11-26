@@ -680,6 +680,184 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // ========================================================
+    // ACTION: CREATE MANUAL ORDER (ADMIN)
+    // ========================================================
+    if (body.action === "create_manual_order") {
+      const {
+        customer_name,
+        customer_phone,
+        customer_email,
+        shipping_address,
+        city,
+        postal_code,
+        items,
+        total_amount,
+        shipping_cost,
+        discount_amount,
+        product_cost,
+        payment_method,
+        payment_status,
+        delivery_status,
+        whatsapp_mode, // "pre_confirmation" | "confirmed" | "none"
+        advance_paid,
+        balance_due,
+        custom_order_id,
+      } = body;
+
+      if (!customer_name || !customer_phone || !shipping_address) {
+        return NextResponse.json(
+          { success: false, error: "Customer name, phone number, and delivery address are required." },
+          { status: 400 }
+        );
+      }
+
+      const orderItems = Array.isArray(items) && items.length > 0 ? items : [
+        {
+          product_id: "manual-item",
+          name: "Custom Product",
+          price: Number(total_amount) || 999,
+          quantity: 1,
+          image: "/vl-logo-nobg.png",
+        }
+      ];
+
+      // Auto-determine next shopify_order_id if not supplied
+      let targetShopifyId = (custom_order_id || "").trim();
+      if (!targetShopifyId) {
+        try {
+          const existingRows = await executeD1Query<any>(
+            "SELECT shopify_order_id FROM orders WHERE shopify_order_id LIKE '#%' ORDER BY id DESC LIMIT 50"
+          );
+          let maxId = 1109;
+          if (existingRows && existingRows.length > 0) {
+            for (const r of existingRows) {
+              const m = (r.shopify_order_id || "").match(/#(\d+)/);
+              if (m) {
+                const parsed = parseInt(m[1], 10);
+                if (parsed > maxId) maxId = parsed;
+              }
+            }
+          }
+          targetShopifyId = `#${maxId + 1}`;
+        } catch {
+          targetShopifyId = `#${1110}`;
+        }
+      }
+
+      const cleanPhone = (customer_phone || "").replace(/\D/g, "");
+      const finalPhone = cleanPhone.length === 10 ? `+91 ${cleanPhone}` : (customer_phone.startsWith("+") ? customer_phone : `+${customer_phone}`);
+
+      const fullAddress = [shipping_address, city, postal_code].filter(Boolean).join(", ");
+      const finalTotal = Number(total_amount) || 0;
+      const finalShipCost = shipping_cost !== undefined ? Number(shipping_cost) : 0;
+      const finalProdCost = product_cost !== undefined ? Number(product_cost) : Math.round(finalTotal * 0.42);
+      const isCod = (payment_method || "COD").toLowerCase().includes("cod") || (payment_method || "COD").toLowerCase().includes("cash on delivery");
+
+      const isConfirmedMode = whatsapp_mode === "confirmed";
+      const isPreConfirmMode = whatsapp_mode === "pre_confirmation";
+      const confirmToken = `tok_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
+
+      const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+      const newOrder = await createERPOrder({
+        id: orderId,
+        shopify_order_id: targetShopifyId,
+        customer_name: customer_name.trim(),
+        customer_phone: finalPhone,
+        guest_email: (customer_email || "").trim(),
+        shipping_address: fullAddress,
+        total_amount: finalTotal,
+        shipping_cost: finalShipCost,
+        product_cost: finalProdCost,
+        discount_amount: Number(discount_amount || 0),
+        payment_method: isCod ? "Cash on Delivery" : (payment_method || "Prepaid"),
+        payment_status: payment_status || (isCod ? "Pending" : "Completed"),
+        advance_paid: advance_paid !== undefined ? Number(advance_paid) : (isCod ? 0 : finalTotal),
+        balance_due: balance_due !== undefined ? Number(balance_due) : (isCod ? finalTotal : 0),
+        delivery_status: (delivery_status as any) || "Processing",
+        status: (delivery_status as any) || "Processing",
+        whatsapp_confirm_status: isConfirmedMode ? "confirmed" : isPreConfirmMode ? "pending_whatsapp" : "confirmed",
+        whatsapp_confirm_token: confirmToken,
+        whatsapp_token_used: isConfirmedMode,
+        items: orderItems.map((it: any) => ({
+          product_name: it.name || it.product_name,
+          name: it.name || it.product_name,
+          quantity: Number(it.quantity || 1),
+          unit_price: Number(it.price || it.unit_price || 0),
+          price: Number(it.price || it.unit_price || 0),
+          product_id: it.product_id || it.id || "manual-item",
+          image: it.image || it.poster_image || "/vl-logo-nobg.png",
+          bundle_tier: it.bundle_tier,
+          bundle_savings: it.bundle_savings,
+          bundle_total: it.bundle_total,
+          offer_label: it.offer_label,
+        })),
+      });
+
+      // Synchronize address
+      try {
+        const { syncAddressFromOrder } = await import("@/lib/addressStore");
+        await syncAddressFromOrder({
+          customer_name,
+          customer_email: customer_email || "",
+          customer_phone: finalPhone,
+          shipping_address,
+          city: city || "",
+          postal_code: postal_code || "",
+          user_id: `guest_${cleanPhone || Date.now()}`,
+        });
+      } catch (e) {
+        console.warn("Auto-sync address error on manual order:", e);
+      }
+
+      // WhatsApp Notification if requested
+      if (isPreConfirmMode) {
+        try {
+          await sendOrderPreConfirmationWhatsApp({
+            customerName: customer_name,
+            customerPhone: finalPhone,
+            orderId: targetShopifyId,
+            totalAmount: finalTotal,
+            paymentMethod: isCod ? "cod" : "prepaid",
+            token: confirmToken,
+            advancePaid: Number(advance_paid || 0),
+            items: orderItems.map((it: any) => ({
+              name: it.name || it.product_name,
+              quantity: Number(it.quantity || 1),
+              price: Number(it.price || it.unit_price || 0),
+            })),
+          });
+        } catch (waErr) {
+          console.warn("Manual order WA pre-confirm error:", waErr);
+        }
+      } else if (isConfirmedMode) {
+        try {
+          await sendOrderConfirmationWhatsApp({
+            customerName: customer_name,
+            customerPhone: finalPhone,
+            orderId: targetShopifyId,
+            totalAmount: finalTotal,
+            paymentMethod: isCod ? "cod" : "prepaid",
+            shippingAddress: fullAddress,
+            items: orderItems.map((it: any) => ({
+              name: it.name || it.product_name,
+              quantity: Number(it.quantity || 1),
+              price: Number(it.price || it.unit_price || 0),
+            })),
+          });
+        } catch (waErr) {
+          console.warn("Manual order WA confirm error:", waErr);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        order: newOrder,
+        message: `Order ${targetShopifyId} created successfully!`,
+      });
+    }
+
     // Default create ERP order
     const {
       customer_name,

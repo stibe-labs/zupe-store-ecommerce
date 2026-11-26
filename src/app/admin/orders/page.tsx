@@ -26,6 +26,11 @@ import {
   XCircle,
   MoreVertical,
   Tag,
+  Plus,
+  Trash2,
+  User,
+  MapPin,
+  CreditCard,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
@@ -149,6 +154,185 @@ function AdminOrdersContent() {
   const [cancelNotes, setCancelNotes] = useState<string>("");
   const [openMenuOrderId, setOpenMenuOrderId] = useState<string | null>(null);
 
+  // Manual Order Creation Modal State
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState("");
+  const [newCustomerPhone, setNewCustomerPhone] = useState("");
+  const [newCustomerEmail, setNewCustomerEmail] = useState("");
+  const [newAddress, setNewAddress] = useState("");
+  const [newCity, setNewCity] = useState("");
+  const [newPostalCode, setNewPostalCode] = useState("");
+  const [newPaymentMethod, setNewPaymentMethod] = useState<"Cash on Delivery" | "Prepaid">("Cash on Delivery");
+  const [newPaymentStatus, setNewPaymentStatus] = useState<"Pending" | "Completed">("Pending");
+  const [newDeliveryStatus, setNewDeliveryStatus] = useState<string>("Processing");
+  const [newCustomOrderId, setNewCustomOrderId] = useState<string>("");
+  const [newShippingCost, setNewShippingCost] = useState<number>(0);
+  const [newDiscount, setNewDiscount] = useState<number>(0);
+  const [newAdvancePaid, setNewAdvancePaid] = useState<number>(0);
+  const [newWhatsappMode, setNewWhatsappMode] = useState<"pre_confirmation" | "confirmed" | "none">("pre_confirmation");
+
+  type ManualOrderItem = {
+    product_id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    image: string;
+    cost_price: number;
+  };
+
+  const [manualItems, setManualItems] = useState<ManualOrderItem[]>([
+    {
+      product_id: DEFAULT_PRODUCTS[0]?.id || "red-vl-athletic-tee",
+      name: DEFAULT_PRODUCTS[0]?.name || "Crimson Red VL Core Performance Athletic T-Shirt",
+      price: DEFAULT_PRODUCTS[0]?.price || 1099,
+      quantity: 1,
+      image: DEFAULT_PRODUCTS[0]?.poster_image || DEFAULT_PRODUCTS[0]?.images?.[0] || "/vl-logo-nobg.png",
+      cost_price: DEFAULT_PRODUCTS[0]?.cost_price || 600,
+    },
+  ]);
+
+  const handleAddManualItem = (prodId?: string) => {
+    const prod = DEFAULT_PRODUCTS.find((p) => p.id === prodId) || DEFAULT_PRODUCTS[0];
+    if (prod) {
+      setManualItems((prev) => [
+        ...prev,
+        {
+          product_id: prod.id,
+          name: prod.name,
+          price: prod.price,
+          quantity: 1,
+          image: prod.poster_image || prod.images?.[0] || "/vl-logo-nobg.png",
+          cost_price: prod.cost_price || Math.round(prod.price * 0.42),
+        },
+      ]);
+    } else {
+      setManualItems((prev) => [
+        ...prev,
+        {
+          product_id: `custom-${Date.now()}`,
+          name: "Custom Product Item",
+          price: 999,
+          quantity: 1,
+          image: "/vl-logo-nobg.png",
+          cost_price: 450,
+        },
+      ]);
+    }
+  };
+
+  const handleRemoveManualItem = (index: number) => {
+    if (manualItems.length <= 1) {
+      showToast("error", "At least one product item is required.");
+      return;
+    }
+    setManualItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateManualItem = (index: number, updates: Partial<ManualOrderItem>) => {
+    setManualItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, ...updates } : item))
+    );
+  };
+
+  const itemsSubtotal = manualItems.reduce(
+    (acc, it) => acc + (Number(it.price) || 0) * (Number(it.quantity) || 1),
+    0
+  );
+  const calculatedTotal = Math.max(
+    0,
+    itemsSubtotal + Number(newShippingCost || 0) - Number(newDiscount || 0)
+  );
+
+  const resetManualOrderForm = () => {
+    setNewCustomerName("");
+    setNewCustomerPhone("");
+    setNewCustomerEmail("");
+    setNewAddress("");
+    setNewCity("");
+    setNewPostalCode("");
+    setNewPaymentMethod("Cash on Delivery");
+    setNewPaymentStatus("Pending");
+    setNewDeliveryStatus("Processing");
+    setNewShippingCost(0);
+    setNewDiscount(0);
+    setNewAdvancePaid(0);
+    setNewWhatsappMode("pre_confirmation");
+    setManualItems([
+      {
+        product_id: DEFAULT_PRODUCTS[0]?.id || "red-vl-athletic-tee",
+        name: DEFAULT_PRODUCTS[0]?.name || "Crimson Red VL Core Performance Athletic T-Shirt",
+        price: DEFAULT_PRODUCTS[0]?.price || 1099,
+        quantity: 1,
+        image: DEFAULT_PRODUCTS[0]?.poster_image || DEFAULT_PRODUCTS[0]?.images?.[0] || "/vl-logo-nobg.png",
+        cost_price: DEFAULT_PRODUCTS[0]?.cost_price || 600,
+      },
+    ]);
+  };
+
+  const handleCreateManualOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCustomerName.trim()) {
+      showToast("error", "Please provide the customer full name.");
+      return;
+    }
+    if (!newCustomerPhone.trim()) {
+      showToast("error", "Please provide the customer phone number.");
+      return;
+    }
+    if (!newAddress.trim()) {
+      showToast("error", "Please provide the delivery shipping address.");
+      return;
+    }
+    if (manualItems.length === 0) {
+      showToast("error", "Please add at least one product item.");
+      return;
+    }
+
+    setIsSubmittingOrder(true);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_manual_order",
+          customer_name: newCustomerName.trim(),
+          customer_phone: newCustomerPhone.trim(),
+          customer_email: newCustomerEmail.trim(),
+          shipping_address: newAddress.trim(),
+          city: newCity.trim(),
+          postal_code: newPostalCode.trim(),
+          items: manualItems,
+          total_amount: calculatedTotal,
+          shipping_cost: Number(newShippingCost || 0),
+          discount_amount: Number(newDiscount || 0),
+          product_cost: manualItems.reduce((acc, it) => acc + (it.cost_price * it.quantity), 0),
+          payment_method: newPaymentMethod,
+          payment_status: newPaymentStatus,
+          delivery_status: newDeliveryStatus,
+          whatsapp_mode: newWhatsappMode,
+          advance_paid: newPaymentMethod === "Prepaid" ? calculatedTotal : Number(newAdvancePaid || 0),
+          balance_due: newPaymentMethod === "Prepaid" ? 0 : Math.max(0, calculatedTotal - Number(newAdvancePaid || 0)),
+          custom_order_id: newCustomOrderId.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", data.message || "Manual order created successfully!");
+        setIsCreateModalOpen(false);
+        resetManualOrderForm();
+        fetchOrders();
+      } else {
+        showToast("error", data.error || "Failed to create manual order.");
+      }
+    } catch (err: any) {
+      showToast("error", err?.message || "Network error while creating order.");
+    } finally {
+      setIsSubmittingOrder(false);
+    }
+  };
+
   const showToast = (type: "success" | "error", text: string) => {
     setToastMessage({ type, text });
     setTimeout(() => {
@@ -184,14 +368,14 @@ function AdminOrdersContent() {
 
   // Lock background body scroll when order modal is open
   useEffect(() => {
-    if (selectedOrder || productsPreviewOrder) {
+    if (selectedOrder || productsPreviewOrder || isCreateModalOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [selectedOrder, productsPreviewOrder]);
+  }, [selectedOrder, productsPreviewOrder, isCreateModalOpen]);
 
   useEffect(() => {
     if (selectedOrder) {
@@ -653,8 +837,25 @@ function AdminOrdersContent() {
 
             <div className="flex items-center gap-2.5">
               <button
+                type="button"
+                onClick={() => {
+                  const latestNum = orders.reduce((max, o) => {
+                    const m = (o.shopify_order_id || "").match(/#(\d+)/);
+                    return m ? Math.max(max, parseInt(m[1], 10)) : max;
+                  }, 1109);
+                  setNewCustomOrderId(`#${latestNum + 1}`);
+                  setIsCreateModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#0B5D44] hover:bg-[#084533] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm shadow-[#0B5D44]/20 cursor-pointer active:scale-98"
+                title="Create a new manual order"
+              >
+                <Plus className="w-4 h-4 text-white stroke-[2.5]" />
+                <span>Create Order</span>
+              </button>
+
+              <button
                 onClick={handleExportCSV}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer"
               >
                 <Download className="w-4 h-4 text-slate-500" />
                 <span>Export CSV</span>
@@ -1950,6 +2151,489 @@ function AdminOrdersContent() {
           </div>
         );
       })()}
+
+      {/* Create Manual Order Modal */}
+      {isCreateModalOpen && (
+        <div
+          className="fixed inset-0 z-[68] flex items-center justify-center p-3 sm:p-5 bg-slate-950/65 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
+          onClick={() => {
+            if (!isSubmittingOrder) setIsCreateModalOpen(false);
+          }}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-emerald-50 via-teal-50/40 to-white border-b border-emerald-100 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0B5D44] text-white flex items-center justify-center shadow-xs shrink-0">
+                  <Plus className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                      Create Manual Order
+                    </h3>
+                    <span className="font-mono text-xs font-black text-[#0B5D44] bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-200">
+                      {newCustomOrderId || "#1110"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Directly book customer phone orders, WhatsApp leads, or offline sales.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(false)}
+                disabled={isSubmittingOrder}
+                className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body Form */}
+            <form onSubmit={handleCreateManualOrder} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column: Customer & Delivery Information */}
+                  <div className="space-y-4">
+                    <div className="border-b border-slate-200 pb-2">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-[#0B5D44]" />
+                        <span>Customer & Shipping Details</span>
+                      </h4>
+                    </div>
+
+                    {/* Customer Full Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Customer Full Name <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newCustomerName}
+                        onChange={(e) => setNewCustomerName(e.target.value)}
+                        placeholder="e.g. Mohammed Ijas"
+                        className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44] focus:bg-white transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Customer Phone & Email */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Phone Number <span className="text-rose-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <input
+                            type="tel"
+                            required
+                            value={newCustomerPhone}
+                            onChange={(e) => setNewCustomerPhone(e.target.value)}
+                            placeholder="e.g. 9876543210"
+                            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44] focus:bg-white transition-all font-medium font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Email (Optional)
+                        </label>
+                        <input
+                          type="email"
+                          value={newCustomerEmail}
+                          onChange={(e) => setNewCustomerEmail(e.target.value)}
+                          placeholder="e.g. customer@gmail.com"
+                          className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44] focus:bg-white transition-all font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Delivery Address */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Shipping Delivery Address <span className="text-rose-500">*</span>
+                      </label>
+                      <textarea
+                        required
+                        rows={2}
+                        value={newAddress}
+                        onChange={(e) => setNewAddress(e.target.value)}
+                        placeholder="House / Flat no, Street, Landmark, Area"
+                        className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44] focus:bg-white transition-all resize-none font-medium"
+                      />
+                    </div>
+
+                    {/* City & PIN Code */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          City / District
+                        </label>
+                        <input
+                          type="text"
+                          value={newCity}
+                          onChange={(e) => setNewCity(e.target.value)}
+                          placeholder="e.g. Kozhikode"
+                          className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44] focus:bg-white transition-all font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          PIN Code
+                        </label>
+                        <input
+                          type="text"
+                          value={newPostalCode}
+                          onChange={(e) => setNewPostalCode(e.target.value)}
+                          placeholder="e.g. 673001"
+                          maxLength={6}
+                          className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44] focus:bg-white transition-all font-medium font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Payment & Order Settings */}
+                    <div className="border-t border-slate-200 pt-3 space-y-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5 text-[#0B5D44]" />
+                        <span>Payment & Status</span>
+                      </h4>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Payment Method */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Payment Method
+                          </label>
+                          <select
+                            value={newPaymentMethod}
+                            onChange={(e) => {
+                              const method = e.target.value as "Cash on Delivery" | "Prepaid";
+                              setNewPaymentMethod(method);
+                              if (method === "Prepaid") {
+                                setNewPaymentStatus("Completed");
+                              } else {
+                                setNewPaymentStatus("Pending");
+                              }
+                            }}
+                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44]"
+                          >
+                            <option value="Cash on Delivery">Cash on Delivery (COD)</option>
+                            <option value="Prepaid">Prepaid (UPI / Card / Online)</option>
+                          </select>
+                        </div>
+
+                        {/* Payment Status */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Payment Status
+                          </label>
+                          <select
+                            value={newPaymentStatus}
+                            onChange={(e) => setNewPaymentStatus(e.target.value as "Pending" | "Completed")}
+                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44]"
+                          >
+                            <option value="Pending">Pending (Doorstep Collection)</option>
+                            <option value="Completed">Completed / Paid</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Custom Order ID */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Assigned Order ID
+                          </label>
+                          <input
+                            type="text"
+                            value={newCustomOrderId}
+                            onChange={(e) => setNewCustomOrderId(e.target.value)}
+                            placeholder="e.g. #1110"
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-[#0B5D44] focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44]"
+                          />
+                        </div>
+
+                        {/* Order Delivery Status */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Fulfillment Status
+                          </label>
+                          <select
+                            value={newDeliveryStatus}
+                            onChange={(e) => setNewDeliveryStatus(e.target.value)}
+                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44]"
+                          >
+                            <option value="Processing">Processing (Packed & Ready)</option>
+                            <option value="In Transit">In Transit (Dispatched)</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
+                            <option value="Delivered">Delivered</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {newPaymentMethod === "Cash on Delivery" && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Advance Partial Payment (₹)
+                          </label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={newAdvancePaid || ""}
+                            onChange={(e) => setNewAdvancePaid(Number(e.target.value) || 0)}
+                            placeholder="e.g. 0 or 100"
+                            className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800"
+                          />
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            Balance due at door: ₹{Math.max(0, calculatedTotal - Number(newAdvancePaid || 0))}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Purchased Products, Pricing & WhatsApp */}
+                  <div className="space-y-4">
+                    <div className="border-b border-slate-200 pb-2 flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                        <ShoppingBag className="w-3.5 h-3.5 text-[#0B5D44]" />
+                        <span>Purchased Products ({manualItems.length})</span>
+                      </h4>
+                    </div>
+
+                    {/* Quick Catalog Item Add Dropdown */}
+                    <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl space-y-2">
+                      <label className="block text-[11px] font-bold text-[#0B5D44]">
+                        + Quick Add Product From Catalog
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          id="catalogSelectDropdown"
+                          className="flex-1 px-3 py-1.5 bg-white border border-emerald-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20"
+                          defaultValue={DEFAULT_PRODUCTS[0]?.id}
+                        >
+                          {DEFAULT_PRODUCTS.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} — ₹{p.price}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const el = document.getElementById("catalogSelectDropdown") as HTMLSelectElement;
+                            if (el?.value) {
+                              handleAddManualItem(el.value);
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-[#0B5D44] hover:bg-[#084533] text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                        >
+                          Add Item
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Items List */}
+                    <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                      {manualItems.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2 text-xs"
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <img
+                              src={item.image || "/vl-logo-nobg.png"}
+                              alt={item.name}
+                              className="w-10 h-10 object-cover rounded-lg border border-slate-200 bg-white shrink-0"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/vl-logo-nobg.png";
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={(e) => handleUpdateManualItem(idx, { name: e.target.value })}
+                                className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800"
+                                placeholder="Product Name"
+                              />
+                              <div className="flex items-center justify-between mt-1.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[11px] text-slate-500 font-medium">Price: ₹</span>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    value={item.price || ""}
+                                    onChange={(e) => handleUpdateManualItem(idx, { price: Number(e.target.value) || 0 })}
+                                    className="w-20 px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[11px] text-slate-500 font-medium">Qty:</span>
+                                  <div className="flex items-center border border-slate-200 rounded-lg bg-white overflow-hidden">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUpdateManualItem(idx, { quantity: Math.max(1, item.quantity - 1) })}
+                                      className="px-2 py-0.5 text-slate-600 hover:bg-slate-100 font-bold"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="px-2 text-xs font-bold text-slate-900">
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUpdateManualItem(idx, { quantity: item.quantity + 1 })}
+                                      className="px-2 py-0.5 text-slate-600 hover:bg-slate-100 font-bold"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveManualItem(idx)}
+                              disabled={manualItems.length <= 1}
+                              className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-colors disabled:opacity-30 cursor-pointer"
+                              title="Remove item"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200/60 font-semibold text-slate-600">
+                            <span>Item Total:</span>
+                            <span className="font-bold text-slate-900">
+                              ₹{(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Pricing Breakdown Card */}
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                      <div className="flex justify-between items-center text-slate-600">
+                        <span>Items Subtotal:</span>
+                        <span className="font-bold text-slate-800">₹{itemsSubtotal.toLocaleString("en-IN")}</span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-slate-600">
+                        <span>Shipping / Delivery Fee:</span>
+                        <div className="flex items-center gap-1">
+                          <span>₹</span>
+                          <input
+                            type="number"
+                            min={0}
+                            value={newShippingCost}
+                            onChange={(e) => setNewShippingCost(Number(e.target.value) || 0)}
+                            className="w-16 px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 text-right"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center text-slate-600">
+                        <span>Discount / Offer (₹):</span>
+                        <div className="flex items-center gap-1">
+                          <span>-₹</span>
+                          <input
+                            type="number"
+                            min={0}
+                            value={newDiscount}
+                            onChange={(e) => setNewDiscount(Number(e.target.value) || 0)}
+                            className="w-16 px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 text-right"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2 border-t border-slate-200 font-bold text-sm">
+                        <span className="text-slate-900">Final Order Total:</span>
+                        <span className="text-base font-black text-[#002D62]">
+                          ₹{calculatedTotal.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* WhatsApp Notification Mode */}
+                    <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-200/60 space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>WhatsApp Notification Setting</span>
+                      </label>
+                      <select
+                        value={newWhatsappMode}
+                        onChange={(e) => setNewWhatsappMode(e.target.value as "pre_confirmation" | "confirmed" | "none")}
+                        className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20"
+                      >
+                        <option value="pre_confirmation">
+                          Send WhatsApp Interactive Buttons (Confirm & Cancel)
+                        </option>
+                        <option value="confirmed">
+                          Mark Confirmed & Send WhatsApp Confirmation Note
+                        </option>
+                        <option value="none">
+                          No WhatsApp Notification (Internal Record Only)
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
+                    Order Total
+                  </span>
+                  <span className="text-base font-black text-[#002D62]">
+                    ₹{calculatedTotal.toLocaleString("en-IN")}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateModalOpen(false)}
+                    disabled={isSubmittingOrder}
+                    className="px-4 py-2 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingOrder}
+                    className="px-5 py-2 bg-[#0B5D44] hover:bg-[#084533] text-white font-bold rounded-xl text-xs transition-all shadow-sm shadow-[#0B5D44]/20 flex items-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98"
+                  >
+                    {isSubmittingOrder ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Creating Order...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Confirm & Create Order</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Cancel Order Confirmation Modal */}
       {orderToCancel && (
