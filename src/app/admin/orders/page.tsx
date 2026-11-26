@@ -28,6 +28,7 @@ import {
   Tag,
 } from "lucide-react";
 import { ERPOrder } from "@/lib/erpStore";
+import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
 function AdminOrdersContent() {
   const searchParams = useSearchParams();
@@ -45,6 +46,33 @@ function AdminOrdersContent() {
   const [courierFilter, setCourierFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<ERPOrder | null>(null);
+  const [productsPreviewOrder, setProductsPreviewOrder] = useState<ERPOrder | null>(null);
+
+  const resolveItemImage = (item: any): string => {
+    if (item?.image && typeof item.image === "string" && item.image.trim()) {
+      return item.image;
+    }
+    if (item?.poster_image && typeof item.poster_image === "string" && item.poster_image.trim()) {
+      return item.poster_image;
+    }
+    if (Array.isArray(item?.images) && item.images.length > 0 && typeof item.images[0] === "string" && item.images[0].trim()) {
+      return item.images[0];
+    }
+    const nameQuery = (item?.name || item?.product_name || "").toLowerCase().trim();
+    const idQuery = (item?.id || item?.product_id || item?.slug || "").toLowerCase().trim();
+
+    if (idQuery || nameQuery) {
+      const matched = DEFAULT_PRODUCTS.find((p) => {
+        if (idQuery && (p.id?.toLowerCase() === idQuery || p.slug?.toLowerCase() === idQuery)) return true;
+        if (nameQuery && (p.name?.toLowerCase() === nameQuery || p.name?.toLowerCase().includes(nameQuery) || nameQuery.includes(p.name?.toLowerCase()))) return true;
+        return false;
+      });
+      if (matched) {
+        return matched.poster_image || matched.images?.[0] || "/vl-logo-nobg.png";
+      }
+    }
+    return "/vl-logo-nobg.png";
+  };
 
   const dateFilterToLabel = (df: string): string => {
     switch (df) {
@@ -156,14 +184,14 @@ function AdminOrdersContent() {
 
   // Lock background body scroll when order modal is open
   useEffect(() => {
-    if (selectedOrder) {
+    if (selectedOrder || productsPreviewOrder) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [selectedOrder]);
+  }, [selectedOrder, productsPreviewOrder]);
 
   useEffect(() => {
     if (selectedOrder) {
@@ -790,10 +818,22 @@ function AdminOrdersContent() {
 
                             return (
                               <div className="space-y-1">
-                                <span className="block text-[11px] text-[#002D62] font-semibold truncate max-w-[200px] mt-0.5">
-                                  📦 {totalQty > 1 ? `${totalQty}× ` : ""}{firstName}
-                                  {rawItems.length > 1 ? ` +${rawItems.length - 1} more` : ""}
-                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setProductsPreviewOrder(ord);
+                                  }}
+                                  className="group/prod inline-flex items-center gap-1.5 px-2 py-1 mt-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#0B5D44] border border-[#0B5D44]/25 hover:border-[#0B5D44]/45 transition-all text-left cursor-pointer max-w-[215px] shadow-2xs hover:shadow-xs active:scale-[0.98]"
+                                  title="Click to view product photo, name & quantity popup"
+                                >
+                                  <span className="shrink-0 text-xs">📦</span>
+                                  <span className="text-[11px] font-bold truncate">
+                                    {totalQty > 1 ? `${totalQty}× ` : ""}{firstName}
+                                    {rawItems.length > 1 ? ` (+${rawItems.length - 1} more)` : ""}
+                                  </span>
+                                  <Eye className="w-3 h-3 text-[#0B5D44]/60 group-hover/prod:text-[#0B5D44] shrink-0 ml-auto" />
+                                </button>
                                 {bundleItem && (
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-gradient-to-r from-orange-100 to-amber-100 text-[#E65100] border border-orange-200">
                                     <span>✨</span>
@@ -1036,7 +1076,23 @@ function AdminOrdersContent() {
 
                                   {hasActionButtons && <div className="my-1 border-t border-slate-100" />}
 
-                                  {/* 4. Details Option */}
+                                  {/* 4. Quick Products Preview Option */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setOpenMenuOrderId(null);
+                                      setProductsPreviewOrder(ord);
+                                    }}
+                                    className="w-full px-3.5 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 flex items-center gap-2.5 transition-colors cursor-pointer text-left"
+                                  >
+                                    <ShoppingBag className="w-4 h-4 text-[#0B5D44] shrink-0" />
+                                    <div>
+                                      <p className="font-bold text-slate-800">View Products & Photos</p>
+                                      <p className="text-[10px] text-slate-400 font-normal">Quick product & qty popup</p>
+                                    </div>
+                                  </button>
+
+                                  {/* 5. Details Option */}
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -1698,6 +1754,202 @@ function AdminOrdersContent() {
           </div>
         </div>
       )}
+
+      {/* Quick Product Photo & Quantity Preview Popup Modal */}
+      {productsPreviewOrder && (() => {
+        let previewItems: any[] = [];
+        if (Array.isArray(productsPreviewOrder.items)) {
+          previewItems = productsPreviewOrder.items;
+        } else if (typeof productsPreviewOrder.items === "string") {
+          try {
+            previewItems = JSON.parse(productsPreviewOrder.items);
+          } catch {
+            previewItems = [];
+          }
+        }
+        const totalUnits = previewItems.reduce((acc, it) => acc + Number(it.quantity || 1), 0);
+        const orderDisplayId = productsPreviewOrder.shopify_order_id || productsPreviewOrder.id;
+
+        return (
+          <div
+            className="fixed inset-0 z-[65] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
+            onClick={() => setProductsPreviewOrder(null)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-emerald-50 via-teal-50/40 to-white border-b border-emerald-100 shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#0B5D44] text-white flex items-center justify-center shadow-xs shrink-0">
+                    <ShoppingBag className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-[#0B5D44] bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-200">
+                        #{orderDisplayId}
+                      </span>
+                      <span className="text-xs font-bold text-slate-900 truncate">
+                        Ordered Products
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                      {productsPreviewOrder.customer_name} • {productsPreviewOrder.customer_phone}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProductsPreviewOrder(null)}
+                  className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-2"
+                  title="Close popup"
+                  aria-label="Close popup"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Body - Items List */}
+              <div className="p-4 sm:p-5 overflow-y-auto space-y-3 flex-1">
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 pb-1 border-b border-slate-100">
+                  <span>{previewItems.length} Product{previewItems.length === 1 ? "" : "s"}</span>
+                  <span className="text-[#0B5D44] font-extrabold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                    Total Quantity: {totalUnits} unit{totalUnits === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                {previewItems.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 text-xs">
+                    No item details recorded for this order.
+                  </div>
+                ) : (
+                  previewItems.map((item, idx) => {
+                    const name = item.name || item.product_name || "Ordered Product";
+                    const qty = Number(item.quantity || 1);
+                    const price = Number(item.price || item.unit_price || 0);
+                    const total = Number(item.bundle_total || (price * qty));
+                    const imgSrc = resolveItemImage(item);
+                    const isBundle = Boolean((item.bundle_tier && Number(item.bundle_tier) > 1) || item.offer_label);
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-xl border transition-all flex items-start gap-3.5 ${
+                          isBundle
+                            ? "bg-gradient-to-r from-orange-50/40 via-amber-50/20 to-white border-orange-200/80"
+                            : "bg-slate-50/70 hover:bg-slate-50 border-slate-200/80"
+                        }`}
+                      >
+                        {/* Product Image */}
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0 shadow-2xs">
+                          <img
+                            src={imgSrc}
+                            alt={name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/vl-logo-nobg.png";
+                            }}
+                          />
+                          <span className="absolute bottom-1 right-1 bg-slate-900/80 backdrop-blur-xs text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-md">
+                            #{idx + 1}
+                          </span>
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-slate-900 text-xs sm:text-sm leading-snug break-words">
+                            {name}
+                          </h4>
+
+                          {/* Quantity & Unit Price Pill Badge */}
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-black bg-[#0B5D44] text-white shadow-2xs">
+                              <span>Qty:</span>
+                              <span className="text-sm font-black">{qty}</span>
+                              <span className="text-[10px] font-medium opacity-90">({qty === 1 ? "unit" : "units"})</span>
+                            </span>
+
+                            <span className="text-xs font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                              ₹{price.toLocaleString("en-IN")} each
+                            </span>
+                          </div>
+
+                          {/* Bundle / Offer badge if applicable */}
+                          {isBundle && (
+                            <div className="mt-1.5">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black bg-gradient-to-r from-orange-100 to-amber-100 text-[#E65100] border border-orange-200">
+                                <span>✨</span>
+                                <span>{item.offer_label || `Bundle Tier: Buy ${item.bundle_tier || qty}`}</span>
+                                {item.bundle_savings ? (
+                                  <span className="text-[#0B5D44] font-extrabold ml-1">
+                                    (Saved ₹{Number(item.bundle_savings).toLocaleString("en-IN")})
+                                  </span>
+                                ) : null}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Line Total */}
+                          <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/60 text-xs">
+                            <span className="text-slate-500 font-medium">Item Total:</span>
+                            <span className="font-black text-slate-900 text-sm">
+                              ₹{total.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+
+                {/* Delivery & Address Quick Snip */}
+                {productsPreviewOrder.shipping_address && (
+                  <div className="mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200/70 text-[11px] text-slate-600">
+                    <span className="font-bold text-slate-800 block mb-0.5">Shipping Destination:</span>
+                    <p className="line-clamp-2 leading-relaxed">{productsPreviewOrder.shipping_address}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
+                    Order Total ({productsPreviewOrder.payment_method})
+                  </span>
+                  <span className="text-base font-black text-[#002D62]">
+                    ₹{productsPreviewOrder.total_amount?.toLocaleString("en-IN")}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const target = productsPreviewOrder;
+                      setProductsPreviewOrder(null);
+                      setSelectedOrder(target);
+                    }}
+                    className="px-3.5 py-1.5 bg-[#0B5D44] hover:bg-[#084533] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-98"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Full Order Details</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setProductsPreviewOrder(null)}
+                    className="px-3.5 py-1.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Cancel Order Confirmation Modal */}
       {orderToCancel && (
