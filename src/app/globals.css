@@ -586,6 +586,13 @@ body[style*="overflow: hidden"] {
   overscroll-behavior: none !important;
 }
 
+body.modal-open nav[aria-label="Mobile Bottom Navigation"] {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
 [data-lenis-prevent],
 .overflow-y-auto,
 .overflow-auto {
