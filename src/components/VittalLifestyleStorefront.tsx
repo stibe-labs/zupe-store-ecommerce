@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
   ShoppingBag,
@@ -128,6 +129,24 @@ const HOMEPAGE_NEW_ARRIVALS_ORDER = [
   "on-creatine-container",
 ];
 
+const AUTHENTICITY_PILLARS = [
+  {
+    icon: BadgeCheck,
+    title: "Direct Authorized Sourcing",
+    desc: "Procured strictly through verified brand distributors and official importers with traceable batch codes.",
+  },
+  {
+    icon: PackageCheck,
+    title: "Pre-Dispatch Seal Inspection",
+    desc: "Every nutrition jar, garment, and gourmet box passes a tamper-evident quality & expiry check before packing.",
+  },
+  {
+    icon: RotateCcw,
+    title: "Insured Express & 7-Day Returns",
+    desc: "Free insured pan-India express shipping above ₹1,499, live milestone tracking, and straightforward 7-day returns.",
+  },
+];
+
 export function VittalLifestyleStorefront({
   initialProducts,
   initialHeroBanners,
@@ -139,6 +158,16 @@ export function VittalLifestyleStorefront({
   const { addItem, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { openSearch } = useSearch();
+
+  // Mobile rotation state for 100% Original Guarantee pillars (rotates every 3 seconds)
+  const [activePillarIndex, setActivePillarIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActivePillarIndex((prev) => (prev + 1) % AUTHENTICITY_PILLARS.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Dynamic Showcase Collections (New Arrivals & Best Sellers)
   const [showcaseCollections, setShowcaseCollections] = useState<ShowcaseCollectionsConfig>(
@@ -1310,17 +1339,10 @@ export function VittalLifestyleStorefront({
         aria-labelledby="vittal-authenticity-guarantee"
         className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10 sm:pb-14"
       >
-        <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-gradient-to-br from-[#F4FAF7] via-[#EBF7F2] to-[#F4FAF7] border border-[#B8DFD1] px-6 py-8 sm:px-10 sm:py-11 text-[#0C1412] shadow-[0_12px_36px_rgba(11,93,68,0.08)]">
-          {/* Vittal Emerald top hairline */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#0B5D44]/40 to-transparent"
-          />
-
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-7 mb-7 border-b border-[#B8DFD1]/60">
+        <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-white border border-neutral-200/80 px-6 py-8 sm:px-10 sm:py-11 text-[#0C1412] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-7 mb-7 border-b border-neutral-200/70">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#B8DFD1] text-[#0B5D44] text-[10.5px] font-bold uppercase tracking-[0.18em] mb-3 shadow-2xs">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#0B5D44]" />
+              <span className="block text-[#0B5D44] text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-2.5">
                 The Vittal Authenticity Standard
               </span>
               <h2
@@ -1345,51 +1367,113 @@ export function VittalLifestyleStorefront({
               </Link>
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white hover:bg-neutral-50 text-[#0C1412] border border-[#B8DFD1] text-xs sm:text-sm font-semibold transition-colors shadow-2xs"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-neutral-100 hover:bg-neutral-200 text-[#0C1412] border border-neutral-200 text-xs sm:text-sm font-semibold transition-colors"
               >
                 <span>Our Story &amp; Sourcing</span>
               </Link>
             </div>
           </div>
 
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
-            {[
-              {
-                icon: BadgeCheck,
-                title: "Direct Authorized Sourcing",
-                desc: "Procured strictly through verified brand distributors and official importers with traceable batch codes.",
-              },
-              {
-                icon: PackageCheck,
-                title: "Pre-Dispatch Seal Inspection",
-                desc: "Every nutrition jar, garment, and gourmet box passes a tamper-evident quality & expiry check before packing.",
-              },
-              {
-                icon: RotateCcw,
-                title: "Insured Express & 7-Day Returns",
-                desc: "Free insured pan-India express shipping above ₹1,499, live milestone tracking, and straightforward 7-day returns.",
-              },
-            ].map((pillar) => {
+          {/* Desktop View: All 3 cards in 3 columns */}
+          <div className="hidden md:grid md:grid-cols-3 gap-4 sm:gap-5">
+            {AUTHENTICITY_PILLARS.map((pillar) => {
               const Icon = pillar.icon;
               return (
                 <div
                   key={pillar.title}
-                  className="rounded-2xl bg-white border border-[#B8DFD1]/70 p-5 flex items-start gap-3.5 shadow-xs hover:border-[#0B5D44]/50 transition-colors"
+                  className="relative rounded-2xl overflow-hidden p-5 flex items-start gap-3.5 shadow-md border border-[#0B5D44]/35 text-white transition-transform hover:-translate-y-0.5 duration-200"
+                  style={{
+                    background: "linear-gradient(135deg, #073B2B 0%, #0B5D44 50%, #06241B 100%)",
+                  }}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#E6F4EF] border border-[#B8DFD1] text-[#0B5D44] flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-[#0B5D44]" />
+                  {/* Matching Pro Gym Nutrition Texture */}
+                  <div
+                    className="absolute inset-0 opacity-[0.10] pointer-events-none mix-blend-overlay"
+                    style={{
+                      backgroundImage: "radial-gradient(#FFFFFF 1.5px, transparent 1.5px), radial-gradient(#FFFFFF 1.5px, #06241B 1.5px)",
+                      backgroundSize: "28px 28px",
+                      backgroundPosition: "0 0, 14px 14px",
+                    }}
+                  />
+                  <div className="relative z-10 w-10 h-10 rounded-xl bg-white/12 backdrop-blur-xs border border-white/20 text-[#B8DFD1] flex items-center justify-center shrink-0 shadow-xs">
+                    <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <div>
-                    <h3 className="text-sm sm:text-base font-bold text-[#0C1412] leading-snug">
+                  <div className="relative z-10">
+                    <h3 className="text-sm sm:text-base font-bold text-white leading-snug">
                       {pillar.title}
                     </h3>
-                    <p className="text-xs text-neutral-600 leading-relaxed mt-1">
+                    <p className="text-xs text-[#E6F4EF]/90 leading-relaxed mt-1">
                       {pillar.desc}
                     </p>
                   </div>
                 </div>
               );
             })}
+          </div>
+
+          {/* Mobile View: 1 card at a time with smooth 3-second right-to-left slide animation */}
+          <div className="block md:hidden">
+            <div className="relative overflow-hidden min-h-[120px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activePillarIndex}
+                  initial={{ opacity: 0, x: 75 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -75 }}
+                  transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
+                  className="w-full"
+                >
+                  {(() => {
+                    const pillar = AUTHENTICITY_PILLARS[activePillarIndex];
+                    const Icon = pillar.icon;
+                    return (
+                      <div
+                        className="relative rounded-2xl overflow-hidden p-5 flex items-start gap-3.5 shadow-md border border-[#0B5D44]/35 text-white"
+                        style={{
+                          background: "linear-gradient(135deg, #073B2B 0%, #0B5D44 50%, #06241B 100%)",
+                        }}
+                      >
+                        {/* Matching Pro Gym Nutrition Texture */}
+                        <div
+                          className="absolute inset-0 opacity-[0.10] pointer-events-none mix-blend-overlay"
+                          style={{
+                            backgroundImage: "radial-gradient(#FFFFFF 1.5px, transparent 1.5px), radial-gradient(#FFFFFF 1.5px, #06241B 1.5px)",
+                            backgroundSize: "28px 28px",
+                            backgroundPosition: "0 0, 14px 14px",
+                          }}
+                        />
+                        <div className="relative z-10 w-10 h-10 rounded-xl bg-white/12 backdrop-blur-xs border border-white/20 text-[#B8DFD1] flex items-center justify-center shrink-0 shadow-xs">
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="relative z-10">
+                          <h3 className="text-sm font-bold text-white leading-snug">
+                            {pillar.title}
+                          </h3>
+                          <p className="text-xs text-[#E6F4EF]/90 leading-relaxed mt-1">
+                            {pillar.desc}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Mobile slide indicator pills */}
+            <div className="flex items-center justify-center gap-1.5 mt-3">
+              {AUTHENTICITY_PILLARS.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActivePillarIndex(idx)}
+                  aria-label={`Slide ${idx + 1}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    activePillarIndex === idx ? "w-6 bg-[#0B5D44]" : "w-1.5 bg-neutral-300"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
