@@ -147,6 +147,16 @@ export async function GET(req: NextRequest) {
           console.warn("Failed to dispatch email confirmation on WA verify:", emailErr);
         }
       }
+
+      // 3c. Automatically push confirmed order to Shiprocket for fulfillment
+      try {
+        const { syncOrderToShiprocket } = await import("@/lib/shiprocketService");
+        syncOrderToShiprocket(ord).catch((srErr) =>
+          console.warn("Asynchronous Shiprocket WhatsApp confirm push warning:", srErr)
+        );
+      } catch (srLoaderErr) {
+        console.warn("Shiprocket loader warning on WhatsApp confirm:", srLoaderErr);
+      }
     }
 
     if (!result.success && !result.alreadyUsed) {

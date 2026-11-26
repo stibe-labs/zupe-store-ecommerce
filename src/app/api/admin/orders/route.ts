@@ -103,6 +103,35 @@ export async function POST(req: NextRequest) {
     }
 
     // ========================================================
+    // ACTION: PUSH / SYNC ORDER TO SHIPROCKET
+    // ========================================================
+    if (body.action === "push_shiprocket") {
+      const { order_id, autoAssignAWB } = body;
+      if (!order_id) {
+        return NextResponse.json(
+          { success: false, error: "Missing required field: order_id" },
+          { status: 400 }
+        );
+      }
+
+      const orders = await getERPOrders();
+      const target = orders.find(
+        (o) => o.id === order_id || (o as any).shopify_order_id?.toLowerCase() === order_id.toLowerCase()
+      );
+
+      if (!target) {
+        return NextResponse.json(
+          { success: false, error: `Order ${order_id} not found` },
+          { status: 404 }
+        );
+      }
+
+      const { syncOrderToShiprocket } = await import("@/lib/shiprocketService");
+      const result = await syncOrderToShiprocket(target, { autoAssignAWB });
+      return NextResponse.json(result);
+    }
+
+    // ========================================================
     // ACTION 1: RESEND WHATSAPP CONFIRM / CANCEL BUTTONS
     // ========================================================
     if (body.action === "resend_wa_buttons") {

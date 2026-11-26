@@ -1055,6 +1055,23 @@ export async function createERPOrder(orderData: Partial<ERPOrder> & {
     console.warn("Shopify push loader warning:", pushErr);
   }
 
+  // Outbound push to Shiprocket (asynchronously, non-blocking for confirmed prepaid orders)
+  if (
+    newOrder.payment_status === "Completed" ||
+    newOrder.payment_status === "paid" ||
+    newOrder.payment_method === "Prepaid" ||
+    newOrder.payment_method === "Credit Card"
+  ) {
+    try {
+      const { syncOrderToShiprocket } = await import("@/lib/shiprocketService");
+      syncOrderToShiprocket(newOrder).catch((e) =>
+        console.warn("Asynchronous Shiprocket prepaid order push warning:", e)
+      );
+    } catch (srErr) {
+      console.warn("Shiprocket push loader warning:", srErr);
+    }
+  }
+
   return newOrder;
 }
 

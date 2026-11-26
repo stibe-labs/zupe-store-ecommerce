@@ -413,6 +413,183 @@ export async function generateShiprocketAWB(
 }
 
 /**
+ * Automatically pushes and adds an order to Shiprocket when confirmed.
+ * Appears under Shiprocket Dashboard -> Orders -> New.
+ * Safely creates the order even if wallet balance is 0 (AWB generation can occur after recharge).
+ */
+export async function syncOrderToShiprocket(
+  order: ERPOrder | OrderRecord,
+  options?: { preferredCourier?: string; autoAssignAWB?: boolean }
+): Promise<{
+  success: boolean;
+  order_id?: number | string;
+  shipment_id?: number | string;
+  awb?: string;
+  message: string;
+}> {
+  try {
+    const settings = await getSettings();
+    const config = settings.shiprocket || ({} as any);
+
+    if (config.isActive === false || config.autoSync === false) {
+      return { success: false, message: "Shiprocket integration is disabled in settings." };
+    }
+
+    const token = await getShiprocketToken();
+    if (!token) {
+      return { success: false, message: "Shiprocket credentials not connected. Please enter API User in settings." };
+    }
+
+    const pickupLocation =
+      config?.pickup_location && config.pickup_location !== "Primary"
+        ? config.pickup_location
+        : process.env.SHIPROCKET_PICKUP_LOCATION || "Primary";
+
+    const rawPhone = (order as any).customer_phone || "";
+    const cleanPhone = rawPhone.replace(/\D/g, "").slice(-10) || "9876543210";
+    const recipientName = (order as any).customer_name || "Valued Customer";
+    const shippingAddress = (order as any).shipping_address || "Customer Address";
+
+    let city = (order as any).city || "";
+    let postalCode = ((order as any).postal_code || "").toString().replace(/\D/g, "");
+    const state = (order as any).state || "Karnataka";
+
+    if (!postalCode || postalCode.length !== 6) {
+      const pinMatch = shippingAddress.match(/\b\d{6}\b/);
+      if (pinMatch) postalCode = pinMatch[0];
+      else postalCode = "560001";
+    }
+    if (!city) {
+      const parts = shippingAddress.split(",").map((s: string) => s.trim());
+      if (parts.length >= 2) {
+        city = parts[parts.length - 2].replace(/\d+/g, "").trim() || "Bengaluru";
+      } else {
+        city = "Bengaluru";
+      }
+    }
+
+    const isCod =
+      ((order as any).payment_method || "").toLowerCase().includes("cod") ||
+      ((order as any).payment_method || "").toLowerCase().includes("cash on delivery");
+
+    const advancePaid = Number((order as any).advance_paid) || 0;
+    const codCollectableAmount =
+      (order as any).balance_due !== undefined
+        ? Number((order as any).balance_due)
+        : isCod
+        ? Math.max(0, Number(order.total_amount) - advancePaid)
+        : Number(order.total_amount);
+
+    const effectiveShiprocketTotal = isCod ? codCollectableAmount : Number(order.total_amount);
+
+    const orderItems = (order.items || []).map((it: any) => {
+      const qty = Number(it.quantity || 1);
+      const itemTot = Number(it.bundle_total || Number(it.unit_price || it.price || 499) * qty);
+      const effectiveUnit = Math.round(itemTot / Math.max(1, qty));
+      return {
+        name: it.product_name || it.name || "Vittal Lifestyle Package",
+        sku: it.product_id || "SKU-VL",
+        units: qty,
+        selling_price: effectiveUnit,
+      };
+    });
+
+    const sumItems = orderItems.reduce((acc: number, it: any) => acc + it.units * it.selling_price, 0);
+    const diff = Number(order.total_amount) - sumItems;
+    if (diff !== 0 && orderItems.length > 0) {
+      orderItems[0].selling_price += Math.round(diff / orderItems[0].units);
+    }
+
+    const createOrderUrl = "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc";
+    const orderRes = await fetch(createOrderUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        order_id: order.id,
+        order_date: new Date().toISOString().split("T")[0],
+        pickup_location: pickupLocation,
+        billing_customer_name: recipientName,
+        billing_last_name: "",
+        billing_address: shippingAddress,
+        billing_city: city,
+        billing_pincode: postalCode,
+        billing_state: state,
+        billing_country: "India",
+        billing_email: (order as any).customer_email || (order as any).guest_email || "support@vittallifestyle.com",
+        billing_phone: cleanPhone,
+        shipping_is_billing: true,
+        order_items:
+          orderItems.length > 0
+            ? orderItems
+            : [{ name: "Vittal Lifestyle Package", sku: "SKU-VL", units: 1, selling_price: order.total_amount || 899 }],
+        payment_method: isCod ? "COD" : "Prepaid",
+        sub_total: effectiveShiprocketTotal,
+        length: 15,
+        breadth: 10,
+        height: 8,
+        weight: 0.45,
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+
+    const orderData = (await orderRes.json()) as any;
+    if (!orderRes.ok || !orderData.order_id) {
+      throw new Error(orderData.message || orderData.error || `Shiprocket error (${orderRes.status})`);
+    }
+
+    const shiprocketOrderId = orderData.order_id;
+    const shipmentId = orderData.shipment_id;
+
+    let awbCode: string | undefined = undefined;
+    if (options?.autoAssignAWB && shipmentId) {
+      try {
+        const awbUrl = "https://apiv2.shiprocket.in/v1/external/courier/assign/awb";
+        const awbRes = await fetch(awbUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ shipment_id: shipmentId }),
+          signal: AbortSignal.timeout(8000),
+        });
+        const awbData = (await awbRes.json()) as any;
+        awbCode = awbData?.response?.data?.awb_code;
+        if (awbCode) {
+          await executeD1Query(
+            `UPDATE orders 
+             SET shiprocket_awb = ?,
+                 tracking_number = ?,
+                 delivery_status = 'In Transit'
+             WHERE id = ? OR shopify_order_id = ?;`,
+            [awbCode, awbCode, order.id, (order as any).shopify_order_id || order.id]
+          );
+        }
+      } catch (awbErr) {
+        console.warn("[Shiprocket AWB Assignment Deferred]:", awbErr);
+      }
+    }
+
+    return {
+      success: true,
+      order_id: shiprocketOrderId,
+      shipment_id: shipmentId,
+      awb: awbCode,
+      message: `Order added to Shiprocket successfully (Order ID: ${shiprocketOrderId}${awbCode ? `, AWB: ${awbCode}` : ""})`,
+    };
+  } catch (err: any) {
+    console.warn("[Shiprocket Order Sync Error]:", err.message || err);
+    return {
+      success: false,
+      message: `Failed to add order to Shiprocket: ${err.message}`,
+    };
+  }
+}
+
+/**
  * Real-time Live Tracking from Shiprocket API
  * Fetches actual carrier checkpoints, expected delivery date, and synchronizes status to D1.
  */
