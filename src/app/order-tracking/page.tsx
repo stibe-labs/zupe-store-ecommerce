@@ -36,6 +36,11 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { BRAND_80_THEMES, Logo80AnimatedMark } from "@/components/Logo80AnimatedMark";
+import {
+  VittalBrandLoader,
+  VittalUnboxingCelebration,
+} from "@/components/VittalBrandLoader";
 import { ERPOrder } from "@/lib/erpStore";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 
@@ -426,8 +431,8 @@ function OrderTrackingContent() {
         };
       case "Out for Delivery":
         return {
-          bg: "bg-[#F4FBE8] text-[#3D6318] border-[#95CF42]/40",
-          dot: "bg-[#6B9E3A] animate-pulse",
+          bg: "bg-[#F3FAF7] text-[#074230] border-[#10B981]/40",
+          dot: "bg-[#0B5D44] animate-pulse",
           icon: Truck,
           label: "Out for Delivery Today",
         };
@@ -449,8 +454,8 @@ function OrderTrackingContent() {
         };
       default:
         return {
-          bg: "bg-[#F4FBE8] text-[#3D6318] border-[#95CF42]/40",
-          dot: "bg-[#6B9E3A] animate-pulse",
+          bg: "bg-[#F3FAF7] text-[#074230] border-[#10B981]/40",
+          dot: "bg-[#0B5D44] animate-pulse",
           icon: Clock,
           label: "Processing & Quality Inspection",
         };
@@ -485,7 +490,7 @@ function OrderTrackingContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between selection:bg-[#E2F5B4] selection:text-[#2E4D12] font-mograph">
+    <div className="min-h-screen bg-[#F3FAF7] text-neutral-900 flex flex-col justify-between selection:bg-[#E6F4EF] selection:text-[#0C1412] font-mograph">
       <Navbar />
 
       <main className="flex-1 pb-20">
@@ -494,13 +499,13 @@ function OrderTrackingContent() {
         {/* ================================================================= */}
         <section className="relative overflow-hidden bg-white pt-10 sm:pt-14 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 border-b border-neutral-200/80">
           {/* Subtle Ambient Radial Lighting */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#95CF42]/10 blur-[100px] pointer-events-none" />
-          <div className="absolute -bottom-10 right-10 w-[300px] h-[200px] bg-[#95CF42]/8 blur-[80px] pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#10B981]/10 blur-[100px] pointer-events-none" />
+          <div className="absolute -bottom-10 right-10 w-[300px] h-[200px] bg-[#10B981]/8 blur-[80px] pointer-events-none" />
 
           <div className="relative max-w-4xl mx-auto text-center">
             {/* Breadcrumb Navigation */}
             <div className="flex items-center justify-center gap-2 text-xs font-medium text-neutral-500 mb-4">
-              <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
+              <Link href="/" className="hover:text-[#0B5D44] transition-colors">
                 Home
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
@@ -508,10 +513,10 @@ function OrderTrackingContent() {
             </div>
 
             {/* Live Tracking Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] shadow-xs mb-4 font-mograph">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3FAF7] border border-[#10B981]/40 text-[#074230] shadow-xs mb-4 font-mograph">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6B9E3A] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#6B9E3A]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0B5D44] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0B5D44]"></span>
               </span>
               <span className="text-[11px] font-bold">
                 Live Shipment Radar &amp; Tracking
@@ -519,7 +524,7 @@ function OrderTrackingContent() {
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-bold text-neutral-950 tracking-tight leading-tight font-mograph">
-              Track Your <span className="text-[#6B9E3A]">Order</span>
+              Track Your <span className="text-[#0B5D44]">Order</span>
             </h1>
             <p className="mt-3 text-sm sm:text-base text-neutral-600 max-w-xl mx-auto leading-relaxed font-normal font-mograph">
               Enter your Order ID, courier AWB tracking number, or 10-digit mobile number for real-time delivery milestone updates.
@@ -529,7 +534,7 @@ function OrderTrackingContent() {
             <div className="mt-8 max-w-2xl mx-auto bg-white rounded-2xl sm:rounded-full shadow-lg p-2 sm:p-2.5 border border-neutral-200/90 ring-1 ring-black/5 font-mograph">
               <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1 flex items-center">
-                  <div className="absolute left-4 sm:left-5 text-[#6B9E3A]">
+                  <div className="absolute left-4 sm:left-5 text-[#0B5D44]">
                     <Search className="w-5 h-5" />
                   </div>
                   <input
@@ -554,11 +559,11 @@ function OrderTrackingContent() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-full bg-[#95CF42] hover:bg-[#85BE33] active:scale-95 text-black font-bold text-sm sm:text-base transition-all shadow-md hover:shadow-lg disabled:opacity-70 cursor-pointer shrink-0 font-mograph"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-full bg-[#0B5D44] hover:bg-[#074230] active:scale-95 text-white font-bold text-sm sm:text-base transition-all shadow-md shadow-[#0B5D44]/20 hover:shadow-lg disabled:opacity-70 cursor-pointer shrink-0 font-mograph"
                 >
                   {loading ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-black" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-white" />
                       <span>Locating Parcel...</span>
                     </>
                   ) : (
@@ -577,18 +582,18 @@ function OrderTrackingContent() {
               <button
                 type="button"
                 onClick={() => setInputTerm("#VL-")}
-                className="px-2.5 py-1 rounded-lg bg-[#F4FBE8] hover:bg-[#EAF8D7] border border-[#95CF42]/30 text-[#3D6318] font-mono text-[11px] font-semibold transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-[#F3FAF7] hover:bg-[#E6F4EF] border border-[#B8DFD1] text-[#074230] font-mono text-[11px] font-semibold transition-colors cursor-pointer"
               >
                 #VL-1001
               </button>
               <button
                 type="button"
                 onClick={() => setInputTerm("SR-AWB-")}
-                className="px-2.5 py-1 rounded-lg bg-[#F4FBE8] hover:bg-[#EAF8D7] border border-[#95CF42]/30 text-[#3D6318] font-mono text-[11px] font-semibold transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-[#F3FAF7] hover:bg-[#E6F4EF] border border-[#B8DFD1] text-[#074230] font-mono text-[11px] font-semibold transition-colors cursor-pointer"
               >
                 Courier AWB
               </button>
-              <span className="px-2.5 py-1 rounded-lg bg-[#F4FBE8] border border-[#95CF42]/30 text-[#3D6318] font-mono text-[11px] font-semibold">
+              <span className="px-2.5 py-1 rounded-lg bg-[#F3FAF7] border border-[#10B981]/30 text-[#074230] font-mono text-[11px] font-semibold">
                 10-Digit Mobile
               </span>
             </div>
@@ -631,8 +636,8 @@ function OrderTrackingContent() {
                       idx >= 2 ? "pt-3 sm:pt-2" : ""
                     }`}
                   >
-                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#F4FBE8] border border-[#95CF42]/30 flex items-center justify-center shadow-xs mb-2 shrink-0">
-                      <Icon className="w-5 h-5 text-[#3D6318]" />
+                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#F3FAF7] border border-[#10B981]/30 flex items-center justify-center shadow-xs mb-2 shrink-0">
+                      <Icon className="w-5 h-5 text-[#074230]" />
                     </div>
                     <span className="text-xs sm:text-sm font-bold text-neutral-900 leading-tight font-mograph tracking-tight">
                       {item.label}
@@ -653,9 +658,14 @@ function OrderTrackingContent() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-10 font-mograph">
           {/* Success Banner if redirected from 1-Click Fastrr Checkout */}
           {orderStatus === "SUCCESS" && (
-            <div className="mb-8 p-6 rounded-3xl bg-[#F4FBE8] border border-[#95CF42]/40 text-neutral-900 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#95CF42] text-black flex items-center justify-center shrink-0 shadow-md">
-                <CheckCircle2 className="w-7 h-7" />
+            <div className="mb-8 p-6 rounded-3xl bg-[#F3FAF7] border border-[#10B981]/40 text-neutral-900 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-white border border-[#B8DFD1] flex items-center justify-center shrink-0 shadow-sm">
+                <Logo80AnimatedMark
+                  theme={BRAND_80_THEMES[0]}
+                  surface="light"
+                  mode="order-success"
+                  size={52}
+                />
               </div>
               <div className="text-center sm:text-left flex-1">
                 <h2 className="text-lg sm:text-xl font-bold text-neutral-950 font-mograph tracking-tight">
@@ -665,13 +675,13 @@ function OrderTrackingContent() {
                   Thank you! Your order has been placed. Your products are undergoing quality verification and being secured in airtight protective packaging.
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <span className="px-3 py-1 rounded-full bg-white border border-[#95CF42]/40 text-[#3D6318] font-bold text-xs font-mograph">
+                  <span className="px-3 py-1 rounded-full bg-white border border-[#10B981]/40 text-[#074230] font-bold text-xs font-mograph">
                     Quality Guarantee Active
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-white border border-[#95CF42]/40 text-[#3D6318] font-bold text-xs font-mograph">
+                  <span className="px-3 py-1 rounded-full bg-white border border-[#10B981]/40 text-[#074230] font-bold text-xs font-mograph">
                     Priority Dispatch
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-white border border-[#95CF42]/40 text-[#3D6318] font-bold text-xs font-mograph">
+                  <span className="px-3 py-1 rounded-full bg-white border border-[#10B981]/40 text-[#074230] font-bold text-xs font-mograph">
                     WhatsApp Updates Enabled
                   </span>
                 </div>
@@ -723,7 +733,7 @@ function OrderTrackingContent() {
                       }}
                       className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-[#F4FBE8] border-[#95CF42] ring-2 ring-[#95CF42]/40 shadow-md text-neutral-900"
+                          ? "bg-[#F3FAF7] border-[#10B981] ring-2 ring-[#10B981]/40 shadow-md text-neutral-900"
                           : "bg-white border-neutral-200/80 hover:border-neutral-300 text-neutral-700 shadow-2xs"
                       }`}
                     >
@@ -731,14 +741,14 @@ function OrderTrackingContent() {
                         <span className="font-bold text-sm text-neutral-900 font-mograph tracking-tight">
                           {ord.shopify_order_id || ord.id}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F3FAF7] text-[#074230] border border-[#10B981]/30">
                           {ord.delivery_status || ord.status}
                         </span>
                       </div>
                       <p className="text-xs text-neutral-500 truncate">
                         {ord.items?.[0]?.product_name || `${siteConfig.name} Products`}
                       </p>
-                      <p className="text-xs font-bold text-[#3D6318] mt-2 font-mono">
+                      <p className="text-xs font-bold text-[#074230] mt-2 font-mono">
                         ₹{ord.total_amount?.toLocaleString("en-IN")}
                       </p>
                     </button>
@@ -753,6 +763,25 @@ function OrderTrackingContent() {
           {/* =============================================================== */}
           {selectedOrder && (
             <div className="space-y-6">
+              {/* 3D Doorstep Parcel Unboxing Celebration for Delivered Orders */}
+              {(() => {
+                const rawStatus = (
+                  selectedOrder.delivery_status ||
+                  selectedOrder.status ||
+                  ""
+                )
+                  .trim()
+                  .toLowerCase();
+                if (rawStatus === "delivered" || (rawStatus.includes("delivered") && !rawStatus.includes("rto"))) {
+                  return (
+                    <VittalUnboxingCelebration
+                      orderNumber={selectedOrder.shopify_order_id || selectedOrder.id}
+                    />
+                  );
+                }
+                return null;
+              })()}
+
               {/* Card 1: Top Summary & Stepper Card */}
               {(() => {
                 const badge = getStatusBadge(selectedOrder.delivery_status || selectedOrder.status);
@@ -762,7 +791,7 @@ function OrderTrackingContent() {
                 return (
                   <div className="bg-white rounded-3xl border border-neutral-200/90 shadow-md overflow-hidden text-neutral-900">
                     {/* Header Strip */}
-                    <div className="p-6 sm:p-8 bg-[#FAFCF6] border-b border-neutral-200/80">
+                    <div className="p-6 sm:p-8 bg-[#F3FAF7] border-b border-neutral-200/80">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-3">
@@ -808,8 +837,8 @@ function OrderTrackingContent() {
                             !liveTracking.isPending &&
                             Array.isArray(liveTracking.activities) &&
                             liveTracking.activities.length > 0 && (
-                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/40">
-                                <span className="w-2 h-2 rounded-full bg-[#6B9E3A] animate-pulse" />
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-[#F3FAF7] text-[#074230] border border-[#10B981]/40">
+                                <span className="w-2 h-2 rounded-full bg-[#0B5D44] animate-pulse" />
                                 Live Carrier Scan
                               </span>
                             )}
@@ -844,7 +873,7 @@ function OrderTrackingContent() {
                           >
                             <RefreshCw
                               className={`w-4 h-4 ${
-                                loading ? "animate-spin text-[#3D6318]" : ""
+                                loading ? "animate-spin text-[#074230]" : ""
                               }`}
                             />
                           </button>
@@ -860,12 +889,12 @@ function OrderTrackingContent() {
                     >
                       <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
                         <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2 font-mograph tracking-tight">
-                          <Truck className="w-5 h-5 text-[#6B9E3A]" />
+                          <Truck className="w-5 h-5 text-[#0B5D44]" />
                           <span>Live Shipment Journey</span>
                         </h3>
                         {lastUpdated && (
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#3D6318] bg-[#F4FBE8] px-2.5 py-1 rounded-full border border-[#95CF42]/30 shadow-2xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#6B9E3A] animate-pulse" />
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#074230] bg-[#F3FAF7] px-2.5 py-1 rounded-full border border-[#10B981]/30 shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44] animate-pulse" />
                             Live Status Updated • {lastUpdated}
                           </span>
                         )}
@@ -895,14 +924,14 @@ function OrderTrackingContent() {
                                 <div
                                   className={`relative z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 transition-transform ${
                                     cp.active
-                                      ? "bg-[#95CF42] border-white ring-4 ring-[#95CF42]/30 text-black shadow-sm"
+                                      ? "bg-[#0B5D44] border-white ring-4 ring-[#0B5D44]/25 text-white shadow-sm"
                                       : cp.completed
-                                      ? "bg-emerald-500 border-white text-white shadow-xs"
+                                      ? "bg-[#0B5D44] border-white text-white shadow-xs"
                                       : "bg-neutral-100 border-neutral-300 text-neutral-400"
                                   }`}
                                 >
                                   {cp.active ? (
-                                    <span className="w-2.5 h-2.5 rounded-full bg-black animate-ping" />
+                                    <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
                                   ) : cp.completed ? (
                                     <Check className="w-4 h-4 text-white stroke-[2.5]" />
                                   ) : (
@@ -912,11 +941,11 @@ function OrderTrackingContent() {
                               </div>
 
                               {/* Content Card */}
-                              <div className="flex-1 bg-[#FAFCF6] hover:bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/80 transition-colors shadow-2xs">
+                              <div className="flex-1 bg-[#F3FAF7] hover:bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/80 transition-colors shadow-2xs">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1 font-mograph">
                                   <h4
                                     className={`text-sm sm:text-base font-bold font-mograph tracking-tight ${
-                                      cp.active ? "text-[#3D6318]" : "text-neutral-900"
+                                      cp.active ? "text-[#074230]" : "text-neutral-900"
                                     }`}
                                   >
                                     {cp.title}
@@ -926,7 +955,7 @@ function OrderTrackingContent() {
                                   </span>
                                 </div>
                                 <p className="text-xs sm:text-sm font-semibold text-neutral-600 mb-1 flex items-center gap-1.5 font-mograph">
-                                  <MapPin className="w-3.5 h-3.5 text-[#6B9E3A] shrink-0" />
+                                  <MapPin className="w-3.5 h-3.5 text-[#0B5D44] shrink-0" />
                                   <span>{cp.location}</span>
                                 </p>
                                 {cp.description && (
@@ -968,19 +997,19 @@ function OrderTrackingContent() {
 
                         return (
                           <div className="mt-8 pt-6 border-t border-neutral-200/80 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mograph">
-                            <div className="bg-[#FAFCF6] rounded-2xl p-4 border border-neutral-200/80">
+                            <div className="bg-[#F3FAF7] rounded-2xl p-4 border border-neutral-200/80">
                               <span className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider block mb-1 font-mograph">
                                 Courier Partner
                               </span>
                               <div className="flex items-center gap-2">
-                                <Truck className="w-4 h-4 text-[#6B9E3A]" />
+                                <Truck className="w-4 h-4 text-[#0B5D44]" />
                                 <span className="text-sm font-bold text-neutral-900">
                                   {courierName}
                                 </span>
                               </div>
                             </div>
 
-                            <div className="bg-[#FAFCF6] rounded-2xl p-4 border border-neutral-200/80">
+                            <div className="bg-[#F3FAF7] rounded-2xl p-4 border border-neutral-200/80">
                               <span className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider block mb-1 font-mograph">
                                 AWB / Waybill Number
                               </span>
@@ -1004,7 +1033,7 @@ function OrderTrackingContent() {
                               </div>
                             </div>
 
-                            <div className="bg-[#FAFCF6] rounded-2xl p-4 border border-neutral-200/80">
+                            <div className="bg-[#F3FAF7] rounded-2xl p-4 border border-neutral-200/80">
                               <span className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider block mb-1 font-mograph">
                                 External Tracking Portal
                               </span>
@@ -1023,7 +1052,7 @@ function OrderTrackingContent() {
                                   }
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#3D6318] hover:text-[#6B9E3A] hover:underline cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#074230] hover:text-[#0B5D44] hover:underline cursor-pointer"
                                 >
                                   <span>Open {courierName} Portal</span>
                                   <ExternalLink className="w-3.5 h-3.5" />
@@ -1047,7 +1076,7 @@ function OrderTrackingContent() {
                 {/* Items in this Shipment */}
                 <div className="lg:col-span-2 bg-white rounded-3xl border border-neutral-200/90 shadow-sm p-6 sm:p-8">
                   <h3 className="text-base font-bold text-neutral-900 mb-4 flex items-center gap-2 font-mograph tracking-tight">
-                    <Package className="w-5 h-5 text-[#6B9E3A]" />
+                    <Package className="w-5 h-5 text-[#0B5D44]" />
                     <span>Items in this Shipment</span>
                   </h3>
 
@@ -1082,7 +1111,7 @@ function OrderTrackingContent() {
                             key={idx}
                             className="py-4 first:pt-0 last:pb-0 flex items-center gap-4"
                           >
-                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#FAFCF6] overflow-hidden flex-shrink-0 border border-neutral-200/80">
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#F3FAF7] overflow-hidden flex-shrink-0 border border-neutral-200/80">
                               <Image
                                 src={img}
                                 alt={productName}
@@ -1098,8 +1127,8 @@ function OrderTrackingContent() {
                                 Qty: {quantity} × ₹{unitPrice.toLocaleString("en-IN")}
                               </p>
                               <div className="mt-1 flex items-center gap-2">
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#3D6318] bg-[#F4FBE8] px-2 py-0.5 rounded-md border border-[#95CF42]/30">
-                                  <ShieldCheck className="w-3 h-3 text-[#6B9E3A]" />
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#074230] bg-[#F3FAF7] px-2 py-0.5 rounded-md border border-[#10B981]/30">
+                                  <ShieldCheck className="w-3 h-3 text-[#0B5D44]" />
                                   100% Authentic
                                 </span>
                               </div>
@@ -1114,7 +1143,7 @@ function OrderTrackingContent() {
                       })
                     ) : (
                       <div className="py-4 flex items-center gap-4">
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#FAFCF6] overflow-hidden flex-shrink-0 border border-neutral-200/80">
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#F3FAF7] overflow-hidden flex-shrink-0 border border-neutral-200/80">
                           <Image
                             src="/vittal/product-whey-protein-jar.png"
                             alt={siteConfig.name}
@@ -1171,7 +1200,7 @@ function OrderTrackingContent() {
                             </div>
                             <div className="flex justify-between text-base font-bold text-neutral-900 pt-2 border-t border-neutral-100">
                               <span>Payable at Doorstep</span>
-                              <span className="text-[#3D6318] font-bold font-mograph text-lg">
+                              <span className="text-[#074230] font-bold font-mograph text-lg">
                                 ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
                               </span>
                             </div>
@@ -1180,13 +1209,13 @@ function OrderTrackingContent() {
                           <>
                             <div className="flex justify-between text-xs text-neutral-500">
                               <span>Payment Status</span>
-                              <span className="font-semibold text-[#3D6318] bg-[#F4FBE8] px-2 py-0.5 rounded-md border border-[#95CF42]/30">
+                              <span className="font-semibold text-[#074230] bg-[#F3FAF7] px-2 py-0.5 rounded-md border border-[#10B981]/30">
                                 Paid Online (Verified)
                               </span>
                             </div>
                             <div className="flex justify-between text-base font-bold text-neutral-900 pt-2 border-t border-neutral-100">
                               <span>Total Paid</span>
-                              <span className="text-[#3D6318] font-bold font-mograph text-lg">
+                              <span className="text-[#074230] font-bold font-mograph text-lg">
                                 ₹{selectedOrder.total_amount?.toLocaleString("en-IN")}
                               </span>
                             </div>
@@ -1202,7 +1231,7 @@ function OrderTrackingContent() {
                   {/* Delivery Address */}
                   <div className="bg-white rounded-3xl border border-neutral-200/90 shadow-sm p-6">
                     <h3 className="text-sm font-bold text-neutral-900 mb-3 flex items-center gap-2 font-mograph tracking-tight">
-                      <MapPin className="w-4 h-4 text-[#6B9E3A]" />
+                      <MapPin className="w-4 h-4 text-[#0B5D44]" />
                       <span>Shipping Destination</span>
                     </h3>
                     <p className="text-sm font-bold text-neutral-900">
@@ -1219,9 +1248,9 @@ function OrderTrackingContent() {
                   </div>
 
                   {/* Need Help Concierge Card (Deep Forest Luxury Theme) */}
-                  <div className="bg-gradient-to-br from-[#111A0B] via-[#1A2812] to-[#0D1509] rounded-3xl p-6 text-white shadow-md border border-[#95CF42]/20 font-mograph">
-                    <div className="flex items-center gap-2 text-[#95CF42] mb-2">
-                      <ShieldCheck className="w-5 h-5 text-[#95CF42]" />
+                  <div className="bg-gradient-to-br from-[#111A0B] via-[#1A2812] to-[#0D1509] rounded-3xl p-6 text-white shadow-md border border-[#10B981]/20 font-mograph">
+                    <div className="flex items-center gap-2 text-[#10B981] mb-2">
+                      <ShieldCheck className="w-5 h-5 text-[#10B981]" />
                       <span className="text-xs font-bold tracking-tight font-mograph">
                         {siteConfig.name} Concierge
                       </span>
@@ -1242,7 +1271,7 @@ function OrderTrackingContent() {
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold transition-all shadow-xs cursor-pointer font-mograph"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B5D44] hover:bg-[#074230] text-white text-xs font-bold transition-all shadow-xs cursor-pointer font-mograph"
                       >
                         <MessageSquare className="w-4 h-4" />
                         <span>Chat on WhatsApp</span>
@@ -1251,14 +1280,14 @@ function OrderTrackingContent() {
                         href={`mailto:${siteConfig.supportEmail}?subject=${encodeURIComponent(`Support Request - Order ${selectedOrder.shopify_order_id || selectedOrder.id}`)}`}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/10 cursor-pointer"
                       >
-                        <Mail className="w-4 h-4 text-[#95CF42]" />
+                        <Mail className="w-4 h-4 text-[#10B981]" />
                         <span>Email {siteConfig.supportEmail}</span>
                       </a>
                       <a
                         href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors border border-white/10 cursor-pointer"
                       >
-                        <Phone className="w-4 h-4 text-[#95CF42]" />
+                        <Phone className="w-4 h-4 text-[#10B981]" />
                         <span>Call {siteConfig.supportPhone}</span>
                       </a>
                     </div>
@@ -1275,7 +1304,7 @@ function OrderTrackingContent() {
             <div className="space-y-12 my-10 font-mograph">
               {/* Section Header */}
               <div className="text-center max-w-xl mx-auto">
-                <span className="text-[10px] font-bold bg-[#F4FBE8] text-[#3D6318] px-3.5 py-1.5 rounded-full border border-[#95CF42]/30 font-mograph">
+                <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-3.5 py-1.5 rounded-full border border-[#10B981]/30 font-mograph">
                   How Shipping Works
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-bold text-neutral-950 mt-3 tracking-tight font-mograph">
@@ -1289,17 +1318,17 @@ function OrderTrackingContent() {
               {/* 3 Step Process Cards (Redesigned to match Homepage aesthetic) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mograph">
                 {/* Step 1 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#95CF42]/50 transition-all group flex flex-col justify-between">
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-bold bg-[#F4FBE8] text-[#3D6318] px-2.5 py-1 rounded-full font-mograph">
+                      <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-2.5 py-1 rounded-full font-mograph">
                         Step 01
                       </span>
                       <span className="text-xs font-bold text-neutral-400">Within 24 Hours</span>
                     </div>
 
-                    <div className="w-12 h-12 rounded-2xl bg-[#F4FBE8] text-[#3D6318] group-hover:bg-[#95CF42]/20 transition-colors flex items-center justify-center mb-4">
-                      <Package className="w-6 h-6 text-[#3D6318]" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#F3FAF7] text-[#074230] group-hover:bg-[#10B981]/20 transition-colors flex items-center justify-center mb-4">
+                      <Package className="w-6 h-6 text-[#074230]" />
                     </div>
 
                     <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-mograph tracking-tight">
@@ -1310,24 +1339,24 @@ function OrderTrackingContent() {
                     </p>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#3D6318]">
-                    <ShieldCheck className="w-4 h-4 text-[#6B9E3A]" />
+                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#074230]">
+                    <ShieldCheck className="w-4 h-4 text-[#0B5D44]" />
                     <span>Tamper-Proof Hermetic Seal</span>
                   </div>
                 </div>
 
                 {/* Step 2 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#95CF42]/50 transition-all group flex flex-col justify-between">
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-bold bg-[#F4FBE8] text-[#3D6318] px-2.5 py-1 rounded-full font-mograph">
+                      <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-2.5 py-1 rounded-full font-mograph">
                         Step 02
                       </span>
                       <span className="text-xs font-bold text-neutral-400">3-5 Days Priority Air</span>
                     </div>
 
-                    <div className="w-12 h-12 rounded-2xl bg-[#F4FBE8] text-[#3D6318] group-hover:bg-[#95CF42]/20 transition-colors flex items-center justify-center mb-4">
-                      <Truck className="w-6 h-6 text-[#3D6318]" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#F3FAF7] text-[#074230] group-hover:bg-[#10B981]/20 transition-colors flex items-center justify-center mb-4">
+                      <Truck className="w-6 h-6 text-[#074230]" />
                     </div>
 
                     <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-mograph tracking-tight">
@@ -1338,24 +1367,24 @@ function OrderTrackingContent() {
                     </p>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#3D6318]">
-                    <Plane className="w-4 h-4 text-[#6B9E3A]" />
+                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#074230]">
+                    <Plane className="w-4 h-4 text-[#0B5D44]" />
                     <span>Real-Time Milestone Radar</span>
                   </div>
                 </div>
 
                 {/* Step 3 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#95CF42]/50 transition-all group flex flex-col justify-between">
+                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-bold bg-[#F4FBE8] text-[#3D6318] px-2.5 py-1 rounded-full font-mograph">
+                      <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-2.5 py-1 rounded-full font-mograph">
                         Step 03
                       </span>
                       <span className="text-xs font-bold text-neutral-400">Verified Handover</span>
                     </div>
 
-                    <div className="w-12 h-12 rounded-2xl bg-[#F4FBE8] text-[#3D6318] group-hover:bg-[#95CF42]/20 transition-colors flex items-center justify-center mb-4">
-                      <CheckCircle2 className="w-6 h-6 text-[#3D6318]" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#F3FAF7] text-[#074230] group-hover:bg-[#10B981]/20 transition-colors flex items-center justify-center mb-4">
+                      <CheckCircle2 className="w-6 h-6 text-[#074230]" />
                     </div>
 
                     <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-mograph tracking-tight">
@@ -1366,8 +1395,8 @@ function OrderTrackingContent() {
                     </p>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#3D6318]">
-                    <Award className="w-4 h-4 text-[#6B9E3A]" />
+                  <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center gap-1.5 text-[11px] font-bold text-[#074230]">
+                    <Award className="w-4 h-4 text-[#0B5D44]" />
                     <span>100% Authentic Quality Guarantee</span>
                   </div>
                 </div>
@@ -1388,7 +1417,7 @@ function OrderTrackingContent() {
                     {["Delhivery Air", "Blue Dart Express", "DTDC Courier", "Shadowfax", "Xpressbees", "India Post Speed"].map((courier) => (
                       <span
                         key={courier}
-                        className="px-3 py-1.5 rounded-xl bg-[#FAFCF6] hover:bg-[#F4FBE8] text-neutral-700 font-bold text-xs border border-neutral-200/80 transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-[#F3FAF7] hover:bg-[#F3FAF7] text-neutral-700 font-bold text-xs border border-neutral-200/80 transition-colors"
                       >
                         {courier}
                       </span>
@@ -1400,7 +1429,7 @@ function OrderTrackingContent() {
               {/* FAQs Accordion */}
               <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-sm p-6 sm:p-10 font-mograph">
                 <div className="text-center max-w-xl mx-auto mb-8">
-                  <span className="text-[10px] font-bold bg-[#F4FBE8] text-[#3D6318] px-3.5 py-1.5 rounded-full border border-[#95CF42]/30 font-mograph">
+                  <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-3.5 py-1.5 rounded-full border border-[#10B981]/30 font-mograph">
                     Got Questions?
                   </span>
                   <h3 className="text-xl sm:text-2xl font-bold text-neutral-950 mt-3 font-mograph tracking-tight">
@@ -1418,10 +1447,10 @@ function OrderTrackingContent() {
                       <div key={idx} className="py-4.5">
                         <button
                           onClick={() => setFaqOpen(isOpen ? null : idx)}
-                          className="w-full flex items-center justify-between text-left font-bold text-sm sm:text-base text-neutral-900 hover:text-[#6B9E3A] transition-colors py-1 cursor-pointer"
+                          className="w-full flex items-center justify-between text-left font-bold text-sm sm:text-base text-neutral-900 hover:text-[#0B5D44] transition-colors py-1 cursor-pointer"
                         >
                           <span className="pr-4">{faq.q}</span>
-                          <div className={`p-1.5 rounded-full transition-colors ${isOpen ? "bg-[#F4FBE8] text-[#3D6318]" : "text-neutral-400"}`}>
+                          <div className={`p-1.5 rounded-full transition-colors ${isOpen ? "bg-[#F3FAF7] text-[#074230]" : "text-neutral-400"}`}>
                             {isOpen ? (
                               <ChevronUp className="w-4 h-4" />
                             ) : (
@@ -1441,9 +1470,9 @@ function OrderTrackingContent() {
               </div>
 
               {/* Help & Support Bottom Card (Deep Forest Luxury Theme) */}
-              <div className="bg-gradient-to-r from-[#111A0B] via-[#1A2812] to-[#111A0B] rounded-3xl p-6 sm:p-8 text-white text-center shadow-lg border border-[#95CF42]/25 font-mograph">
+              <div className="bg-gradient-to-r from-[#111A0B] via-[#1A2812] to-[#111A0B] rounded-3xl p-6 sm:p-8 text-white text-center shadow-lg border border-[#10B981]/25 font-mograph">
                 <div className="max-w-xl mx-auto">
-                  <HelpCircle className="w-8 h-8 text-[#95CF42] mx-auto mb-3" />
+                  <HelpCircle className="w-8 h-8 text-[#10B981] mx-auto mb-3" />
                   <h3 className="text-lg sm:text-xl font-bold font-mograph tracking-tight">
                     Need Help With Your Shipment or Delivery Address?
                   </h3>
@@ -1457,7 +1486,7 @@ function OrderTrackingContent() {
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-xs transition-colors shadow-sm cursor-pointer font-mograph"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-xs transition-colors shadow-sm cursor-pointer font-mograph"
                     >
                       <MessageSquare className="w-4 h-4" />
                       <span>WhatsApp Support</span>
@@ -1466,14 +1495,14 @@ function OrderTrackingContent() {
                       href={`mailto:${siteConfig.supportEmail}`}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
                     >
-                      <Mail className="w-4 h-4 text-[#95CF42]" />
+                      <Mail className="w-4 h-4 text-[#10B981]" />
                       <span>Email: {siteConfig.supportEmail}</span>
                     </a>
                     <a
                       href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
                     >
-                      <Phone className="w-4 h-4 text-[#95CF42]" />
+                      <Phone className="w-4 h-4 text-[#10B981]" />
                       <span>Call Concierge: {siteConfig.supportPhone}</span>
                     </a>
                   </div>
@@ -1493,9 +1522,11 @@ export default function OrderTrackingPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAFCF6] flex items-center justify-center">
-          <RefreshCw className="w-6 h-6 text-[#6B9E3A] animate-spin" />
-        </div>
+        <VittalBrandLoader
+          fullScreen
+          label="Fetching live shipment status…"
+          sublabel="Real-Time Carrier Tracking"
+        />
       }
     >
       <OrderTrackingContent />

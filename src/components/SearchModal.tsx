@@ -140,14 +140,14 @@ export function SearchModal() {
                   className="flex items-center gap-2 sm:gap-3"
                 >
                   <div className="relative flex-1 flex items-center">
-                    <Search className="absolute left-4 w-4 h-4 sm:w-5 sm:h-5 text-[#6B9E3A] pointer-events-none stroke-[2.2]" />
+                    <Search className="absolute left-4 w-4 h-4 sm:w-5 sm:h-5 text-[#0B5D44] pointer-events-none stroke-[2.2]" />
                     <input
                       ref={inputRef}
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search Gym Supplements, Outfits, Dates, Chocolates..."
-                      className="w-full pl-11 sm:pl-12 pr-10 py-3 sm:py-3.5 rounded-2xl bg-[#F7F8FA] border border-neutral-200/80 text-sm sm:text-base text-neutral-950 placeholder:text-neutral-400 focus:outline-none focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#95CF42]/25 focus:bg-white transition-all font-medium"
+                      className="w-full pl-11 sm:pl-12 pr-10 py-3 sm:py-3.5 rounded-2xl bg-[#F7F8FA] border border-neutral-200/80 text-sm sm:text-base text-neutral-950 placeholder:text-neutral-400 focus:outline-none focus:border-[#0B5D44] focus:ring-2 focus:ring-[#10B981]/25 focus:bg-white transition-all font-medium"
                     />
                     {searchQuery && (
                       <button
@@ -185,7 +185,7 @@ export function SearchModal() {
                       {liveResults.length > 0 && (
                         <button
                           onClick={handleSearchSubmit}
-                          className="text-xs font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-1 cursor-pointer transition-colors"
+                          className="text-xs font-semibold text-[#0B5D44] hover:text-[#0B5D44] flex items-center gap-1 cursor-pointer transition-colors"
                         >
                           <span>View all</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -195,7 +195,7 @@ export function SearchModal() {
 
                     {liveResults.length === 0 ? (
                       <div className="py-10 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mx-auto mb-3 shadow-xs">
+                        <div className="w-12 h-12 rounded-2xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mx-auto mb-3 shadow-xs">
                           <Search className="w-6 h-6 stroke-[2]" />
                         </div>
                         <p className="text-sm font-bold text-neutral-900 mb-1">
@@ -219,9 +219,9 @@ export function SearchModal() {
                             key={product.id}
                             href={`/products/${product.slug || product.id}`}
                             onClick={closeSearch}
-                            className="flex items-center gap-3 p-2.5 rounded-2xl bg-white hover:bg-[#F8FAF5] border border-neutral-200/80 hover:border-[#6B9E3A]/50 shadow-2xs hover:shadow-xs transition-all group"
+                            className="flex items-center gap-3 p-2.5 rounded-2xl bg-white hover:bg-[#F8FAF5] border border-neutral-200/80 hover:border-[#0B5D44]/50 shadow-2xs hover:shadow-xs transition-all group"
                           >
-                            <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] flex-shrink-0 border border-neutral-200/60 p-1">
+                            <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-b from-[#F3FAF7] via-[#F3FAF7] to-[#FFFFFF] flex-shrink-0 border border-neutral-200/60 p-1">
                               <Image
                                 src={product.poster_image}
                                 alt={product.name}
@@ -231,10 +231,10 @@ export function SearchModal() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B9E3A] block">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0B5D44] block">
                                 {product.category}
                               </span>
-                              <h4 className="text-xs sm:text-sm font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors truncate">
+                              <h4 className="text-xs sm:text-sm font-bold text-neutral-900 group-hover:text-[#0B5D44] transition-colors truncate">
                                 {product.name}
                               </h4>
                               <div className="flex items-center gap-2 mt-0.5">
@@ -243,13 +243,13 @@ export function SearchModal() {
                                 </span>
                                 {product.rating && (
                                   <span className="text-[10px] font-semibold text-neutral-500 flex items-center gap-0.5">
-                                    <Star className="w-2.5 h-2.5 fill-[#95CF42] text-[#95CF42]" />
+                                    <Star className="w-2.5 h-2.5 fill-[#10B981] text-[#10B981]" />
                                     {product.rating.toFixed(1)}
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                            <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#0B5D44] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                           </Link>
                         ))}
                       </div>
@@ -260,13 +260,13 @@ export function SearchModal() {
                   <div>
                     <div className="flex items-center justify-between mb-2.5 px-0.5">
                       <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 flex items-center gap-1.5 font-mograph">
-                        <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                        <Sparkles className="w-3.5 h-3.5 text-[#0B5D44]" />
                         Collections
                       </span>
                       <Link
                         href="/products"
                         onClick={closeSearch}
-                        className="text-xs font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-0.5 transition-colors"
+                        className="text-xs font-semibold text-[#0B5D44] hover:text-[#0B5D44] flex items-center gap-0.5 transition-colors"
                       >
                         <span>Explore All</span>
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -290,7 +290,7 @@ export function SearchModal() {
                               className="group flex flex-col items-center w-full transition-transform duration-200 active:scale-95 cursor-pointer"
                             >
                               {/* Compact Image Tile matching Home Page with Banner Green Wave Texture & Fade */}
-                              <div className="w-full relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-xs transition-all duration-300 flex items-end justify-center mb-1 sm:mb-1.5">
+                              <div className="w-full relative aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-b from-[#10B981] via-[#E6F4EF] to-white border border-neutral-200/80 group-hover:border-[#0B5D44]/60 shadow-2xs group-hover:shadow-xs transition-all duration-300 flex items-end justify-center mb-1 sm:mb-1.5">
                                 {/* Banner's Matching Green Wave Texture */}
                                 <Image
                                   src="/vittal/banner-hero-green-texture.jpg"
@@ -316,7 +316,7 @@ export function SearchModal() {
                               </div>
 
                               {/* Category Name below card */}
-                              <span className="font-mograph font-bold text-[9px] xs:text-[10px] sm:text-[11px] text-neutral-800 group-hover:text-[#6B9E3A] transition-colors text-center leading-tight line-clamp-2 px-0.5">
+                              <span className="font-mograph font-bold text-[9px] xs:text-[10px] sm:text-[11px] text-neutral-800 group-hover:text-[#0B5D44] transition-colors text-center leading-tight line-clamp-2 px-0.5">
                                 {col.title}
                               </span>
                             </Link>

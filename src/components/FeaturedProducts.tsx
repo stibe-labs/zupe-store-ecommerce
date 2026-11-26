@@ -10,6 +10,7 @@ import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { CardAddToCartControl } from "@/components/CardAddToCartControl";
 
 export function FeaturedProducts() {
   const router = useRouter();
@@ -155,21 +156,7 @@ export function FeaturedProducts() {
                       Out of Stock
                     </span>
                   ) : (
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          openAuthModal("login", "Sign in required: Please log in to add items to your cart & checkout 🛍️");
-                          return;
-                        }
-                        const success = addToCart(product);
-                        if (success) openCart();
-                      }}
-                      className="w-10 h-10 rounded-xl bg-[#FF7A00] hover:bg-[#E66E00] flex items-center justify-center transition-colors btn-press shadow-md shadow-[#FF7A00]/20 cursor-pointer"
-                      title="Add to cart"
-                      aria-label="Add to cart"
-                    >
-                      <ShoppingBag className="w-4 h-4 text-white" />
-                    </button>
+                    <CardAddToCartControl product={product} />
                   )}
                 </div>
               </div>

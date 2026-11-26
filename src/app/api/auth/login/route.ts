@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
           redirect: "/admin",
           user: {
             id: "superadmin",
-            name: adminCheck.name || "Turkiye Jam SuperAdmin",
+            name: adminCheck.name || "Vittal Lifestyle Admin",
             email: adminCheck.email,
             role: "admin",
           },
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
         const userToken = await createUserSessionToken({
           id: "superadmin",
-          name: adminCheck.name || "Turkiye Jam SuperAdmin",
+          name: adminCheck.name || "Vittal Lifestyle Admin",
           email: adminCheck.email,
           role: "admin",
         });

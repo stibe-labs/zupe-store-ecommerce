@@ -70,7 +70,7 @@ export function ProductFaqSection({ className = "" }: ProductFaqSectionProps) {
     <div className={`w-full my-8 select-none font-mograph ${className}`}>
       {/* Header */}
       <div className="text-center mb-5">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F2D0] border border-[#BBDC92]/60 text-[#3B581C] text-[11px] font-bold uppercase tracking-wider mb-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F4EF] border border-[#B8DFD1]/60 text-[#074230] text-[11px] font-bold uppercase tracking-wider mb-2">
           <HelpCircle className="w-3.5 h-3.5" />
           <span>FAQ</span>
         </div>
@@ -91,7 +91,7 @@ export function ProductFaqSection({ className = "" }: ProductFaqSectionProps) {
               key={item.id}
               className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                 isOpen
-                  ? "bg-white border-[#6B9E3A]/50 shadow-xs"
+                  ? "bg-white border-[#0B5D44]/50 shadow-xs"
                   : "bg-white/80 border-neutral-200/80 hover:border-neutral-300"
               }`}
             >
@@ -105,15 +105,15 @@ export function ProductFaqSection({ className = "" }: ProductFaqSectionProps) {
                   <span
                     className={`shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-colors ${
                       isOpen
-                        ? "bg-[#6B9E3A] text-white shadow-2xs"
-                        : "bg-[#E5F2D0] text-[#3B581C]"
+                        ? "bg-[#0B5D44] text-white shadow-2xs"
+                        : "bg-[#E6F4EF] text-[#074230]"
                     }`}
                   >
                     {item.id}
                   </span>
                   <span
                     className={`text-xs sm:text-[13px] font-bold leading-snug line-clamp-2 ${
-                      isOpen ? "text-[#6B9E3A]" : "text-neutral-900"
+                      isOpen ? "text-[#0B5D44]" : "text-neutral-900"
                     }`}
                   >
                     {item.question}
@@ -121,7 +121,7 @@ export function ProductFaqSection({ className = "" }: ProductFaqSectionProps) {
                 </div>
                 <ChevronDown
                   className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
-                    isOpen ? "rotate-180 text-[#6B9E3A]" : "text-neutral-400"
+                    isOpen ? "rotate-180 text-[#0B5D44]" : "text-neutral-400"
                   }`}
                 />
               </button>

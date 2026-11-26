@@ -1889,7 +1889,7 @@ export default function AdminOrdersPage() {
       fallback={
         <div className="min-h-screen bg-[#F4F6FA] flex items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-[#FF7A00] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <div className="w-8 h-8 border-4 border-[#0B5D44] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             <p className="text-xs font-semibold text-slate-500">Loading orders...</p>
           </div>
         </div>

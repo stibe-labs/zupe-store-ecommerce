@@ -72,7 +72,7 @@ export function addRecentlyViewed(
     }
 
     // Resolve poster image
-    let poster_image = "/vittal-digital-logo.png";
+    let poster_image = "/vl-logo-black.png";
     if ("poster_image" in product && product.poster_image) {
       poster_image = product.poster_image;
     } else if ("image" in product && product.image) {

@@ -67,10 +67,16 @@ export function SupplementCategoryShowcase({
   const activeTab: SupplementCategoryTab =
     categories.find((t) => t.id === activeTabId) || categories[0] || DEFAULT_SUPPLEMENT_SHOWCASE.categories[0];
 
-  const fromColor = showcaseConfig.bgGradientFrom || "#587933";
-  const viaColor = showcaseConfig.bgGradientVia || "#466324";
-  const toColor = showcaseConfig.bgGradientTo || "#344C19";
-  const borderColor = showcaseConfig.borderColor || "#6B9E3A";
+  // Auto-upgrade legacy olive hexes (even if previously stored in D1) to Imperial Emerald & Obsidian Pine
+  const LEGACY_OLIVE = new Set(["#587933", "#466324", "#6b9e3a", "#55762e", "#354a1b"]);
+  const rawFrom = (showcaseConfig.bgGradientFrom || "").toLowerCase();
+  const rawVia = (showcaseConfig.bgGradientVia || "").toLowerCase();
+  const rawTo = (showcaseConfig.bgGradientTo || "").toLowerCase();
+
+  const fromColor = !rawFrom || LEGACY_OLIVE.has(rawFrom) ? "#073B2B" : showcaseConfig.bgGradientFrom!;
+  const viaColor = !rawVia || LEGACY_OLIVE.has(rawVia) ? "#0B5D44" : showcaseConfig.bgGradientVia!;
+  const toColor = !rawTo || LEGACY_OLIVE.has(rawTo) ? "#06241B" : showcaseConfig.bgGradientTo!;
+  const borderColor = showcaseConfig.borderColor || "#C59B27";
 
   // Horizontal carousel scroll state & helper for desktop swipe/navigation
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -132,7 +138,7 @@ export function SupplementCategoryShowcase({
         {/* TOP HEADER ROW: Overline & Heading                               */}
         {/* ================================================================= */}
         <div className="relative mb-3 sm:mb-4 md:mb-3">
-          <span className="text-[10px] sm:text-xs md:text-[11px] font-bold tracking-[0.22em] uppercase text-[#D5EBBF] block mb-1">
+          <span className="text-[10px] sm:text-xs md:text-[11px] font-bold tracking-[0.22em] uppercase text-[#B8DFD1] block mb-1">
             {showcaseConfig.overlineText || "PRO GYM NUTRITION"}
           </span>
           <h3 className="font-movault text-xl sm:text-2xl md:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-tight">
@@ -157,8 +163,8 @@ export function SupplementCategoryShowcase({
                 <div
                   className={`relative w-15 h-15 sm:w-18 sm:h-18 md:w-13 md:h-13 lg:w-14 lg:h-14 rounded-2xl sm:rounded-3xl md:rounded-2xl flex items-center justify-center transition-all duration-300 p-2 sm:p-2.5 md:p-2 overflow-hidden ${
                     isActive
-                      ? "bg-[#D8ECC0] ring-2 ring-white/95 shadow-md scale-105"
-                      : "bg-white/20 hover:bg-white/30 backdrop-blur-xs opacity-85 group-hover:opacity-100"
+                      ? "bg-[#E6F4EF] ring-2 ring-[#E5C469] shadow-md scale-105"
+                      : "bg-white/15 hover:bg-white/25 backdrop-blur-xs opacity-85 group-hover:opacity-100"
                   }`}
                 >
                   <div className="relative w-full h-full flex items-center justify-center">
@@ -177,16 +183,16 @@ export function SupplementCategoryShowcase({
                   className={`font-mograph text-xs sm:text-sm md:text-xs mt-1.5 md:mt-1 transition-colors text-center whitespace-nowrap ${
                     isActive
                       ? "text-white font-bold tracking-tight"
-                      : "text-[#E3F2CE]/80 font-medium group-hover:text-white"
+                      : "text-[#B8DFD1]/90 font-medium group-hover:text-white"
                   }`}
                 >
                   {tab.label}
                 </span>
 
-                {/* White Active Underline Bar */}
+                {/* Champagne Gold Active Underline Bar */}
                 <div
                   className={`h-1 md:h-0.5 rounded-full mt-1.5 md:mt-1 transition-all duration-300 ${
-                    isActive ? "w-10 sm:w-14 md:w-10 bg-white" : "w-0 bg-transparent"
+                    isActive ? "w-10 sm:w-14 md:w-10 bg-[#E5C469]" : "w-0 bg-transparent"
                   }`}
                 />
               </button>
@@ -251,12 +257,12 @@ export function SupplementCategoryShowcase({
                   </div>
 
                   {/* Product Name (Clean & Truncated) */}
-                  <h4 className="font-mograph text-xs sm:text-sm md:text-xs font-bold text-white text-center leading-snug line-clamp-1 mt-2.5 md:mt-1.5 px-1 group-hover:text-[#FEF08A] transition-colors">
+                  <h4 className="font-mograph text-xs sm:text-sm md:text-xs font-bold text-white text-center leading-snug line-clamp-1 mt-2.5 md:mt-1.5 px-1 group-hover:text-[#E5C469] transition-colors">
                     {prod.name}
                   </h4>
 
-                  {/* Offer in Bold */}
-                  <p className="font-movault text-sm sm:text-base md:text-xs lg:text-sm font-black text-[#FEF08A] text-center tracking-tight mt-0.5">
+                  {/* Offer in Champagne Gold */}
+                  <p className="font-movault text-sm sm:text-base md:text-xs lg:text-sm font-extrabold text-[#E5C469] text-center tracking-tight mt-0.5 tabular-nums">
                     {prod.discountTag}
                   </p>
                 </Link>

@@ -384,20 +384,20 @@ export default function AdminHeader({
     <>
       {/* Browser Notification Permission Prompt Banner */}
       {browserPermission === "default" && !dismissedBanner && (
-        <div className="bg-gradient-to-r from-[#111111] via-[#1a2512] to-[#111111] text-white px-4 py-2 text-xs font-semibold flex items-center justify-between gap-3 border-b border-[#B8ED3E]/30 sticky top-0 z-40 animate-in slide-in-from-top duration-300">
+        <div className="bg-gradient-to-r from-[#111111] via-[#1a2512] to-[#111111] text-white px-4 py-2 text-xs font-semibold flex items-center justify-between gap-3 border-b border-[#10B981]/30 sticky top-0 z-40 animate-in slide-in-from-top duration-300">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-6 h-6 rounded-lg bg-[#B8ED3E]/20 text-[#B8ED3E] flex items-center justify-center shrink-0">
+            <div className="w-6 h-6 rounded-lg bg-[#10B981]/20 text-[#10B981] flex items-center justify-center shrink-0">
               <Bell className="w-3.5 h-3.5 animate-pulse" />
             </div>
             <p className="truncate">
-              <span className="font-bold text-[#B8ED3E]">Enable Desktop Alerts:</span> Allow browser notifications to receive sound alerts when orders are confirmed, even when this tab is minimized.
+              <span className="font-bold text-[#10B981]">Enable Desktop Alerts:</span> Allow browser notifications to receive sound alerts when orders are confirmed, even when this tab is minimized.
             </p>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={requestNotificationPermission}
-              className="px-3 py-1 bg-[#B8ED3E] hover:bg-[#9FD92A] text-[#111111] rounded-lg font-bold text-xs transition-all shadow-xs active:scale-95 cursor-pointer"
+              className="px-3 py-1 bg-[#10B981] hover:bg-[#9FD92A] text-[#111111] rounded-lg font-bold text-xs transition-all shadow-xs active:scale-95 cursor-pointer"
             >
               Allow Notifications
             </button>
@@ -435,7 +435,7 @@ export default function AdminHeader({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search orders, customers, AWB..."
-          className="w-full pl-9 pr-8 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#B8ED3E]/40 focus:border-[#7ABF1E] transition-all"
+          className="w-full pl-9 pr-8 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-xs sm:text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981]/40 focus:border-[#7ABF1E] transition-all"
           />
           {searchQuery && (
             <button
@@ -456,17 +456,17 @@ export default function AdminHeader({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="p-2 text-neutral-500 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 rounded-xl transition-all"
+            className="p-2 text-neutral-500 hover:text-[#0B5D44] hover:bg-[#10B981]/10 rounded-xl transition-all"
             title="Refresh ERP Data"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#002D62]" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#0B5D44]" : ""}`} />
           </button>
         )}
 
         <Link
           href="https://vittallifestyle.com"
           target="_blank"
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 hover:border-[#B8ED3E]/40 rounded-xl border border-neutral-200/70 transition-all"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:text-[#0B5D44] hover:bg-[#10B981]/10 hover:border-[#10B981]/40 rounded-xl border border-neutral-200/70 transition-all"
         >
           <span>Live Storefront</span>
           <ExternalLink className="w-3.5 h-3.5" />
@@ -480,8 +480,8 @@ export default function AdminHeader({
           title={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
           className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-200 select-none cursor-pointer ${
             theme === "dark"
-              ? "bg-[#111111] border-[#B8ED3E]/30 text-[#B8ED3E] hover:bg-[#1a1a1a] hover:border-[#B8ED3E]/60 shadow-sm"
-              : "bg-neutral-50 border-neutral-200 text-neutral-700 hover:bg-[#B8ED3E]/10 hover:border-[#B8ED3E]/40 shadow-sm"
+              ? "bg-[#111111] border-[#10B981]/30 text-[#10B981] hover:bg-[#1a1a1a] hover:border-[#10B981]/60 shadow-sm"
+              : "bg-neutral-50 border-neutral-200 text-neutral-700 hover:bg-[#10B981]/10 hover:border-[#10B981]/40 shadow-sm"
           }`}
         >
           {theme === "dark" ? (
@@ -502,7 +502,7 @@ export default function AdminHeader({
           <div className="relative" ref={rangeRef}>
             <button
               onClick={() => setShowRangeDropdown(!showRangeDropdown)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 hover:bg-[#B8ED3E]/10 hover:border-[#B8ED3E]/40 rounded-xl text-xs sm:text-sm font-semibold text-neutral-700 transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 hover:bg-[#10B981]/10 hover:border-[#10B981]/40 rounded-xl text-xs sm:text-sm font-semibold text-neutral-700 transition-all"
             >
               <Calendar className="w-4 h-4 text-slate-500" />
               <span className="hidden sm:inline">{activeRange}</span>
@@ -521,8 +521,8 @@ export default function AdminHeader({
                       }
                       setShowRangeDropdown(false);
                     }}
-                    className={`w-full text-left px-4 py-2 hover:bg-[#B8ED3E]/10 font-medium ${
-                      activeRange === opt ? "text-[#4A7C0F] bg-[#B8ED3E]/20 font-bold" : "text-neutral-700"
+                    className={`w-full text-left px-4 py-2 hover:bg-[#10B981]/10 font-medium ${
+                      activeRange === opt ? "text-[#0B5D44] bg-[#10B981]/20 font-bold" : "text-neutral-700"
                     }`}
                   >
                     {opt}
@@ -580,14 +580,14 @@ export default function AdminHeader({
                         "/admin/orders"
                       );
                     }}
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-neutral-700 hover:text-[#4A7C0F] hover:border-[#B8ED3E] shadow-2xs transition-colors shrink-0 cursor-pointer"
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-neutral-700 hover:text-[#0B5D44] hover:border-[#10B981] shadow-2xs transition-colors shrink-0 cursor-pointer"
                   >
                     Test Alert
                   </button>
                 ) : browserPermission === "default" ? (
                   <button
                     onClick={requestNotificationPermission}
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#B8ED3E] text-[#111111] hover:bg-[#9FD92A] transition-colors shrink-0 cursor-pointer"
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#10B981] text-[#111111] hover:bg-[#9FD92A] transition-colors shrink-0 cursor-pointer"
                   >
                     Enable Now
                   </button>
@@ -597,7 +597,7 @@ export default function AdminHeader({
               <div className="px-4 py-2 border-b border-neutral-100 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <h4 className="font-bold text-neutral-900 text-sm">ERP Alerts</h4>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#B8ED3E]/30 text-[#4A7C0F]">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#10B981]/30 text-[#0B5D44]">
                     {alerts.length} New
                   </span>
                 </div>
@@ -624,7 +624,7 @@ export default function AdminHeader({
                         key={alt.id}
                         href={alt.href}
                         onClick={() => setShowNotifications(false)}
-                        className="p-3.5 flex items-start gap-3 hover:bg-[#B8ED3E]/5 transition-colors block"
+                        className="p-3.5 flex items-start gap-3 hover:bg-[#10B981]/5 transition-colors block"
                       >
                         <div className={`p-2 rounded-xl shrink-0 ${alt.iconColor}`}>
                           {renderAlertIcon(alt.iconType)}
@@ -664,7 +664,7 @@ export default function AdminHeader({
             onClick={() => setShowAdminUserDropdown(!showAdminUserDropdown)}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="w-8 h-8 rounded-full bg-[#B8ED3E] text-[#111111] font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#B8ED3E]/40">
+            <div className="w-8 h-8 rounded-full bg-[#10B981] text-[#111111] font-extrabold flex items-center justify-center text-xs shadow-sm ring-2 ring-[#10B981]/40">
               VL
             </div>
             <span className="text-xs sm:text-sm font-semibold text-neutral-800 hidden md:inline">
@@ -682,14 +682,14 @@ export default function AdminHeader({
               <Link
                 href="/admin/settings"
                 onClick={() => setShowAdminUserDropdown(false)}
-                className="block px-4 py-2 text-neutral-700 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 font-medium"
+                className="block px-4 py-2 text-neutral-700 hover:text-[#0B5D44] hover:bg-[#10B981]/10 font-medium"
               >
                 Store Settings
               </Link>
               <Link
                 href="/admin/reports"
                 onClick={() => setShowAdminUserDropdown(false)}
-                className="block px-4 py-2 text-neutral-700 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 font-medium"
+                className="block px-4 py-2 text-neutral-700 hover:text-[#0B5D44] hover:bg-[#10B981]/10 font-medium"
               >
                 P&L Reports
               </Link>
@@ -699,13 +699,13 @@ export default function AdminHeader({
                   toggleTheme();
                   setShowAdminUserDropdown(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-neutral-700 hover:text-[#4A7C0F] hover:bg-[#B8ED3E]/10 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-neutral-700 hover:text-[#0B5D44] hover:bg-[#10B981]/10 transition-colors"
               >
                 <span className="flex items-center gap-2">
                   {theme === "dark" ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-neutral-500" />}
                   Theme
                 </span>
-                <span className="text-[11px] font-bold text-[#4A7C0F] uppercase">
+                <span className="text-[11px] font-bold text-[#0B5D44] uppercase">
                   {theme}
                 </span>
               </button>

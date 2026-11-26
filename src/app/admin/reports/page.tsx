@@ -940,7 +940,7 @@ export default function AdminReportsPage() {
                 disabled={refreshing || loading}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-60"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#002D62]" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#0B5D44]" : ""}`} />
                 <span>{refreshing ? "Refreshing..." : "Sync Live"}</span>
               </button>
 
@@ -1212,7 +1212,7 @@ export default function AdminReportsPage() {
           {/* Loading Skeleton */}
           {loading ? (
             <div className="bg-white rounded-2xl p-12 border border-slate-200/90 flex flex-col items-center justify-center gap-3">
-              <RefreshCw className="w-8 h-8 text-[#002D62] animate-spin" />
+              <RefreshCw className="w-8 h-8 text-[#0B5D44] animate-spin" />
               <p className="text-sm font-semibold text-slate-600">
                 Aggregating real financial statements from database...
               </p>

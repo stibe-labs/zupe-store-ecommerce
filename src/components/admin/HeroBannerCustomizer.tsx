@@ -299,7 +299,7 @@ export function HeroBannerCustomizer({
   if (loading) {
     return (
       <div className="bg-white rounded-3xl p-12 border border-slate-200/80 shadow-xs flex flex-col items-center justify-center space-y-3">
-        <RefreshCw className="w-8 h-8 text-[#6B9E3A] animate-spin" />
+        <RefreshCw className="w-8 h-8 text-[#0B5D44] animate-spin" />
         <p className="text-sm font-semibold font-mograph text-slate-700">
           Loading Hero Banner customizer...
         </p>
@@ -325,13 +325,13 @@ export function HeroBannerCustomizer({
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="p-2 rounded-xl bg-[#E2F5B4] text-[#3D6318]">
+            <span className="p-2 rounded-xl bg-[#E6F4EF] text-[#074230]">
               <Sparkles className="w-5 h-5 stroke-[2.2]" />
             </span>
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 font-mograph">
               Hero Banner Cards Customizer
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E2F5B4] text-[#3D6318] border border-[#85BE33]/30">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E6F4EF] text-[#074230] border border-[#10B981]/30">
               {draftSlides.filter((s) => s.active !== false).length} / {draftSlides.length} Active Slides
             </span>
             {isDirty ? (
@@ -369,7 +369,7 @@ export function HeroBannerCustomizer({
             disabled={saving || !isDirty}
             className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer ${
               isDirty
-                ? "bg-[#95CF42] hover:bg-[#85BE33] text-black hover:scale-102 hover:shadow-lg"
+                ? "bg-[#10B981] hover:bg-[#10B981] text-black hover:scale-102 hover:shadow-lg"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
             }`}
           >
@@ -436,7 +436,7 @@ export function HeroBannerCustomizer({
         <div className="w-full bg-neutral-900/5 rounded-2xl p-3 sm:p-6 flex items-center justify-center overflow-hidden">
           {previewDevice === "desktop" ? (
             /* Desktop Banner Preview (16:9 aspect bounds) */
-            <div className="w-full max-w-[1200px] relative rounded-3xl overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-md min-h-[260px] sm:min-h-[300px] md:min-h-[320px] flex items-center">
+            <div className="w-full max-w-[1200px] relative rounded-3xl overflow-hidden bg-[#10B981] border border-[#10B981]/50 shadow-md min-h-[260px] sm:min-h-[300px] md:min-h-[320px] flex items-center">
               {/* Background texture */}
               <div className="absolute inset-0 z-0">
                 <Image
@@ -450,9 +450,9 @@ export function HeroBannerCustomizer({
               {/* Fluid wave */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25 z-0">
                 <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
-                  <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#7EBA2B" strokeWidth="40" fill="none" />
-                  <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#7EBA2B" strokeWidth="50" fill="none" />
-                  <path d="M -100,280 Q 200,420 500,320 T 900,400" stroke="#7EBA2B" strokeWidth="60" fill="none" />
+                  <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#10B981" strokeWidth="40" fill="none" />
+                  <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#10B981" strokeWidth="50" fill="none" />
+                  <path d="M -100,280 Q 200,420 500,320 T 900,400" stroke="#10B981" strokeWidth="60" fill="none" />
                 </svg>
               </div>
 
@@ -518,7 +518,7 @@ export function HeroBannerCustomizer({
                         onClick={() => setSelectedSlideIndex(idx)}
                         className={`transition-all duration-300 cursor-pointer ${
                           selectedSlideIndex === idx
-                            ? "w-6 h-1.5 rounded-full bg-[#B8ED3E] shadow-2xs"
+                            ? "w-6 h-1.5 rounded-full bg-[#10B981] shadow-2xs"
                             : "w-1.5 h-1.5 rounded-full bg-neutral-300 hover:bg-neutral-400"
                         }`}
                       />
@@ -529,7 +529,7 @@ export function HeroBannerCustomizer({
             </div>
           ) : (
             /* Mobile Phone Frame Preview */
-            <div className="w-[340px] relative rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-xl min-h-[240px] flex items-center">
+            <div className="w-[340px] relative rounded-[32px] overflow-hidden bg-[#10B981] border border-[#10B981]/50 shadow-xl min-h-[240px] flex items-center">
               {/* Background texture */}
               <div className="absolute inset-0 z-0">
                 <Image
@@ -543,8 +543,8 @@ export function HeroBannerCustomizer({
               {/* Fluid wave */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25 z-0">
                 <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
-                  <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#7EBA2B" strokeWidth="40" fill="none" />
-                  <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#7EBA2B" strokeWidth="50" fill="none" />
+                  <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#10B981" strokeWidth="40" fill="none" />
+                  <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#10B981" strokeWidth="50" fill="none" />
                 </svg>
               </div>
 
@@ -609,7 +609,7 @@ export function HeroBannerCustomizer({
                         onClick={() => setSelectedSlideIndex(idx)}
                         className={`transition-all duration-300 cursor-pointer ${
                           selectedSlideIndex === idx
-                            ? "w-5 h-1 rounded-full bg-[#B8ED3E]"
+                            ? "w-5 h-1 rounded-full bg-[#10B981]"
                             : "w-1 h-1 rounded-full bg-neutral-300"
                         }`}
                       />
@@ -636,7 +636,7 @@ export function HeroBannerCustomizer({
           <button
             type="button"
             onClick={handleAddNewSlide}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#10B981] text-black text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>+ Add New Banner Slide</span>
@@ -653,7 +653,7 @@ export function HeroBannerCustomizer({
                 onClick={() => setSelectedSlideIndex(idx)}
                 className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
                   isSelected
-                    ? "border-[#6B9E3A] bg-[#F4FBE8] shadow-xs ring-2 ring-[#6B9E3A]/20"
+                    ? "border-[#0B5D44] bg-[#F3FAF7] shadow-xs ring-2 ring-[#0B5D44]/20"
                     : "border-slate-200 hover:border-slate-300 bg-white"
                 }`}
               >
@@ -755,7 +755,7 @@ export function HeroBannerCustomizer({
               />
               <div
                 className={`w-9 h-5 rounded-full transition-colors relative ${
-                  currentSlide?.active !== false ? "bg-[#85BE33]" : "bg-neutral-300"
+                  currentSlide?.active !== false ? "bg-[#10B981]" : "bg-neutral-300"
                 }`}
               >
                 <div
@@ -771,7 +771,7 @@ export function HeroBannerCustomizer({
         {/* SECTION A: CUTOUT IMAGE SETTINGS */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-[#E2F5B4] text-[#3D6318] text-xs font-bold flex items-center justify-center">
+            <span className="w-6 h-6 rounded-full bg-[#E6F4EF] text-[#074230] text-xs font-bold flex items-center justify-center">
               1
             </span>
             <h4 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
@@ -840,7 +840,7 @@ export function HeroBannerCustomizer({
                     handleUpdateCurrentSlide("image", e.target.value);
                   }}
                   placeholder="https://... or /vittal/cutout-hero-1.png"
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#85BE33]"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 />
               </div>
 
@@ -859,7 +859,7 @@ export function HeroBannerCustomizer({
                         handleUpdateCurrentSlide("image", preset.url);
                         showToast("success", `Preset applied: ${preset.label}`);
                       }}
-                      className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 hover:bg-[#E2F5B4] text-neutral-700 hover:text-[#3D6318] rounded-lg transition-colors border border-neutral-200"
+                      className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 hover:bg-[#E6F4EF] text-neutral-700 hover:text-[#074230] rounded-lg transition-colors border border-neutral-200"
                     >
                       {preset.label}
                     </button>
@@ -911,7 +911,7 @@ export function HeroBannerCustomizer({
         <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#E2F5B4] text-[#3D6318] text-xs font-bold flex items-center justify-center">
+              <span className="w-6 h-6 rounded-full bg-[#E6F4EF] text-[#074230] text-xs font-bold flex items-center justify-center">
                 2
               </span>
               <h4 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
@@ -929,7 +929,7 @@ export function HeroBannerCustomizer({
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   controlViewTab === "desktop"
-                    ? "bg-[#95CF42] text-black shadow-xs font-extrabold"
+                    ? "bg-[#10B981] text-black shadow-xs font-extrabold"
                     : "text-neutral-600 hover:text-neutral-900"
                 }`}
               >
@@ -944,7 +944,7 @@ export function HeroBannerCustomizer({
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   controlViewTab === "mobile"
-                    ? "bg-[#95CF42] text-black shadow-xs font-extrabold"
+                    ? "bg-[#10B981] text-black shadow-xs font-extrabold"
                     : "text-neutral-600 hover:text-neutral-900"
                 }`}
               >
@@ -957,7 +957,7 @@ export function HeroBannerCustomizer({
           <div className="bg-neutral-50/80 rounded-2xl p-5 border border-neutral-200/80 space-y-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-neutral-700">
-                Adjusting: <span className="text-[#4A7220] uppercase font-extrabold">{controlViewTab} View</span>
+                Adjusting: <span className="text-[#0B5D44] uppercase font-extrabold">{controlViewTab} View</span>
               </span>
               <button
                 type="button"
@@ -983,10 +983,10 @@ export function HeroBannerCustomizer({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="flex items-center gap-1.5 text-neutral-800">
-                  <ZoomIn className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                  <ZoomIn className="w-3.5 h-3.5 text-[#0B5D44]" />
                   <span>Zoom / Scale:</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#3D6318] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#074230] font-bold">
                   {activeScale}%
                 </span>
               </div>
@@ -1011,7 +1011,7 @@ export function HeroBannerCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentSlide(isDesktopTab ? "desktopScale" : "mobileScale", val);
                   }}
-                  className="w-full accent-[#85BE33] cursor-pointer"
+                  className="w-full accent-[#10B981] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1030,10 +1030,10 @@ export function HeroBannerCustomizer({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="flex items-center gap-1.5 text-neutral-800">
-                  <Move className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                  <Move className="w-3.5 h-3.5 text-[#0B5D44]" />
                   <span>Move Left / Right (X Offset):</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#3D6318] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#074230] font-bold">
                   {activeOffsetX === 0
                     ? "Centered (0px)"
                     : activeOffsetX < 0
@@ -1063,7 +1063,7 @@ export function HeroBannerCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentSlide(isDesktopTab ? "desktopOffsetX" : "mobileOffsetX", val);
                   }}
-                  className="w-full accent-[#85BE33] cursor-pointer"
+                  className="w-full accent-[#10B981] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1083,10 +1083,10 @@ export function HeroBannerCustomizer({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="flex items-center gap-1.5 text-neutral-800">
-                  <Move className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                  <Move className="w-3.5 h-3.5 text-[#0B5D44]" />
                   <span>Move Upper / Lower (Y Offset):</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#3D6318] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#074230] font-bold">
                   {activeOffsetY === 0
                     ? "Centered (0px)"
                     : activeOffsetY < 0
@@ -1116,7 +1116,7 @@ export function HeroBannerCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentSlide(isDesktopTab ? "desktopOffsetY" : "mobileOffsetY", val);
                   }}
-                  className="w-full accent-[#85BE33] cursor-pointer"
+                  className="w-full accent-[#10B981] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1137,7 +1137,7 @@ export function HeroBannerCustomizer({
         {/* SECTION C: HEADINGS, BADGE & BUTTON SETTINGS */}
         <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-[#E2F5B4] text-[#3D6318] text-xs font-bold flex items-center justify-center">
+            <span className="w-6 h-6 rounded-full bg-[#E6F4EF] text-[#074230] text-xs font-bold flex items-center justify-center">
               3
             </span>
             <h4 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
@@ -1156,7 +1156,7 @@ export function HeroBannerCustomizer({
                 value={currentSlide?.badge || ""}
                 onChange={(e) => handleUpdateCurrentSlide("badge", e.target.value)}
                 placeholder="e.g. Limited Offer"
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#85BE33]"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
               />
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {BADGE_PRESETS.map((b) => (
@@ -1164,7 +1164,7 @@ export function HeroBannerCustomizer({
                     key={b}
                     type="button"
                     onClick={() => handleUpdateCurrentSlide("badge", b)}
-                    className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-100 hover:bg-[#E2F5B4] text-neutral-700 hover:text-[#3D6318] rounded-md transition-colors"
+                    className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-100 hover:bg-[#E6F4EF] text-neutral-700 hover:text-[#074230] rounded-md transition-colors"
                   >
                     {b}
                   </button>
@@ -1185,7 +1185,7 @@ export function HeroBannerCustomizer({
                   handleUpdateCurrentSlide("ctaText", e.target.value);
                 }}
                 placeholder="e.g. Shop Now"
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#85BE33]"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
               />
             </div>
 
@@ -1199,7 +1199,7 @@ export function HeroBannerCustomizer({
                 value={currentSlide?.heading || ""}
                 onChange={(e) => handleUpdateCurrentSlide("heading", e.target.value)}
                 placeholder="First Purchase Enjoy&#10;a Special Offer"
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#85BE33]"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
               />
             </div>
 
@@ -1216,7 +1216,7 @@ export function HeroBannerCustomizer({
                   handleUpdateCurrentSlide("ctaLink", e.target.value);
                 }}
                 placeholder="/products or /products?category=Gym+Supplements"
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#85BE33]"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
               />
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {REDIRECT_PRESETS.map((dest) => (
@@ -1227,7 +1227,7 @@ export function HeroBannerCustomizer({
                       handleUpdateCurrentSlide("buttonLink", dest.url);
                       handleUpdateCurrentSlide("ctaLink", dest.url);
                     }}
-                    className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-100 hover:bg-[#E2F5B4] text-neutral-700 hover:text-[#3D6318] rounded-md transition-colors"
+                    className="px-2 py-0.5 text-[10px] font-semibold bg-neutral-100 hover:bg-[#E6F4EF] text-neutral-700 hover:text-[#074230] rounded-md transition-colors"
                   >
                     {dest.label}
                   </button>
@@ -1246,7 +1246,7 @@ export function HeroBannerCustomizer({
             <button
               type="button"
               onClick={() => handleUpdateCurrentSlide("bgImage", "/vittal/banner-hero-green-texture.jpg")}
-              className="text-[11px] font-bold text-[#4A7220] hover:underline"
+              className="text-[11px] font-bold text-[#0B5D44] hover:underline"
             >
               Reset to Brand Lime Wave
             </button>
@@ -1256,7 +1256,7 @@ export function HeroBannerCustomizer({
             value={currentSlide?.bgImage || ""}
             onChange={(e) => handleUpdateCurrentSlide("bgImage", e.target.value)}
             placeholder="/vittal/banner-hero-green-texture.jpg"
-            className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#85BE33]"
+            className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
           />
         </div>
 
@@ -1268,7 +1268,7 @@ export function HeroBannerCustomizer({
             disabled={saving || !isDirty}
             className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer ${
               isDirty
-                ? "bg-[#95CF42] hover:bg-[#85BE33] text-black hover:scale-102 hover:shadow-lg"
+                ? "bg-[#10B981] hover:bg-[#10B981] text-black hover:scale-102 hover:shadow-lg"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
             }`}
           >

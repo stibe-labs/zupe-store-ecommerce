@@ -67,13 +67,13 @@ export function ProductDealTimer({
 
   return (
     <div
-      className={`w-full py-1.5 px-3 sm:px-4 mb-0 sm:mb-3 rounded-none sm:rounded-2xl bg-[#111111] border border-[#6B9E3A]/40 text-white flex items-center justify-between sm:shadow-xs select-none font-mograph ${className}`}
+      className={`w-full py-1.5 px-3 sm:px-4 mb-0 sm:mb-3 rounded-none sm:rounded-2xl bg-[#111111] border border-[#0B5D44]/40 text-white flex items-center justify-between sm:shadow-xs select-none font-mograph ${className}`}
     >
       {/* Left: Deal Badge */}
       <div className="flex items-center gap-1.5 min-w-0">
-        <Flame className="w-3.5 h-3.5 text-[#95CF42] fill-[#95CF42] animate-pulse shrink-0" />
+        <Flame className="w-3.5 h-3.5 text-[#10B981] fill-[#10B981] animate-pulse shrink-0" />
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-1.5 truncate">
-          <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#95CF42] truncate font-movault">
+          <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#10B981] truncate font-movault">
             DEAL UP TO {discountPercent}% OFF
           </span>
           <span className="text-[10px] font-medium text-neutral-300 hidden sm:inline">
@@ -97,7 +97,7 @@ export function ProductDealTimer({
               days
             </span>
           </div>
-          <span className="text-[#95CF42] font-bold text-xs pb-2">:</span>
+          <span className="text-[#10B981] font-bold text-xs pb-2">:</span>
 
           {/* Hours */}
           <div className="flex flex-col items-center">
@@ -108,7 +108,7 @@ export function ProductDealTimer({
               hours
             </span>
           </div>
-          <span className="text-[#95CF42] font-bold text-xs pb-2">:</span>
+          <span className="text-[#10B981] font-bold text-xs pb-2">:</span>
 
           {/* Minutes */}
           <div className="flex flex-col items-center">
@@ -119,14 +119,14 @@ export function ProductDealTimer({
               mins
             </span>
           </div>
-          <span className="text-[#95CF42] font-bold text-xs pb-2">:</span>
+          <span className="text-[#10B981] font-bold text-xs pb-2">:</span>
 
           {/* Seconds */}
           <div className="flex flex-col items-center">
-            <span className="px-1.5 py-0.5 rounded bg-white/10 text-[#95CF42] font-extrabold text-[11px] sm:text-xs leading-none shadow-2xs">
+            <span className="px-1.5 py-0.5 rounded bg-white/10 text-[#10B981] font-extrabold text-[11px] sm:text-xs leading-none shadow-2xs">
               {pad(timeLeft.seconds)}
             </span>
-            <span className="text-[7.5px] sm:text-[8px] font-mograph font-semibold text-[#95CF42] uppercase mt-0.5 leading-none">
+            <span className="text-[7.5px] sm:text-[8px] font-mograph font-semibold text-[#10B981] uppercase mt-0.5 leading-none">
               secs
             </span>
           </div>

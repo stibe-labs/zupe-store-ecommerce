@@ -60,13 +60,13 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-neutral-700 flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E] font-mograph">
+    <div className="min-h-screen bg-white text-neutral-700 flex flex-col justify-between selection:bg-[#E6F4EF] selection:text-[#0C1412] font-mograph">
       <Navbar />
 
       <main className="flex-1 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 w-full">
         {/* Navigation Breadcrumb */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-500 mb-6 font-medium">
-          <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
+          <Link href="/" className="hover:text-[#0B5D44] transition-colors">
             Home
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
@@ -77,8 +77,8 @@ export default function ContactPage() {
         {/* HERO HEADER                                              */}
         {/* ======================================================= */}
         <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5F2D0] text-[#3B581C] text-xs font-semibold mb-3 shadow-2xs">
-            <Headphones className="w-3.5 h-3.5 text-[#6B9E3A]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F4EF] text-[#074230] text-xs font-semibold mb-3 shadow-2xs">
+            <Headphones className="w-3.5 h-3.5 text-[#0B5D44]" />
             <span>Dedicated Customer Care &amp; Concierge</span>
           </div>
           <h1 className="font-mograph font-bold text-3xl sm:text-5xl text-neutral-950 tracking-tight leading-tight">
@@ -94,17 +94,17 @@ export default function ContactPage() {
         {/* ======================================================= */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mb-12">
           {/* Card 1: Official Email Support */}
-          <div className="bg-white rounded-3xl border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.07)] relative overflow-hidden flex flex-col justify-between group transition-all duration-300">
+          <div className="bg-white rounded-3xl border border-neutral-200/80 hover:border-[#0B5D44]/50 p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.07)] relative overflow-hidden flex flex-col justify-between group transition-all duration-300">
             {/* Official Desk badge */}
-            <div className="absolute top-0 right-0 bg-[#E5F2D0] text-[#3B581C] border-b border-l border-[#D5E9BC] text-[10px] font-bold px-3 py-1 rounded-bl-xl tracking-wide font-mograph">
+            <div className="absolute top-0 right-0 bg-[#E6F4EF] text-[#074230] border-b border-l border-[#B8DFD1] text-[10px] font-bold px-3 py-1 rounded-bl-xl tracking-wide font-mograph">
               Official Desk
             </div>
 
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <Mail className="w-6 h-6 text-[#6B9E3A]" />
+              <div className="w-12 h-12 rounded-2xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                <Mail className="w-6 h-6 text-[#0B5D44]" />
               </div>
-              <span className="text-xs font-bold text-[#6B9E3A] uppercase tracking-wider block mb-1 font-mograph">
+              <span className="text-xs font-bold text-[#0B5D44] uppercase tracking-wider block mb-1 font-mograph">
                 Email Support
               </span>
               <h3 className="text-base sm:text-lg font-bold text-neutral-950 mb-1 truncate font-mograph">
@@ -131,8 +131,8 @@ export default function ContactPage() {
               >
                 {copiedEmail ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-[#6B9E3A]" />
-                    <span className="text-[#6B9E3A]">Copied!</span>
+                    <Check className="w-3.5 h-3.5 text-[#0B5D44]" />
+                    <span className="text-[#0B5D44]">Copied!</span>
                   </>
                 ) : (
                   <>
@@ -145,12 +145,12 @@ export default function ContactPage() {
           </div>
 
           {/* Card 2: WhatsApp Concierge */}
-          <div className="bg-white rounded-3xl border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.07)] flex flex-col justify-between group transition-all duration-300">
+          <div className="bg-white rounded-3xl border border-neutral-200/80 hover:border-[#0B5D44]/50 p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.07)] flex flex-col justify-between group transition-all duration-300">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#E5F2D0] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <MessageCircle className="w-6 h-6 text-[#6B9E3A]" />
+              <div className="w-12 h-12 rounded-2xl bg-[#E6F4EF] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                <MessageCircle className="w-6 h-6 text-[#0B5D44]" />
               </div>
-              <span className="text-xs font-bold text-[#6B9E3A] uppercase tracking-wider block mb-1 font-mograph">
+              <span className="text-xs font-bold text-[#0B5D44] uppercase tracking-wider block mb-1 font-mograph">
                 WhatsApp Support
               </span>
               <h3 className="text-base sm:text-lg font-bold text-neutral-950 mb-1 font-mograph">
@@ -166,7 +166,7 @@ export default function ContactPage() {
                 href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%20Vittal%20Lifestyle%20Support%2C%20I%20have%20an%20inquiry`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs shadow-sm transition-colors cursor-pointer font-mograph"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-xs shadow-sm transition-colors cursor-pointer font-mograph"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 <span>Chat on WhatsApp</span>
@@ -175,10 +175,10 @@ export default function ContactPage() {
           </div>
 
           {/* Card 3: Phone Helpline */}
-          <div className="bg-white rounded-3xl border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.07)] flex flex-col justify-between group transition-all duration-300">
+          <div className="bg-white rounded-3xl border border-neutral-200/80 hover:border-[#0B5D44]/50 p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.07)] flex flex-col justify-between group transition-all duration-300">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#E5F2D0] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                <Phone className="w-6 h-6 text-[#6B9E3A]" />
+              <div className="w-12 h-12 rounded-2xl bg-[#E6F4EF] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                <Phone className="w-6 h-6 text-[#0B5D44]" />
               </div>
               <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider block mb-1 font-mograph">
                 Direct Helpline
@@ -196,7 +196,7 @@ export default function ContactPage() {
                 href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-bold text-xs border border-neutral-200/80 shadow-sm transition-colors cursor-pointer font-mograph"
               >
-                <Phone className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                <Phone className="w-3.5 h-3.5 text-[#0B5D44]" />
                 <span>Call Helpline</span>
               </a>
             </div>
@@ -210,7 +210,7 @@ export default function ContactPage() {
           {/* Left Form (7 Cols) */}
           <div className="lg:col-span-7 bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
             <div className="mb-6">
-              <span className="text-xs font-semibold text-[#6B9E3A] uppercase tracking-wider block mb-1 font-mograph">
+              <span className="text-xs font-semibold text-[#0B5D44] uppercase tracking-wider block mb-1 font-mograph">
                 Direct Ticket
               </span>
               <h2 className="text-xl sm:text-3xl font-bold text-neutral-950 mt-1 font-mograph tracking-tight">
@@ -222,14 +222,14 @@ export default function ContactPage() {
             </div>
 
             {isSubmitted ? (
-              <div className="bg-[#E5F2D0] border border-[#D5E9BC] rounded-2xl p-6 text-center space-y-3">
-                <div className="w-12 h-12 bg-[#D5EBBF] text-[#3B581C] rounded-full mx-auto flex items-center justify-center">
+              <div className="bg-[#E6F4EF] border border-[#B8DFD1] rounded-2xl p-6 text-center space-y-3">
+                <div className="w-12 h-12 bg-[#B8DFD1] text-[#074230] rounded-full mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-[#15230D] font-mograph tracking-tight">
+                <h3 className="text-base font-bold text-[#0C1412] font-mograph tracking-tight">
                   Message Sent Successfully!
                 </h3>
-                <p className="text-xs text-[#3B581C] leading-relaxed max-w-md mx-auto">
+                <p className="text-xs text-[#074230] leading-relaxed max-w-md mx-auto">
                   Thank you for reaching out. We have logged your request. Our concierge desk will respond to your email or WhatsApp number shortly.
                 </p>
                 <button
@@ -263,7 +263,7 @@ export default function ContactPage() {
                       placeholder="e.g. Rahul Sharma"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#6B9E3A]/20 transition-all placeholder:text-neutral-400"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#0B5D44] focus:ring-2 focus:ring-[#0B5D44]/20 transition-all placeholder:text-neutral-400"
                     />
                   </div>
 
@@ -277,7 +277,7 @@ export default function ContactPage() {
                       placeholder="e.g. rahul@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#6B9E3A]/20 transition-all placeholder:text-neutral-400"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#0B5D44] focus:ring-2 focus:ring-[#0B5D44]/20 transition-all placeholder:text-neutral-400"
                     />
                   </div>
                 </div>
@@ -293,7 +293,7 @@ export default function ContactPage() {
                       placeholder="10-digit mobile number"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#6B9E3A]/20 transition-all placeholder:text-neutral-400"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#0B5D44] focus:ring-2 focus:ring-[#0B5D44]/20 transition-all placeholder:text-neutral-400"
                     />
                   </div>
 
@@ -306,7 +306,7 @@ export default function ContactPage() {
                       placeholder="e.g. #VL-1001"
                       value={formData.orderId}
                       onChange={(e) => setFormData({ ...formData, orderId: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#6B9E3A]/20 transition-all placeholder:text-neutral-400"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#0B5D44] focus:ring-2 focus:ring-[#0B5D44]/20 transition-all placeholder:text-neutral-400"
                     />
                   </div>
                 </div>
@@ -318,7 +318,7 @@ export default function ContactPage() {
                   <select
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#6B9E3A]/20 transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#0B5D44] focus:ring-2 focus:ring-[#0B5D44]/20 transition-all"
                   >
                     <option value="Order Status & Tracking">Order Status &amp; Tracking</option>
                     <option value="Gym Supplements & Nutrition Inquiries">Gym Supplements &amp; Nutrition Inquiries</option>
@@ -340,7 +340,7 @@ export default function ContactPage() {
                     placeholder="Please describe your query in detail..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#6B9E3A]/20 transition-all resize-none placeholder:text-neutral-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 bg-neutral-50 text-xs sm:text-sm text-neutral-900 focus:outline-none focus:border-[#0B5D44] focus:ring-2 focus:ring-[#0B5D44]/20 transition-all resize-none placeholder:text-neutral-400"
                   />
                 </div>
 
@@ -372,13 +372,13 @@ export default function ContactPage() {
             {/* Fulfillment Center Card */}
             <div className="bg-white rounded-3xl border border-neutral-200/80 p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
               <div className="flex items-center gap-2 text-neutral-950 font-bold mb-4 font-mograph tracking-tight">
-                <MapPin className="w-5 h-5 text-[#6B9E3A]" />
+                <MapPin className="w-5 h-5 text-[#0B5D44]" />
                 <h3 className="text-base sm:text-lg">Fulfillment &amp; Dispatch Bay</h3>
               </div>
               <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed mb-4">
                 All products are inspected, sealed, and dispatched directly from our primary distribution hub:
               </p>
-              <div className="bg-[#F8FAF4] rounded-2xl p-4 border border-[#E5F2D0] text-xs text-neutral-700 space-y-1 mb-4">
+              <div className="bg-[#F3FAF7] rounded-2xl p-4 border border-[#E6F4EF] text-xs text-neutral-700 space-y-1 mb-4">
                 <strong className="block text-neutral-950 font-bold font-mograph text-sm">
                   Vittal Lifestyle Logistics Hub
                 </strong>
@@ -387,11 +387,11 @@ export default function ContactPage() {
               </div>
               <div className="space-y-2 text-xs text-neutral-500">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#6B9E3A]" />
+                  <Clock className="w-4 h-4 text-[#0B5D44]" />
                   <span>Working Hours: Mon – Sat, 9:30 AM – 7:00 PM IST</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-[#6B9E3A]" />
+                  <Truck className="w-4 h-4 text-[#0B5D44]" />
                   <span>Dispatch Window: Within 24–48 hours of order confirmation</span>
                 </div>
               </div>
@@ -399,9 +399,9 @@ export default function ContactPage() {
 
             {/* Quick Links Card */}
             <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-neutral-200/80">
-              <div className="flex items-center gap-2 text-[#3B581C] mb-3">
-                <Sparkles className="w-4 h-4 text-[#6B9E3A]" />
-                <span className="text-xs font-bold tracking-wider font-mograph text-[#6B9E3A]">
+              <div className="flex items-center gap-2 text-[#074230] mb-3">
+                <Sparkles className="w-4 h-4 text-[#0B5D44]" />
+                <span className="text-xs font-bold tracking-wider font-mograph text-[#0B5D44]">
                   Self-Service Quick Links
                 </span>
               </div>
@@ -411,35 +411,35 @@ export default function ContactPage() {
               <div className="space-y-2.5">
                 <Link
                   href="/order-tracking"
-                  className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 hover:bg-[#F2F8EB] hover:border-[#D5E9BC] text-xs font-bold transition-all border border-neutral-200/80 group"
+                  className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 hover:bg-[#F3FAF7] hover:border-[#B8DFD1] text-xs font-bold transition-all border border-neutral-200/80 group"
                 >
-                  <span className="flex items-center gap-2 text-neutral-800 group-hover:text-[#3B581C]">
-                    <Truck className="w-4 h-4 text-[#6B9E3A]" />
+                  <span className="flex items-center gap-2 text-neutral-800 group-hover:text-[#074230]">
+                    <Truck className="w-4 h-4 text-[#0B5D44]" />
                     <span>Track Your Shipment</span>
                   </span>
-                  <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#6B9E3A]" />
+                  <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#0B5D44]" />
                 </Link>
 
                 <Link
                   href="/return"
-                  className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 hover:bg-[#F2F8EB] hover:border-[#D5E9BC] text-xs font-bold transition-all border border-neutral-200/80 group"
+                  className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 hover:bg-[#F3FAF7] hover:border-[#B8DFD1] text-xs font-bold transition-all border border-neutral-200/80 group"
                 >
-                  <span className="flex items-center gap-2 text-neutral-800 group-hover:text-[#3B581C]">
-                    <RotateCcw className="w-4 h-4 text-[#6B9E3A]" />
+                  <span className="flex items-center gap-2 text-neutral-800 group-hover:text-[#074230]">
+                    <RotateCcw className="w-4 h-4 text-[#0B5D44]" />
                     <span>7-Day Replacement Policy</span>
                   </span>
-                  <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#6B9E3A]" />
+                  <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#0B5D44]" />
                 </Link>
 
                 <Link
                   href="/shipping-and-delivery"
-                  className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 hover:bg-[#F2F8EB] hover:border-[#D5E9BC] text-xs font-bold transition-all border border-neutral-200/80 group"
+                  className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 hover:bg-[#F3FAF7] hover:border-[#B8DFD1] text-xs font-bold transition-all border border-neutral-200/80 group"
                 >
-                  <span className="flex items-center gap-2 text-neutral-800 group-hover:text-[#3B581C]">
-                    <ShieldCheck className="w-4 h-4 text-[#6B9E3A]" />
+                  <span className="flex items-center gap-2 text-neutral-800 group-hover:text-[#074230]">
+                    <ShieldCheck className="w-4 h-4 text-[#0B5D44]" />
                     <span>Shipping Timelines &amp; Insurance</span>
                   </span>
-                  <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#6B9E3A]" />
+                  <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#0B5D44]" />
                 </Link>
               </div>
             </div>

@@ -12,6 +12,13 @@ import {
   ChevronRight,
   Search,
   SlidersHorizontal,
+  ShieldCheck,
+  Award,
+  Truck,
+  BadgeCheck,
+  Star,
+  PackageCheck,
+  RotateCcw,
 } from "lucide-react";
 import { Product } from "@/types/product";
 import {
@@ -30,6 +37,7 @@ import { useSearch } from "@/context/SearchContext";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
 import { SupplementCategoryShowcase } from "@/components/SupplementCategoryShowcase";
+import { CardAddToCartControl } from "@/components/CardAddToCartControl";
 
 interface VittalLifestyleStorefrontProps {
   initialProducts?: Product[];
@@ -390,11 +398,10 @@ export function VittalLifestyleStorefront({
       poster_image: product.poster_image,
       category: product.category,
     });
-    openCart();
   };
 
   return (
-    <div className="bg-white text-neutral-900 font-mograph min-h-screen selection:bg-[#E5F2D0] selection:text-[#1E300E] pb-24 md:pb-12">
+    <div className="bg-white text-neutral-900 font-mograph min-h-screen selection:bg-[#E6F4EF] selection:text-[#0C1412] pb-24 md:pb-12">
       {/* ===================================================================== */}
       {/* 1. LARGE ROUNDED SEARCH BAR WITH FILTER ICON (Mobile only, hidden on desktop) */}
       {/* ===================================================================== */}
@@ -428,48 +435,39 @@ export function VittalLifestyleStorefront({
       </section>
 
       {/* ===================================================================== */}
-      {/* 2. CATEGORIES SECTION (Placed Upper of Banner, Edge-to-Edge with Banner) */}
+      {/* 2. GALLERY CATEGORY DEPARTMENTS (Refined Alabaster Emerald Mist)      */}
       {/* ===================================================================== */}
-      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 md:pt-2.5 pb-1 sm:pb-1.5 md:pb-2">
-        {/* Responsive Grid: 5 columns on Mobile, 6 columns on Desktop spanning from banner's left edge to right edge */}
-        <div className="w-full grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 justify-center">
+      <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-2 sm:pb-3">
+        <div className="w-full grid grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3.5 md:gap-4 lg:gap-5 xl:gap-6 justify-center">
           {categoryItems.map((cat) => (
             <Link
               key={cat.name}
               href={cat.link}
-              className={`group flex flex-col items-center cursor-pointer transition-transform duration-300 hover:-translate-y-1 w-full md:max-w-[94px] lg:max-w-[104px] xl:max-w-[114px] mx-auto ${
+              className={`group flex flex-col items-center cursor-pointer transition-transform duration-300 hover:-translate-y-1 w-full md:max-w-[104px] lg:max-w-[114px] xl:max-w-[122px] mx-auto ${
                 cat.desktopOnly ? "hidden md:flex" : "flex"
               }`}
             >
-              {/* Card Image Tile: Top-to-Lower Fade (Banner green texture fading to white at the bottom) */}
-              <div className="w-full relative aspect-square rounded-2xl sm:rounded-2xl md:rounded-[18px] lg:rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md transition-all duration-300 flex items-end justify-center">
-                {/* Banner's Matching Green Wave Texture */}
-                <Image
-                  src="/vittal/banner-hero-green-texture.jpg"
-                  alt=""
-                  fill
-                  sizes="(max-width: 768px) 20vw, 130px"
-                  className="object-cover object-top pointer-events-none select-none opacity-90"
-                />
+              {/* Refined Gallery Alabaster Tile with subtle Imperial Emerald mist & gold rim */}
+              <div className="w-full relative aspect-square rounded-2xl md:rounded-[20px] overflow-hidden bg-gradient-to-b from-[#E6F4EF] via-[#F4FAF7] to-white border border-[#D4E9E0] group-hover:border-[#0B5D44]/55 shadow-[0_2px_10px_rgba(11,93,68,0.05)] group-hover:shadow-[0_10px_24px_rgba(11,93,68,0.12)] transition-all duration-300 flex items-end justify-center">
+                {/* Soft Top Emerald-Gold Studio Glow */}
+                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-[#0B5D44]/[0.11] via-[#C59B27]/[0.04] to-transparent pointer-events-none" />
+                <div className="absolute inset-x-3 top-0 h-[2px] rounded-b-full bg-gradient-to-r from-transparent via-[#C59B27]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                {/* Top-to-lower fade: Top shows the green texture, fading down to crisp clean white */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
-
-                {/* Inside Category Product Image - Lower-aligned directly to bottom */}
-                <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] md:h-[84%] lg:h-[85%] flex items-end justify-center px-1.5 sm:px-2 md:px-2">
+                {/* Product Cutout Icon */}
+                <div className="relative z-10 w-full h-[88%] sm:h-[90%] md:h-[85%] flex items-end justify-center px-1.5 sm:px-2">
                   <Image
                     src={cat.image}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 20vw, 130px"
-                    className="object-contain object-bottom group-hover:scale-108 transition-transform duration-300 drop-shadow-xs"
+                    sizes="(max-width: 640px) 20vw, (max-width: 1024px) 18vw, 130px"
+                    className="object-contain object-bottom group-hover:scale-106 transition-transform duration-300 drop-shadow-[0_4px_8px_rgba(12,20,18,0.14)]"
                   />
                 </div>
               </div>
 
-              {/* Outside Category Label: Current brand font, no background filling, centered below card */}
-              <div className="w-full mt-1 sm:mt-1.5 text-center">
-                <span className="font-mograph font-semibold text-[9px] xs:text-[9.5px] sm:text-[10px] md:text-[11px] lg:text-[11.5px] text-neutral-800 group-hover:text-[#6B9E3A] transition-colors leading-tight line-clamp-1 block w-full px-0.5">
+              {/* Clean Legible Category Label */}
+              <div className="w-full mt-1.5 sm:mt-2 text-center">
+                <span className="font-mograph font-semibold text-[10px] sm:text-[11px] md:text-[12px] text-[#0C1412] group-hover:text-[#0B5D44] transition-colors leading-tight line-clamp-1 block w-full px-0.5">
                   {cat.name}
                 </span>
               </div>
@@ -479,41 +477,38 @@ export function VittalLifestyleStorefront({
       </section>
 
       {/* ===================================================================== */}
-      {/* 3. HERO BANNER CARD (DYNAMIC ADMIN-CUSTOMIZABLE SLIDES & CUTOUTS)     */}
+      {/* 3. IMPERIAL EMERALD & SILK-GOLD HERO BANNER                           */}
       {/* ===================================================================== */}
       {(() => {
         const currentSlide = activeSlides[activeHeroIndex] || activeSlides[0];
         const bgUrl = currentSlide?.bgImage || "/vittal/banner-hero-green-texture.jpg";
-        const badgeText = currentSlide?.badge || "Limited Offer";
+        const badgeText = currentSlide?.badge || "100% Original · Limited Offer";
         const headingText = currentSlide?.heading || "First Purchase Enjoy\na Special Offer";
         const ctaBtnText = currentSlide?.buttonText || currentSlide?.ctaText || "Shop Now";
         const ctaBtnLink = currentSlide?.buttonLink || currentSlide?.ctaLink || "/products";
 
         return (
-          <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-2 sm:pb-3">
-            <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#95CF42] border border-[#85BE33]/50 shadow-sm min-h-[250px] sm:min-h-[300px] md:min-h-[290px] lg:min-h-[340px] xl:min-h-[360px] flex items-center">
+          <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1.5 sm:pt-2 pb-3 sm:pb-4">
+            <div className="relative rounded-3xl sm:rounded-[32px] overflow-hidden bg-[#073B2B] border border-[#0B5D44]/40 shadow-[0_14px_40px_rgba(6,40,29,0.16)] min-h-[248px] sm:min-h-[308px] md:min-h-[310px] lg:min-h-[355px] xl:min-h-[380px] flex items-center">
               
-              {/* Dynamic Lime Green / Custom Textured Background */}
+              {/* Imperial Emerald & Champagne Gold Silk Background */}
               <div className="absolute inset-0 z-0">
                 <Image
                   src={bgUrl}
-                  alt="Hero Background"
+                  alt="Vittal Lifestyle Hero Canvas"
                   fill
                   priority
                   className="object-cover object-center"
                 />
               </div>
 
-              {/* Subtle Organic Fluid Wave Pattern Behind Cutouts */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25 z-0">
-                <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
-                  <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#7EBA2B" strokeWidth="40" fill="none" />
-                  <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#7EBA2B" strokeWidth="50" fill="none" />
-                  <path d="M -100,280 Q 200,420 500,320 T 900,400" stroke="#7EBA2B" strokeWidth="60" fill="none" />
-                </svg>
-              </div>
+              {/* Editorial Obsidian-Emerald Left Readability Scrim (guarantees >12:1 AAA headline contrast) */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-r from-[#041D15]/88 via-[#073B2B]/55 to-transparent"
+              />
 
-              {/* Cutout Images Rotating with Viewport-Specific Zoom & Position */}
+              {/* Cutout Images Rotating with Clean Non-Ghosting Crossfade */}
               <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
                 {activeSlides.map((slide, idx) => {
                   const isCurrent = activeHeroIndex === idx;
@@ -531,11 +526,12 @@ export function VittalLifestyleStorefront({
                   return (
                     <div
                       key={slide.id || idx}
-                      className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                        isCurrent ? "opacity-100" : "opacity-0"
+                      aria-hidden={!isCurrent}
+                      className={`absolute inset-0 transition-opacity duration-500 ease-out ${
+                        isCurrent ? "opacity-100 visible" : "opacity-0 invisible"
                       }`}
                     >
-                      {/* Desktop View Cutout with Desktop Zoom & Position */}
+                      {/* Desktop View Cutout */}
                       <div
                         className="hidden md:block absolute inset-0 transition-transform duration-300"
                         style={{
@@ -553,7 +549,7 @@ export function VittalLifestyleStorefront({
                         />
                       </div>
 
-                      {/* Mobile View Cutout with Mobile Zoom & Position */}
+                      {/* Mobile View Cutout */}
                       <div
                         className="block md:hidden absolute inset-0 transition-transform duration-300"
                         style={{
@@ -575,58 +571,61 @@ export function VittalLifestyleStorefront({
                 })}
               </div>
 
-              {/* Left Content Overlay (Dynamic Badge, Heading, Button) */}
-              <div className="relative z-10 px-4 sm:px-8 lg:px-12 py-5 sm:py-7 md:py-7 lg:py-8 max-w-[50%] xs:max-w-[48%] sm:max-w-md md:max-w-lg lg:max-w-xl">
-                {/* Black Pill Eyebrow Badge */}
+              {/* Left Editorial Content Overlay */}
+              <div className="relative z-10 px-5 sm:px-8 lg:px-12 py-6 sm:py-8 md:py-9 max-w-[56%] xs:max-w-[54%] sm:max-w-md md:max-w-lg lg:max-w-xl">
+                {/* Brushed Champagne Gold Status Pill */}
                 {badgeText && (
-                  <div className="inline-block bg-[#111111] text-white text-[9px] sm:text-xs font-semibold px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full mb-2 sm:mb-3 shadow-xs">
-                    {badgeText}
+                  <div className="inline-flex items-center gap-1.5 bg-[#09110E]/75 backdrop-blur-sm border border-[#E5C469]/50 text-[#F3D37A] text-[10px] sm:text-xs font-semibold tracking-wide px-3 sm:px-3.5 py-1 rounded-full mb-2.5 sm:mb-3.5 shadow-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#E5C469]" aria-hidden="true" />
+                    <span>{badgeText}</span>
                   </div>
                 )}
 
-                {/* Headline matching reference */}
-                <h1 className="font-mograph font-bold text-[15px] xs:text-base sm:text-2xl md:text-3xl lg:text-[34px] xl:text-[40px] text-[#111111] leading-tight sm:leading-[1.12] tracking-tight mb-2.5 sm:mb-4 md:mb-5 whitespace-pre-line">
+                {/* Pure White Editorial Display Headline (>12:1 AAA Contrast) */}
+                <h1 className="font-movault font-extrabold text-[17px] xs:text-[19px] sm:text-3xl md:text-[34px] lg:text-[40px] xl:text-[44px] text-white leading-[1.12] tracking-[-0.025em] mb-3 sm:mb-5 whitespace-pre-line drop-shadow-[0_2px_12px_rgba(4,29,21,0.35)]">
                   {headingText}
                 </h1>
 
-                {/* Black Pill CTA Button with White Circle Up-Right Arrow */}
+                {/* Crisp Ivory Pill CTA with Imperial Emerald Disc Arrow */}
                 <Link
                   href={ctaBtnLink}
-                  className="inline-flex items-center gap-2 sm:gap-3 bg-[#111111] hover:bg-black text-white font-bold text-[11px] sm:text-sm pl-3.5 pr-1 py-1 sm:pl-5 sm:pr-2 sm:py-2 rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 group"
+                  className="inline-flex items-center gap-2.5 sm:gap-3 bg-white hover:bg-[#F5FAF8] active:scale-[0.98] text-[#0C1412] font-bold text-xs sm:text-sm pl-4 pr-1.5 py-1.5 sm:pl-5 sm:pr-2 sm:py-2 rounded-full transition-all duration-200 shadow-[0_8px_24px_rgba(4,29,21,0.28)] hover:shadow-[0_12px_28px_rgba(4,29,21,0.38)] group min-h-[40px] sm:min-h-[44px]"
                 >
                   <span>{ctaBtnText}</span>
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white text-[#111111] flex items-center justify-center shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shadow-xs">
-                    <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 stroke-[2.5]" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0B5D44] text-white flex items-center justify-center shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+                    <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                   </div>
                 </Link>
               </div>
 
-              {/* Signature Bottom Scoop Notch with Pagination Indicators Synced to Active Hero Index */}
+              {/* Signature Bottom Scoop Notch with Accessible Pagination Indicators */}
               <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none">
                 <div className="relative">
-                  {/* Arched scoop cutting into the card from page background */}
                   <svg
                     viewBox="0 0 160 30"
-                    className="w-32 sm:w-40 md:w-48 h-6 sm:h-7 md:h-8 fill-white block"
+                    className="w-36 sm:w-44 md:w-48 h-6 sm:h-7 md:h-8 fill-white block"
                     preserveAspectRatio="none"
                   >
                     <path d="M 0,30 C 22,30 26,0 48,0 L 112,0 C 134,0 138,30 160,30 Z" />
                   </svg>
 
-                  {/* Indicators inside scoop */}
-                  <div className="absolute inset-0 flex items-center justify-center gap-1.5 sm:gap-2 pb-0.5 pointer-events-auto">
+                  <div className="absolute inset-0 flex items-center justify-center gap-1 sm:gap-1.5 pb-0.5 pointer-events-auto">
                     {activeSlides.map((_, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => setActiveHeroIndex(idx)}
                         aria-label={`Go to slide ${idx + 1}`}
-                        className={`transition-all duration-300 cursor-pointer ${
-                          activeHeroIndex === idx
-                            ? "w-6 sm:w-7 h-1.5 sm:h-2 rounded-full bg-[#B8ED3E] shadow-2xs"
-                            : "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-neutral-300 hover:bg-neutral-400"
-                        }`}
-                      />
+                        className="p-1.5 flex items-center justify-center cursor-pointer"
+                      >
+                        <span
+                          className={`block transition-all duration-300 rounded-full ${
+                            activeHeroIndex === idx
+                              ? "w-6 sm:w-7 h-1.5 sm:h-2 bg-[#0B5D44]"
+                              : "w-1.5 sm:w-2 h-1.5 sm:h-2 bg-neutral-300 hover:bg-neutral-400"
+                          }`}
+                        />
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -637,16 +636,94 @@ export function VittalLifestyleStorefront({
       })()}
 
       {/* ===================================================================== */}
-      {/* 4. NEW ARRIVALS (Product Cards matching mockup)                       */}
+      {/* 3B. CONCISE 4-PILLAR AUTHENTICITY & TRUST RIBBON                      */}
+      {/* ===================================================================== */}
+      <section aria-label="Marketplace Authenticity Guarantees" className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-4 sm:pb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 rounded-2xl bg-[#F5F8F6] border border-[#E2EDE8] px-3.5 py-2.5 sm:px-5 sm:py-3">
+          {[
+            { icon: ShieldCheck, title: "100% Original Brands", sub: "Direct authorized stock" },
+            { icon: BadgeCheck, title: "Quality Seal Verified", sub: "Inspected before dispatch" },
+            { icon: Truck, title: "Pan-India Express", sub: "Fast insured delivery" },
+            { icon: Award, title: "Trusted Multi-Brand", sub: "Global curated catalog" },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-white border border-[#D4E9E0] flex items-center justify-center text-[#0B5D44] shrink-0 shadow-2xs">
+                  <Icon className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] sm:text-xs font-bold text-[#0C1412] leading-tight truncate">
+                    {item.title}
+                  </p>
+                  <p className="text-[10px] sm:text-[11px] text-slate-600 leading-tight truncate">
+                    {item.sub}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ===================================================================== */}
+      {/* 3C. AUTHORIZED & CURATED GLOBAL BRANDS SHOWCASE                       */}
+      {/* ===================================================================== */}
+      <section
+        aria-label="Authorized Global Brands"
+        className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pb-5 sm:pb-7"
+      >
+        <div className="rounded-2xl bg-white border border-neutral-200/80 px-4 py-3.5 sm:px-6 sm:py-4 shadow-[0_2px_12px_rgba(7,20,16,0.025)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#C59B27]" aria-hidden="true" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#074230]">
+                Authorized &amp; Curated Global Brands
+              </span>
+            </div>
+            <Link
+              href="/about"
+              className="text-[11px] font-semibold text-neutral-500 hover:text-[#0B5D44] transition-colors inline-flex items-center gap-1"
+            >
+              <span>How we verify authenticity</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {[
+              { name: "Optimum Nutrition", query: "Optimum" },
+              { name: "Nike", query: "Nike" },
+              { name: "MuscleTech", query: "MuscleTech" },
+              { name: "Adidas", query: "Adidas" },
+              { name: "Ferrero Rocher", query: "Ferrero" },
+              { name: "Lindt", query: "Lindt" },
+              { name: "Royal Medjool", query: "Medjool" },
+              { name: "Sports Research", query: "Whey" },
+              { name: "GNC", query: "Protein" },
+            ].map((brand) => (
+              <Link
+                key={brand.name}
+                href={`/products?search=${encodeURIComponent(brand.query)}`}
+                className="shrink-0 px-3.5 py-2 rounded-full bg-[#F5F8F6] hover:bg-[#0B5D44] text-[#0C1412] hover:text-white border border-[#E2EDE8] hover:border-[#0B5D44] text-xs font-bold tracking-tight transition-all"
+              >
+                {brand.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===================================================================== */}
+      {/* 4. NEW ARRIVALS (Unified Luxury Marketplace Product Cards)            */}
       {/* ===================================================================== */}
       <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-2 pb-6 sm:pb-8">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#111111] tracking-tight">
+        <div className="flex items-center justify-between mb-3.5 sm:mb-5">
+          <h2 className="font-movault text-lg sm:text-xl md:text-2xl font-extrabold text-[#0C1412] tracking-[-0.02em]">
             New Arrivals
           </h2>
           <Link
             href="/products"
-            className="text-xs sm:text-sm font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-0.5 transition-colors"
+            className="text-xs sm:text-sm font-bold text-[#0B5D44] hover:text-[#074230] flex items-center gap-0.5 transition-colors"
           >
             <span>See all</span>
             <ChevronRight className="w-4 h-4" />
@@ -665,9 +742,9 @@ export function VittalLifestyleStorefront({
             return (
               <div
                 key={product.id}
-                className="group relative rounded-3xl bg-white border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-3 sm:p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+                className="group relative rounded-3xl bg-white border border-neutral-200/85 hover:border-[#0B5D44]/45 p-2.5 sm:p-3.5 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_10px_rgba(12,20,18,0.03)] hover:shadow-[0_12px_28px_rgba(11,93,68,0.08)] hover:-translate-y-0.5"
               >
-                {/* Wishlist Heart Icon */}
+                {/* Wishlist Heart Icon (44px accessible hit zone) */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -680,20 +757,22 @@ export function VittalLifestyleStorefront({
                       image: product.poster_image,
                     });
                   }}
-                  className="absolute top-3.5 right-3.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-neutral-400 hover:text-rose-500 transition-colors shadow-2xs"
-                  aria-label="Wishlist"
+                  className="absolute top-2.5 right-2.5 z-10 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+                  aria-label={isWish ? "Remove from wishlist" : "Add to wishlist"}
                 >
-                  <Heart
-                    className={`w-4 h-4 transition-colors ${
-                      isWish ? "fill-rose-500 text-rose-500" : "stroke-current"
-                    }`}
-                  />
+                  <span className="w-8 h-8 rounded-full bg-white/95 border border-neutral-200/70 shadow-2xs flex items-center justify-center text-neutral-500 hover:text-rose-500 transition-colors">
+                    <Heart
+                      className={`w-4 h-4 transition-colors ${
+                        isWish ? "fill-rose-500 text-rose-500" : "stroke-current"
+                      }`}
+                    />
+                  </span>
                 </button>
 
-                {/* Product Poster Image Container with Pastel Lime Gradient Backing */}
+                {/* Studio Product Image Stage */}
                 <Link
                   href={`/products/${product.id || product.slug}`}
-                  className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5"
+                  className="relative aspect-square w-full rounded-2xl bg-[#F5F8F6] p-3 flex items-center justify-center overflow-hidden mb-3"
                 >
                   <Image
                     src={product.poster_image || "/vittal/product-whey-protein-jar.png"}
@@ -705,47 +784,61 @@ export function VittalLifestyleStorefront({
                 </Link>
 
                 {/* Product Metadata */}
-                <div>
+                <div className="px-0.5">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0B5D44] truncate">
+                      {product.category || "Original"}
+                    </span>
+                    <span className="inline-flex items-center gap-0.5 text-[10.5px] font-bold text-neutral-700 tabular-nums shrink-0">
+                      <Star className="w-3 h-3 fill-[#C59B27] text-[#C59B27]" />
+                      {(product.rating ?? 4.8).toFixed(1)}
+                    </span>
+                  </div>
                   <Link
                     href={`/products/${product.id || product.slug}`}
                     className="block"
                   >
-                    <h3 className="font-semibold text-xs sm:text-sm text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-1">
+                    <h3 className="font-semibold text-xs sm:text-[13.5px] text-[#0C1412] group-hover:text-[#0B5D44] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-1.5">
                       {product.name}
                     </h3>
                   </Link>
 
-                  {/* Price Row */}
-                  <div className="flex items-baseline gap-1.5 mb-2">
-                    <span className="text-sm sm:text-base font-extrabold text-neutral-950">
+                  {/* Tabular Price Row */}
+                  <div className="flex items-baseline gap-1.5 mb-2.5 tabular-nums">
+                    <span className="text-sm sm:text-base font-extrabold text-[#0C1412]">
                       ₹{product.price.toLocaleString("en-IN")}
                     </span>
                     {product.mrp && product.mrp > product.price && (
-                      <span className="text-xs text-neutral-400 line-through">
+                      <span className="text-[11px] sm:text-xs text-neutral-400 line-through">
                         ₹{product.mrp.toLocaleString("en-IN")}
                       </span>
                     )}
                   </div>
 
-                  {/* Discount Badge & Add to Cart Button */}
+                  {/* Unified Discount Pill & Obsidian-to-Emerald Add Button */}
                   <div className="flex items-center justify-between gap-2">
                     {discountPercent ? (
-                      <span className="bg-[#E5F2D0] text-[#3B581C] text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center">
+                      <span className="bg-[#E6F4EF] text-[#074230] text-[10px] sm:text-[11px] font-bold tabular-nums px-2.5 py-0.5 rounded-full inline-flex items-center">
                         {discountPercent}% OFF
                       </span>
                     ) : (
-                      <span className="text-[10px] text-neutral-500 font-medium">In Stock</span>
+                      <span className="text-[10px] text-[#0B5D44] font-semibold">100% Original</span>
                     )}
 
-                    <button
-                      type="button"
-                      onClick={(e) => handleAddToCart(e, product)}
-                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-[#E5F2D0] hover:bg-[#D5EBBF] text-[#3B581C] hover:text-[#284214] flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
-                      title="Add to Cart"
-                      aria-label="Add to Cart"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
-                    </button>
+                    <CardAddToCartControl
+                      product={product}
+                      onAfterAdd={() =>
+                        addRecentlyViewed({
+                          id: product.id,
+                          slug: product.slug || product.id,
+                          name: product.name,
+                          price: product.price,
+                          mrp: product.mrp,
+                          poster_image: product.poster_image,
+                          category: product.category,
+                        })
+                      }
+                    />
                   </div>
                 </div>
               </div>
@@ -785,16 +878,17 @@ export function VittalLifestyleStorefront({
 
         return (
           <section className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-            {/* Top Header Banner */}
-            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#EBF5DF] via-[#E2F0CE] to-[#D5E9BB] border border-[#D5E9BC]/70 p-5 sm:p-7 md:p-8 text-center mb-3 sm:mb-5 shadow-xs">
-              <h3 className="relative font-movault text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#15230D] tracking-wide mb-1 sm:mb-2">
+            {/* Editorial Obsidian Pine & Champagne Gold Sportswear Banner */}
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#061812] via-[#09241B] to-[#0B5D44] border border-[#C59B27]/30 p-5 sm:p-7 md:p-8 text-center mb-3.5 sm:mb-5 shadow-[0_12px_32px_rgba(6,24,18,0.16)]">
+              <div aria-hidden="true" className="absolute inset-x-12 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#E5C469]/60 to-transparent" />
+              <h3 className="relative font-movault text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-extrabold text-white tracking-[-0.02em] mb-1.5">
                 {sportswearCampaign.bannerHeadingPrefix ?? "Fresh"}{" "}
-                <span className="font-mograph italic font-bold text-[#6B9E3A]">
+                <span className="font-mograph italic font-bold text-[#E5C469]">
                   {sportswearCampaign.bannerHeadingHighlight ?? "Sportswear"}
                 </span>{" "}
                 {sportswearCampaign.bannerHeadingSuffix ?? "Drops"}
               </h3>
-              <p className="relative font-movault text-xs sm:text-sm md:text-base font-bold text-[#415C29] tracking-[0.2em] uppercase">
+              <p className="relative font-mono text-[10px] sm:text-xs font-semibold text-[#A7F3D0] tracking-[0.24em] uppercase">
                 {sportswearCampaign.bannerHashtag ?? "#EngineeredForEveryMove"}
               </p>
             </div>
@@ -807,18 +901,18 @@ export function VittalLifestyleStorefront({
           {/* Card 1: Sports Wear (Wide Horizontal Card) */}
           <Link
             href={c1.linkUrl || "/products?category=Outfits"}
-            className="group md:w-[43%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-row items-stretch justify-between gap-4 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
+            className="group md:w-[43%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#0B5D44]/60 p-4 lg:p-5 flex flex-row items-stretch justify-between gap-4 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
             {/* Left: Text Info */}
             <div className="flex flex-col justify-between py-2 pr-2 flex-1 min-w-0">
-              <h4 className="font-movault text-xl lg:text-2xl xl:text-3xl font-black uppercase italic tracking-wide text-neutral-950 leading-[1.15] mb-2 group-hover:text-[#6B9E3A] transition-colors">
+              <h4 className="font-movault text-xl lg:text-2xl xl:text-3xl font-black uppercase italic tracking-wide text-neutral-950 leading-[1.15] mb-2 group-hover:text-[#0B5D44] transition-colors">
                 {c1.title}
               </h4>
               <div className="mt-auto">
                 <span className="font-mograph text-[10px] lg:text-xs text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                   {c1.priceLabel || "Starting At"}
                 </span>
-                <span className="font-movault text-2xl lg:text-3xl xl:text-4xl font-black text-[#6B9E3A] tracking-tight">
+                <span className="font-movault text-2xl lg:text-3xl xl:text-4xl font-black text-[#0B5D44] tracking-tight">
                   {c1.price}
                 </span>
               </div>
@@ -847,7 +941,7 @@ export function VittalLifestyleStorefront({
           {/* Card 2: Jackets & Track Pants */}
           <Link
             href={c2.linkUrl || "/products?category=Outfits"}
-            className="group md:w-[28.5%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-col justify-between gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
+            className="group md:w-[28.5%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#0B5D44]/60 p-4 lg:p-5 flex flex-col justify-between gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
             {/* Top: Inner Image Frame */}
             <div className="relative aspect-[4/3] w-full rounded-xl lg:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
@@ -871,24 +965,24 @@ export function VittalLifestyleStorefront({
             {/* Bottom: Text Info & Bare Arrow */}
             <div className="flex items-end justify-between gap-2 mt-auto pt-2">
               <div className="min-w-0 flex-1">
-                <h4 className="font-movault text-sm lg:text-base xl:text-lg font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#6B9E3A] transition-colors">
+                <h4 className="font-movault text-sm lg:text-base xl:text-lg font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#0B5D44] transition-colors">
                   {c2.title}
                 </h4>
                 <span className="font-mograph text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                   {c2.priceLabel || "Starting At"}
                 </span>
-                <span className="font-movault text-lg lg:text-xl xl:text-2xl font-black text-[#6B9E3A] tracking-tight">
+                <span className="font-movault text-lg lg:text-xl xl:text-2xl font-black text-[#0B5D44] tracking-tight">
                   {c2.price}
                 </span>
               </div>
-              <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-1" />
+              <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6 text-neutral-900 group-hover:text-[#0B5D44] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-1" />
             </div>
           </Link>
 
           {/* Card 3: Shorts */}
           <Link
             href={c3.linkUrl || "/products?category=Outfits"}
-            className="group md:w-[28.5%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-4 lg:p-5 flex flex-col justify-between gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
+            className="group md:w-[28.5%] rounded-2xl sm:rounded-3xl bg-white hover:bg-neutral-50/80 border border-neutral-200/90 hover:border-[#0B5D44]/60 p-4 lg:p-5 flex flex-col justify-between gap-3 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer"
           >
             {/* Top: Inner Image Frame */}
             <div className="relative aspect-[4/3] w-full rounded-xl lg:rounded-2xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
@@ -912,17 +1006,17 @@ export function VittalLifestyleStorefront({
             {/* Bottom: Text Info & Bare Arrow */}
             <div className="flex items-end justify-between gap-2 mt-auto pt-2">
               <div className="min-w-0 flex-1">
-                <h4 className="font-movault text-sm lg:text-base xl:text-lg font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#6B9E3A] transition-colors">
+                <h4 className="font-movault text-sm lg:text-base xl:text-lg font-black uppercase tracking-wide text-neutral-950 leading-tight mb-1 truncate group-hover:text-[#0B5D44] transition-colors">
                   {c3.title}
                 </h4>
                 <span className="font-mograph text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                   {c3.priceLabel || "Starting At"}
                 </span>
-                <span className="font-movault text-lg lg:text-xl xl:text-2xl font-black text-[#6B9E3A] tracking-tight">
+                <span className="font-movault text-lg lg:text-xl xl:text-2xl font-black text-[#0B5D44] tracking-tight">
                   {c3.price}
                 </span>
               </div>
-              <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-1" />
+              <ArrowUpRight className="w-5 h-5 lg:w-6 lg:h-6 text-neutral-900 group-hover:text-[#0B5D44] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-1" />
             </div>
           </Link>
         </div>
@@ -935,7 +1029,7 @@ export function VittalLifestyleStorefront({
           {/* Column 1: Card 1 (Tall Card, Tall Image on Top) */}
           <Link
             href={c1.linkUrl || "/products?category=Outfits"}
-            className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between h-full transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
+            className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#0B5D44]/60 p-2.5 sm:p-3 flex flex-col justify-between h-full transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
           >
             {/* Top: Tall Image Filling Upper Section */}
             <div className="relative aspect-[4/5.6] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
@@ -958,14 +1052,14 @@ export function VittalLifestyleStorefront({
 
             {/* Bottom: Text Info */}
             <div className="flex flex-col justify-end flex-1 min-w-0 pt-2 pb-0.5">
-              <h4 className="font-movault text-xs xs:text-sm font-black uppercase italic tracking-wide text-neutral-950 leading-tight mb-1 group-hover:text-[#6B9E3A] transition-colors">
+              <h4 className="font-movault text-xs xs:text-sm font-black uppercase italic tracking-wide text-neutral-950 leading-tight mb-1 group-hover:text-[#0B5D44] transition-colors">
                 {c1.title}
               </h4>
               <div className="mt-auto">
                 <span className="font-mograph text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">
                   {c1.priceLabel || "Starting At"}
                 </span>
-                <span className="font-movault text-base xs:text-lg font-black text-[#6B9E3A] tracking-tight">
+                <span className="font-movault text-base xs:text-lg font-black text-[#0B5D44] tracking-tight">
                   {c1.price}
                 </span>
               </div>
@@ -978,7 +1072,7 @@ export function VittalLifestyleStorefront({
             {/* Card 2: Jackets & Track Pants */}
             <Link
               href={c2.linkUrl || "/products?category=Outfits"}
-              className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between flex-1 transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
+              className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#0B5D44]/60 p-2.5 sm:p-3 flex flex-col justify-between flex-1 transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
             >
               {/* Top: Inner Image */}
               <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
@@ -1002,24 +1096,24 @@ export function VittalLifestyleStorefront({
               {/* Bottom: Text Info & Bare Arrow */}
               <div className="flex items-end justify-between gap-1 mt-auto pt-1.5">
                 <div className="min-w-0 flex-1">
-                  <h4 className="font-movault text-[11px] xs:text-xs font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate group-hover:text-[#6B9E3A] transition-colors">
+                  <h4 className="font-movault text-[11px] xs:text-xs font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate group-hover:text-[#0B5D44] transition-colors">
                     {c2.title}
                   </h4>
                   <span className="font-mograph text-[8.5px] text-neutral-500 font-bold uppercase tracking-wider block">
                     {c2.priceLabel || "Starting At"}
                   </span>
-                  <span className="font-movault text-sm xs:text-base font-black text-[#6B9E3A] tracking-tight">
+                  <span className="font-movault text-sm xs:text-base font-black text-[#0B5D44] tracking-tight">
                     {c2.price}
                   </span>
                 </div>
-                <ArrowUpRight className="w-4 h-4 xs:w-4.5 xs:h-4.5 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-0.5" />
+                <ArrowUpRight className="w-4 h-4 xs:w-4.5 xs:h-4.5 text-neutral-900 group-hover:text-[#0B5D44] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-0.5" />
               </div>
             </Link>
 
             {/* Card 3: Shorts */}
             <Link
               href={c3.linkUrl || "/products?category=Outfits"}
-              className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#6B9E3A]/60 p-2.5 sm:p-3 flex flex-col justify-between flex-1 transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
+              className="group rounded-2xl bg-white border border-neutral-200/90 hover:border-[#0B5D44]/60 p-2.5 sm:p-3 flex flex-col justify-between flex-1 transition-all duration-300 shadow-2xs hover:shadow-md cursor-pointer"
             >
               {/* Top: Inner Image */}
               <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0">
@@ -1043,17 +1137,17 @@ export function VittalLifestyleStorefront({
               {/* Bottom: Text Info & Bare Arrow */}
               <div className="flex items-end justify-between gap-1 mt-auto pt-1.5">
                 <div className="min-w-0 flex-1">
-                  <h4 className="font-movault text-[11px] xs:text-xs font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate group-hover:text-[#6B9E3A] transition-colors">
+                  <h4 className="font-movault text-[11px] xs:text-xs font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate group-hover:text-[#0B5D44] transition-colors">
                     {c3.title}
                   </h4>
                   <span className="font-mograph text-[8.5px] text-neutral-500 font-bold uppercase tracking-wider block">
                     {c3.priceLabel || "Starting At"}
                   </span>
-                  <span className="font-movault text-sm xs:text-base font-black text-[#6B9E3A] tracking-tight">
+                  <span className="font-movault text-sm xs:text-base font-black text-[#0B5D44] tracking-tight">
                     {c3.price}
                   </span>
                 </div>
-                <ArrowUpRight className="w-4 h-4 xs:w-4.5 xs:h-4.5 text-neutral-900 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-0.5" />
+                <ArrowUpRight className="w-4 h-4 xs:w-4.5 xs:h-4.5 text-neutral-900 group-hover:text-[#0B5D44] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all stroke-[2.5] shrink-0 mb-0.5" />
               </div>
             </Link>
 
@@ -1078,13 +1172,13 @@ export function VittalLifestyleStorefront({
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-[#111111] tracking-tight">
                 Best Sellers
               </h2>
-              <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#E5F2D0] text-[#344C19] border border-[#6B9E3A]/30">
+              <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#E6F4EF] text-[#074230] border border-[#0B5D44]/30">
                 Top Trending
               </span>
             </div>
             <Link
               href="/products?sort=best_selling"
-              className="text-xs sm:text-sm font-semibold text-[#6B9E3A] hover:text-[#527C2B] flex items-center gap-0.5 transition-colors"
+              className="text-xs sm:text-sm font-semibold text-[#0B5D44] hover:text-[#0B5D44] flex items-center gap-0.5 transition-colors"
             >
               <span>See all</span>
               <ChevronRight className="w-4 h-4" />
@@ -1103,9 +1197,9 @@ export function VittalLifestyleStorefront({
               return (
                 <div
                   key={product.id}
-                  className="group relative rounded-3xl bg-white border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-3 sm:p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+                  className="group relative rounded-3xl bg-white border border-neutral-200/85 hover:border-[#0B5D44]/45 p-2.5 sm:p-3.5 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_10px_rgba(12,20,18,0.03)] hover:shadow-[0_12px_28px_rgba(11,93,68,0.08)] hover:-translate-y-0.5"
                 >
-                  {/* Wishlist Heart Icon */}
+                  {/* Wishlist Heart Icon (44px accessible hit zone) */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -1118,20 +1212,22 @@ export function VittalLifestyleStorefront({
                         image: product.poster_image,
                       });
                     }}
-                    className="absolute top-3.5 right-3.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-neutral-400 hover:text-rose-500 transition-colors shadow-2xs cursor-pointer"
-                    aria-label="Wishlist"
+                    className="absolute top-2.5 right-2.5 z-10 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+                    aria-label={isWish ? "Remove from wishlist" : "Add to wishlist"}
                   >
-                    <Heart
-                      className={`w-4 h-4 transition-colors ${
-                        isWish ? "fill-rose-500 text-rose-500" : "stroke-current"
-                      }`}
-                    />
+                    <span className="w-8 h-8 rounded-full bg-white/95 border border-neutral-200/70 shadow-2xs flex items-center justify-center text-neutral-500 hover:text-rose-500 transition-colors">
+                      <Heart
+                        className={`w-4 h-4 transition-colors ${
+                          isWish ? "fill-rose-500 text-rose-500" : "stroke-current"
+                        }`}
+                      />
+                    </span>
                   </button>
 
-                  {/* Product Poster Image Container */}
+                  {/* Studio Product Image Stage */}
                   <Link
                     href={`/products/${product.id || product.slug}`}
-                    className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5"
+                    className="relative aspect-square w-full rounded-2xl bg-[#F5F8F6] p-3 flex items-center justify-center overflow-hidden mb-3"
                   >
                     <Image
                       src={product.poster_image || "/vittal/product-whey-protein-jar.png"}
@@ -1143,46 +1239,61 @@ export function VittalLifestyleStorefront({
                   </Link>
 
                   {/* Product Metadata */}
-                  <div>
+                  <div className="px-0.5">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#0B5D44] truncate">
+                        {product.category || "Original"}
+                      </span>
+                      <span className="inline-flex items-center gap-0.5 text-[10.5px] font-bold text-neutral-700 tabular-nums shrink-0">
+                        <Star className="w-3 h-3 fill-[#C59B27] text-[#C59B27]" />
+                        {(product.rating ?? 4.8).toFixed(1)}
+                      </span>
+                    </div>
                     <Link
                       href={`/products/${product.id || product.slug}`}
                       className="block"
                     >
-                      <h3 className="font-semibold text-xs sm:text-sm text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-1">
+                      <h3 className="font-semibold text-xs sm:text-[13.5px] text-[#0C1412] group-hover:text-[#0B5D44] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-1.5">
                         {product.name}
                       </h3>
                     </Link>
 
-                    {/* Price Row */}
-                    <div className="flex items-baseline gap-1.5 mb-2">
-                      <span className="text-sm sm:text-base font-extrabold text-neutral-950">
+                    {/* Tabular Price Row */}
+                    <div className="flex items-baseline gap-1.5 mb-2.5 tabular-nums">
+                      <span className="text-sm sm:text-base font-extrabold text-[#0C1412]">
                         ₹{product.price.toLocaleString("en-IN")}
                       </span>
                       {product.mrp && product.mrp > product.price && (
-                        <span className="text-xs text-neutral-400 line-through">
+                        <span className="text-[11px] sm:text-xs text-neutral-400 line-through">
                           ₹{product.mrp.toLocaleString("en-IN")}
                         </span>
                       )}
                     </div>
 
-                    {/* Discount Badge & Add to Cart Button */}
+                    {/* Unified Discount Pill & Obsidian-to-Emerald Add Button */}
                     <div className="flex items-center justify-between gap-2">
                       {discountPercent ? (
-                        <span className="text-[10px] sm:text-xs font-bold text-[#6B9E3A] bg-[#EBF5DF] px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] sm:text-[11px] font-bold tabular-nums text-[#074230] bg-[#E6F4EF] px-2.5 py-0.5 rounded-full">
                           {discountPercent}% OFF
                         </span>
                       ) : (
-                        <span />
+                        <span className="text-[10px] text-[#0B5D44] font-semibold">100% Original</span>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={(e) => handleAddToCart(e, product)}
-                        className="px-3 py-1.5 rounded-xl bg-neutral-900 hover:bg-[#6B9E3A] text-white text-xs font-bold transition-all shadow-xs hover:shadow-sm cursor-pointer flex items-center gap-1 active:scale-95"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        <span>Add</span>
-                      </button>
+                      <CardAddToCartControl
+                        product={product}
+                        onAfterAdd={() =>
+                          addRecentlyViewed({
+                            id: product.id,
+                            slug: product.slug || product.id,
+                            name: product.name,
+                            price: product.price,
+                            mrp: product.mrp,
+                            poster_image: product.poster_image,
+                            category: product.category,
+                          })
+                        }
+                      />
                     </div>
                   </div>
                 </div>
@@ -1191,6 +1302,97 @@ export function VittalLifestyleStorefront({
           </div>
         </section>
       )}
+
+      {/* ===================================================================== */}
+      {/* 8. THE VITTAL 100% ORIGINAL GUARANTEE (Editorial Marketplace Proof)   */}
+      {/* ===================================================================== */}
+      <section
+        aria-labelledby="vittal-authenticity-guarantee"
+        className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10 sm:pb-14"
+      >
+        <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-gradient-to-br from-[#071410] via-[#0B221A] to-[#071410] border border-[#C59B27]/30 px-6 py-8 sm:px-10 sm:py-11 text-white shadow-[0_18px_48px_rgba(7,20,16,0.14)]">
+          {/* Champagne Gold top hairline */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-12 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#E5C469]/70 to-transparent"
+          />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-7 mb-7 border-b border-white/10">
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/8 border border-[#E5C469]/40 text-[#F3D37A] text-[10.5px] font-bold uppercase tracking-[0.18em] mb-3">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                The Vittal Authenticity Standard
+              </span>
+              <h2
+                id="vittal-authenticity-guarantee"
+                className="font-movault text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight"
+              >
+                Every Order Backed by Our{" "}
+                <span className="text-[#E5C469]">100% Original Guarantee</span>
+              </h2>
+              <p className="mt-2.5 text-xs sm:text-sm text-white/75 leading-relaxed">
+                Zero grey-market resellers, zero compromised seals. Every supplement, athletic piece, and gourmet import is inspected and shipped with full invoice &amp; transit protection.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <Link
+                href="/order-tracking"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white hover:bg-[#F3FAF7] text-[#071410] text-xs sm:text-sm font-bold transition-colors shadow-sm"
+              >
+                <span>Live Order Tracking</span>
+                <ArrowUpRight className="w-4 h-4 text-[#0B5D44]" />
+              </Link>
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/8 hover:bg-white/15 text-white border border-white/15 text-xs sm:text-sm font-semibold transition-colors"
+              >
+                <span>Our Story &amp; Sourcing</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+            {[
+              {
+                icon: BadgeCheck,
+                title: "Direct Authorized Sourcing",
+                desc: "Procured strictly through verified brand distributors and official importers with traceable batch codes.",
+              },
+              {
+                icon: PackageCheck,
+                title: "Pre-Dispatch Seal Inspection",
+                desc: "Every nutrition jar, garment, and gourmet box passes a tamper-evident quality & expiry check before packing.",
+              },
+              {
+                icon: RotateCcw,
+                title: "Insured Express & 7-Day Returns",
+                desc: "Free insured pan-India express shipping above ₹1,499, live milestone tracking, and straightforward 7-day returns.",
+              },
+            ].map((pillar) => {
+              const Icon = pillar.icon;
+              return (
+                <div
+                  key={pillar.title}
+                  className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 flex items-start gap-3.5"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[#0B5D44]/60 border border-[#34D399]/30 text-[#E5C469] flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-white leading-snug">
+                      {pillar.title}
+                    </h3>
+                    <p className="text-xs text-white/70 leading-relaxed mt-1">
+                      {pillar.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -55,10 +55,10 @@ export function ProductComparisonTable({
     } else {
       featureList.push(
         { label: "Premium verified build quality & finish", zupe: true, other: false },
-        { label: "Fast & intuitive one-touch operation", zupe: true, other: false },
-        { label: "Ergonomic & durable modern design", zupe: true, other: false },
-        { label: "Verified genuine quality & secure packaging", zupe: true, other: false },
-        { label: "100% genuine authentic Turkiye Jam verified product", zupe: true, other: false }
+        { label: "Direct authorized brand sourcing", zupe: true, other: false },
+        { label: "Tamper-sealed pre-dispatch quality check", zupe: true, other: false },
+        { label: "Insured pan-India express delivery", zupe: true, other: false },
+        { label: "100% genuine Vittal Lifestyle authenticity guarantee", zupe: true, other: false }
       );
     }
   }
@@ -66,14 +66,14 @@ export function ProductComparisonTable({
   // Ensure exactly 4-5 rows
   while (featureList.length < 4) {
     featureList.push({
-      label: "Tested & verified authentic Turkiye Jam performance",
+      label: "Verified authentic Vittal Lifestyle quality standard",
       zupe: true,
       other: false,
     });
   }
 
   const shortName = product.name.split(" ").slice(0, 3).join(" ");
-  const fallbackPoster = product.poster_image || product.images?.[0] || "/products/ripple-lamp.jpg";
+  const fallbackPoster = product.poster_image || product.images?.[0] || "/vittal/product-whey-protein-jar.png";
 
   return (
     <div className={`w-full my-7 select-none font-mograph ${className}`}>
@@ -98,20 +98,20 @@ export function ProductComparisonTable({
                 Features
               </th>
 
-              {/* Vittal Lifestyle Product Column (Lime Header) */}
-              <th className="w-[29%] p-2 sm:p-3 bg-gradient-to-b from-[#95CF42] to-[#7EBA2B] text-neutral-950 text-center align-middle border-x border-[#6B9E3A]/40">
+              {/* Vittal Lifestyle Product Column (Imperial Emerald Header) */}
+              <th className="w-[29%] p-2 sm:p-3 bg-gradient-to-b from-[#0B5D44] to-[#074230] text-white text-center align-middle border-x border-[#074230]">
                 <div className="flex flex-col items-center justify-center gap-1">
-                  <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider block leading-tight text-neutral-950 line-clamp-1">
+                  <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider block leading-tight text-[#E5C469] line-clamp-1">
                     Vittal Lifestyle
                   </span>
-                  <span className="text-[10px] sm:text-[11px] font-bold text-[#1E300E] block leading-tight line-clamp-1">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-white/90 block leading-tight line-clamp-1">
                     {shortName}
                   </span>
-                  <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg overflow-hidden bg-white/40 border border-white/60 shadow-2xs mt-0.5">
+                  <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-lg overflow-hidden bg-white border border-white/40 shadow-2xs mt-0.5">
                     <img
                       src={fallbackPoster}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain p-0.5"
                       loading="lazy"
                     />
                   </div>
@@ -149,9 +149,9 @@ export function ProductComparisonTable({
                   {item.label}
                 </td>
 
-                {/* Zupe Column (Green Check) */}
-                <td className="p-2 sm:p-3 text-center align-middle bg-orange-50/30 border-x border-orange-100/60">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-2xs">
+                {/* Vittal Column (Emerald Check) */}
+                <td className="p-2 sm:p-3 text-center align-middle bg-[#F3FAF7]/60 border-x border-[#E2EDE8]">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#E6F4EF] text-[#0B5D44] mx-auto flex items-center justify-center shadow-2xs">
                     <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
                   </div>
                 </td>

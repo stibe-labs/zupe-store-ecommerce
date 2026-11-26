@@ -381,7 +381,7 @@ export default function AbandonedCartsAdminPage() {
                 disabled={refreshing}
                 className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-xs cursor-pointer"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#002D62]" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#0B5D44]" : ""}`} />
                 <span>{refreshing ? "Syncing..." : "Refresh"}</span>
               </button>
             </div>
@@ -618,7 +618,7 @@ export default function AbandonedCartsAdminPage() {
             <div className="overflow-x-auto">
               {loading ? (
                 <div className="py-20 text-center">
-                  <RefreshCw className="w-8 h-8 text-[#002D62] animate-spin mx-auto mb-3" />
+                  <RefreshCw className="w-8 h-8 text-[#0B5D44] animate-spin mx-auto mb-3" />
                   <p className="text-sm font-semibold text-slate-600">Loading abandoned carts...</p>
                 </div>
               ) : filteredCheckouts.length === 0 ? (

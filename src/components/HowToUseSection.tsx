@@ -100,9 +100,9 @@ function HowToUseCard({
       ref={cardRef}
       className={`flex flex-col h-full bg-white select-none transition-all duration-200 overflow-hidden ${cardRadius} ${cardBorder} ${cardShadow}`}
     >
-      {/* 1. Square 1:1 Media Container with #F2F8EB background */}
+      {/* 1. Square 1:1 Media Container with #F3FAF7 background */}
       {hasMedia ? (
-        <div className="relative w-full aspect-square bg-[#F2F8EB] overflow-hidden flex items-center justify-center shrink-0">
+        <div className="relative w-full aspect-square bg-[#F3FAF7] overflow-hidden flex items-center justify-center shrink-0">
           {isVideo ? (
             <video
               ref={videoRef}
@@ -133,8 +133,8 @@ function HowToUseCard({
           )}
         </div>
       ) : (
-        <div className="relative w-full aspect-square bg-[#F2F8EB]/85 border-b border-[#6B9E3A]/10 flex flex-col items-center justify-center p-2 text-center shrink-0">
-          <div className="w-8 h-8 rounded-full bg-[#E5F2D0] flex items-center justify-center mb-1 text-[#3B581C]">
+        <div className="relative w-full aspect-square bg-[#F3FAF7]/85 border-b border-[#0B5D44]/10 flex flex-col items-center justify-center p-2 text-center shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#E6F4EF] flex items-center justify-center mb-1 text-[#074230]">
             <svg
               className="w-4 h-4 stroke-[2]"
               viewBox="0 0 24 24"
@@ -148,7 +148,7 @@ function HowToUseCard({
               <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
             </svg>
           </div>
-          <span className="text-[9px] font-bold text-[#6B9E3A] uppercase tracking-wider">
+          <span className="text-[9px] font-bold text-[#0B5D44] uppercase tracking-wider">
             {isPreview ? "Upload Media" : stepBadge}
           </span>
         </div>
@@ -157,7 +157,7 @@ function HowToUseCard({
       {/* 2. Text Content: Step Badge, Optional Title, Optional Description */}
       <div className={`flex flex-col flex-1 min-w-0 ${isMobilePreview ? "p-2" : "p-2 sm:p-2.5"}`}>
         {/* Step Badge (Always displayed automatically in sequential order) */}
-        <span className={`font-bold uppercase tracking-wider text-[#6B9E3A] leading-none ${
+        <span className={`font-bold uppercase tracking-wider text-[#0B5D44] leading-none ${
           isMobilePreview ? "text-[10px]" : "text-[10px] sm:text-[11px]"
         }`}>
           {stepBadge}
@@ -364,7 +364,7 @@ export function HowToUseSection({
               aria-label="Previous step"
               className={`${
                 isDesktopPreview ? "flex" : "hidden md:flex"
-              } absolute -left-3.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/95 border border-neutral-200 text-neutral-700 shadow-md items-center justify-center hover:bg-[#6B9E3A] hover:text-white hover:border-[#6B9E3A] active:scale-95 transition-all duration-150 cursor-pointer`}
+              } absolute -left-3.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/95 border border-neutral-200 text-neutral-700 shadow-md items-center justify-center hover:bg-[#0B5D44] hover:text-white hover:border-[#0B5D44] active:scale-95 transition-all duration-150 cursor-pointer`}
             >
               <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             </button>
@@ -378,7 +378,7 @@ export function HowToUseSection({
               aria-label="Next step"
               className={`${
                 isDesktopPreview ? "flex" : "hidden md:flex"
-              } absolute -right-3.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/95 border border-neutral-200 text-neutral-700 shadow-md items-center justify-center hover:bg-[#6B9E3A] hover:text-white hover:border-[#6B9E3A] active:scale-95 transition-all duration-150 cursor-pointer`}
+              } absolute -right-3.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/95 border border-neutral-200 text-neutral-700 shadow-md items-center justify-center hover:bg-[#0B5D44] hover:text-white hover:border-[#0B5D44] active:scale-95 transition-all duration-150 cursor-pointer`}
             >
               <ChevronRight className="w-4 h-4 stroke-[2.5]" />
             </button>

@@ -133,7 +133,7 @@ export function Animated3DTruck({ className = "" }: { className?: string }) {
           {/* Cab 3D Forest Green Gradient */}
           <linearGradient id="cabGradient" x1="28" y1="7" x2="42" y2="19" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#4A7C24" />
-            <stop offset="40%" stopColor="#3B581C" />
+            <stop offset="40%" stopColor="#074230" />
             <stop offset="100%" stopColor="#253A10" />
           </linearGradient>
 
@@ -182,8 +182,8 @@ export function Animated3DTruck({ className = "" }: { className?: string }) {
         />
 
         {/* 3. Aerodynamic Wind Streaks behind Cargo */}
-        <line x1="2" y1="7" x2="5" y2="7" stroke="#3B581C" strokeWidth="1" strokeLinecap="round" className="wind-streak-1 opacity-70" />
-        <line x1="0" y1="11" x2="4" y2="11" stroke="#6B9E3A" strokeWidth="1" strokeLinecap="round" className="wind-streak-2 opacity-60" />
+        <line x1="2" y1="7" x2="5" y2="7" stroke="#074230" strokeWidth="1" strokeLinecap="round" className="wind-streak-1 opacity-70" />
+        <line x1="0" y1="11" x2="4" y2="11" stroke="#0B5D44" strokeWidth="1" strokeLinecap="round" className="wind-streak-2 opacity-60" />
 
         {/* 4. Truck Body (Bouncing on suspension) */}
         <g className="truck-chassis-bounce">
@@ -198,7 +198,7 @@ export function Animated3DTruck({ className = "" }: { className?: string }) {
           <line x1="4.5" y1="18" x2="27.5" y2="18" stroke="#94A3B8" strokeWidth="0.6" />
 
           {/* Vittal Lifestyle Brand Stripe on Container */}
-          <rect x="4" y="11" width="24" height="2.2" fill="#6B9E3A" fillOpacity="0.85" />
+          <rect x="4" y="11" width="24" height="2.2" fill="#0B5D44" fillOpacity="0.85" />
           <circle cx="16" cy="12.1" r="0.8" fill="#FFFFFF" />
 
           {/* Rear Container Door Gap Line */}

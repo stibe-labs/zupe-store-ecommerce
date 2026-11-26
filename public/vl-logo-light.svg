@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 420 96" fill="none" role="img" aria-label="Vittal Lifestyle Official Logo">
+  <defs><linearGradient id="vl_l_gold" x1="18" y1="5" x2="58" y2="25" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#E5C469"/>
+        <stop offset="55%" stop-color="#C59B27"/>
+        <stop offset="100%" stop-color="#A37E18"/>
+      </linearGradient>
+      <linearGradient id="vl_l_bag" x1="12" y1="21" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#0E7153"/>
+        <stop offset="100%" stop-color="#074230"/>
+      </linearGradient>
+      <linearGradient id="vl_l_star" x1="47" y1="4" x2="60" y2="17" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#F3D37A"/>
+        <stop offset="100%" stop-color="#C59B27"/>
+      </linearGradient></defs>
+  <g transform="translate(14,13) scale(1.08)"><path d="M22.5 23.5 V15.5 A9.5 9.5 0 0 1 41.5 15.5 V23.5" stroke="url(#vl_l_gold)" stroke-width="4.1" stroke-linecap="round" fill="none"/>
+      <path d="M16.5 21.5 H47.5 C51.8 21.5 54.4 24.4 54.7 28.6 L55.8 46.2 C56.2 52.0 52.0 56.0 46.2 56.0 H17.8 C12.0 56.0 7.8 52.0 8.2 46.2 L9.3 28.6 C9.6 24.4 12.2 21.5 16.5 21.5 Z" fill="url(#vl_l_bag)"/>
+      <path d="M15.8 22.8 H48.2" stroke="#A7F3D0" stroke-opacity="0.22" stroke-width="1.1" stroke-linecap="round"/>
+      <circle cx="22.5" cy="25.8" r="1.6" fill="#E5C469" fill-opacity="0.88"/>
+      <circle cx="41.5" cy="25.8" r="1.6" fill="#E5C469" fill-opacity="0.88"/>
+      <path d="M18.8 34.8 C19.8 39.2 23.2 43.9 28.9 46.5 C29.5 46.8 30.1 46.6 30.3 46.0 C30.6 45.2 30.5 44.3 30.1 43.5 C27.8 39.1 24.9 35.3 21.3 32.9 C20.1 32.1 18.4 33.3 18.8 34.8 Z" fill="#86EFAC"/>
+      <path d="M28.6 46.2 C28.4 46.9 29.2 47.4 29.9 47.0 C36.6 43.2 42.6 36.2 46.2 28.4 C46.7 27.3 45.4 26.3 44.5 27.0 C38.9 31.2 33.3 37.5 28.6 46.2 Z" fill="#FFFFFF"/>
+      <path d="M53.8 4.0 C54.7 8.4 56.0 9.7 60.4 10.6 C56.0 11.5 54.7 12.8 53.8 17.2 C52.9 12.8 51.6 11.5 47.2 10.6 C51.6 9.7 52.9 8.4 53.8 4.0 Z" fill="url(#vl_l_star)"/></g>
+  <text x="98" y="61" font-family="Manrope, Avenir Next, Plus Jakarta Sans, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="42" letter-spacing="-1.2" fill="#0C1412">vittal<tspan dx="7" font-weight="400" fill="#0B5D44">lifestyle</tspan></text>
+</svg>

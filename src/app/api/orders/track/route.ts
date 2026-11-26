@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
       // Ensure items are completely normalized with name, product_name, price, unit_price
       if (Array.isArray(target.items)) {
         target.items = target.items.map((it: any) => {
-          const name = it.product_name || it.name || it.title || "Turkiye Jam (3 Sachet Pack)";
+          const name = it.product_name || it.name || it.title || "Vittal Lifestyle Item";
           const quantity = Number(it.quantity || it.units || 1);
           const price = Number(it.unit_price ?? it.price ?? it.selling_price ?? (target.total_amount ? Math.round(target.total_amount / quantity) : 1099)) || 1099;
           return {
@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
             price,
             unit_price: price,
             total_price: Number(it.total_price ?? (price * quantity)),
-            image: it.image || it.poster_image || "/tj/turkiye-jam-3-strips.png",
+            image: it.image || it.poster_image || "/vittal/product-whey-protein-jar.png",
           };
         });
       }

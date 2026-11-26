@@ -213,7 +213,7 @@ export default function AdminExpensesPage() {
                 disabled={isRefreshing || loading}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm disabled:opacity-60"
               >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#002D62]" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#0B5D44]" : ""}`} />
                 <span>Sync</span>
               </button>
 
@@ -327,7 +327,7 @@ export default function AdminExpensesPage() {
                   {loading ? (
                     <tr>
                       <td colSpan={8} className="py-12 text-center">
-                        <RefreshCw className="w-6 h-6 text-[#002D62] animate-spin mx-auto mb-2" />
+                        <RefreshCw className="w-6 h-6 text-[#0B5D44] animate-spin mx-auto mb-2" />
                         <span className="text-slate-500 font-medium">Loading expense records...</span>
                       </td>
                     </tr>

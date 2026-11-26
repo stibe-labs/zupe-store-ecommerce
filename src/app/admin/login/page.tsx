@@ -15,6 +15,8 @@ import {
   AlertCircle,
   ChevronLeft,
 } from "lucide-react";
+import { BRAND_80_THEMES, Logo80AnimatedMark } from "@/components/Logo80AnimatedMark";
+import { VittalBrandLoader } from "@/components/VittalBrandLoader";
 
 function AdminLoginForm() {
   const router = useRouter();
@@ -192,21 +194,19 @@ function AdminLoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <div className="min-h-screen bg-[#070708] flex flex-col justify-between selection:bg-[#D4AF37] text-white selection:text-black">
+    <div className="min-h-screen bg-[#09110E] flex flex-col justify-between selection:bg-[#C59B27] text-white selection:text-[#09110E]">
       {/* Header */}
-      <header className="w-full border-b border-white/10 bg-[#0B0B0C]/90 backdrop-blur-md py-4">
+      <header className="w-full border-b border-white/10 bg-[#0B1511]/90 backdrop-blur-md py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative h-9 w-32 flex items-center justify-start">
-              <Image
-                src="/vl-logo-nobg.png"
-                alt="Vittal Lifestyle"
-                width={128}
-                height={36}
-                className="object-contain"
-              />
-            </div>
-            <span className="text-xs uppercase font-mono px-2 py-0.5 rounded bg-[#18181C] text-[#D4AF37] border border-white/10">
+          <Link href="/" className="flex items-center gap-2.5 group" aria-label="Vittal Lifestyle — Home">
+            <Logo80AnimatedMark
+              theme={BRAND_80_THEMES[0]}
+              surface="dark"
+              mode="hover-press"
+              size={36}
+              withWordmark
+            />
+            <span className="text-xs uppercase font-mono px-2 py-0.5 rounded bg-[#0B5D44]/40 text-[#E5C469] border border-[#C59B27]/40">
               ERP
             </span>
           </Link>
@@ -224,10 +224,12 @@ export default function AdminLoginPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <Suspense
           fallback={
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37]" />
-              <p className="text-xs text-neutral-400">Loading admin portal...</p>
-            </div>
+            <VittalBrandLoader
+              surface="dark"
+              label="Loading admin portal…"
+              sublabel="Enterprise ERP Console"
+              size={60}
+            />
           }
         >
           <AdminLoginForm />

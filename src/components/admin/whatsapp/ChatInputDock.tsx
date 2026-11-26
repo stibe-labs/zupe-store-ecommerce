@@ -211,7 +211,7 @@ export default function ChatInputDock({
         name: "B&O Beoplay E8 3.0 Wireless Earbuds",
         price: 2499,
         mrp: 3499,
-        image: "/vittal-digital-logo.png",
+        image: "/vl-logo-black.png",
         badge: "Top Seller • 1-Year Warranty",
         description:
           "True wireless earbuds with rich acoustic sound, fast wireless charging case, and comprehensive 1-year brand warranty.",

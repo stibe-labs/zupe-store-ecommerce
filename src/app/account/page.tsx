@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { BRAND_80_THEMES, Logo80AnimatedMark } from "@/components/Logo80AnimatedMark";
+import { VittalBrandLoader } from "@/components/VittalBrandLoader";
 import {
   User,
   Package,
@@ -47,7 +49,7 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout, updateUserProfile } = useAuth();
   const { totalWishlistItems } = useWishlist();
-  const { totalItems, openCart } = useCart();
+  const { totalItems } = useCart();
 
   // Delivery Addresses State
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
@@ -399,10 +401,12 @@ export default function AccountPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between font-mograph">
+      <div className="min-h-screen bg-[#F3FAF7] text-neutral-900 flex flex-col justify-between font-mograph">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center py-32">
-          <div className="w-10 h-10 border-4 border-neutral-200 border-t-[#95CF42] rounded-full animate-spin" />
+        <div className="flex-1 flex items-center justify-center py-24">
+          <VittalBrandLoader
+            label="Loading your account…"
+          />
         </div>
         <Footer />
       </div>
@@ -411,12 +415,17 @@ export default function AccountPage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between font-mograph">
+      <div className="min-h-screen bg-[#F3FAF7] text-neutral-900 flex flex-col justify-between font-mograph">
         <Navbar />
         <div className="max-w-md mx-auto px-4 pt-32 pb-24 text-center">
           <div className="bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center mx-auto mb-4 shadow-xs">
-              <User className="w-8 h-8" />
+            <div className="w-20 h-20 rounded-2xl bg-[#F3FAF7] border border-[#10B981]/30 flex items-center justify-center mx-auto mb-4 shadow-xs">
+              <Logo80AnimatedMark
+                theme={BRAND_80_THEMES[0]}
+                surface="light"
+                mode="ambient"
+                size={52}
+              />
             </div>
             <h2 className="text-2xl font-bold text-neutral-950 mb-2 font-mograph tracking-tight">Sign In to Your Account</h2>
             <p className="text-xs sm:text-sm text-neutral-600 mb-6 leading-relaxed font-normal">
@@ -425,7 +434,7 @@ export default function AccountPage() {
             <div className="space-y-3 font-mograph">
               <Link
                 href="/signin?redirect=/account"
-                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black font-bold text-sm shadow-sm transition-colors"
+                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-sm shadow-sm transition-colors"
               >
                 Sign In
               </Link>
@@ -446,18 +455,18 @@ export default function AccountPage() {
   const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
-    <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between pb-24 sm:pb-0 font-mograph">
+    <div className="min-h-screen bg-[#F3FAF7] text-neutral-900 flex flex-col justify-between pb-24 sm:pb-0 font-mograph">
       <Navbar />
 
       <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-16">
         {/* Profile Header Banner in Luxury Vittal Lifestyle Theme */}
         <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#111111] via-[#1a1c17] to-[#111111] text-white p-5 sm:p-7 shadow-xl border border-neutral-800 mb-6 sm:mb-8">
-          <div className="absolute -top-16 -right-16 w-64 h-64 bg-[#95CF42]/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-[#E2F5B4]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-64 h-64 bg-[#10B981]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-[#E6F4EF]/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6">
             <div className="flex items-center gap-4 sm:gap-5">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#95CF42] text-black font-bold text-2xl sm:text-3xl flex items-center justify-center shadow-md shrink-0 font-mograph">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#0B5D44] text-white font-bold text-2xl sm:text-3xl flex items-center justify-center shadow-md border border-[#34D399]/30 shrink-0 font-mograph">
                 {initial}
               </div>
               <div className="min-w-0 font-mograph">
@@ -466,8 +475,8 @@ export default function AccountPage() {
                     {user.name}
                   </h1>
                   {isSuperAdmin && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#95CF42]/20 text-[#95CF42] text-[10px] font-bold tracking-wide uppercase border border-[#95CF42]/40">
-                      <Shield className="w-3 h-3 text-[#95CF42]" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#10B981]/20 text-[#10B981] text-[10px] font-bold tracking-wide uppercase border border-[#10B981]/40">
+                      <Shield className="w-3 h-3 text-[#10B981]" />
                       Super Admin
                     </span>
                   )}
@@ -480,14 +489,14 @@ export default function AccountPage() {
                   </p>
                 ) : user.email ? (
                   <p className="text-xs sm:text-sm text-neutral-300 flex items-center gap-2 truncate">
-                    <Mail className="w-3.5 h-3.5 text-[#95CF42] shrink-0" />
+                    <Mail className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
                     <span className="truncate">{user.email}</span>
                   </p>
                 ) : null}
 
                 {user.email && !siteConfig.isSyntheticEmail(user.email) && (
                   <p className="text-xs text-neutral-400 flex items-center gap-2 truncate mt-0.5">
-                    <Mail className="w-3 h-3 text-[#95CF42]/80 shrink-0" />
+                    <Mail className="w-3 h-3 text-[#10B981]/80 shrink-0" />
                     <span className="truncate">{user.email}</span>
                   </p>
                 )}
@@ -499,7 +508,7 @@ export default function AccountPage() {
                     onClick={handleOpenProfileModal}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-colors cursor-pointer"
                   >
-                    <Edit2 className="w-3 h-3 text-[#95CF42]" />
+                    <Edit2 className="w-3 h-3 text-[#10B981]" />
                     <span>Edit Profile</span>
                   </button>
 
@@ -518,7 +527,7 @@ export default function AccountPage() {
                   {isSuperAdmin && (
                     <Link
                       href="/admin"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#95CF42]/20 hover:bg-[#95CF42]/30 text-[#95CF42] text-xs font-bold border border-[#95CF42]/40 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#10B981]/20 hover:bg-[#10B981]/30 text-[#10B981] text-xs font-bold border border-[#10B981]/40 transition-colors cursor-pointer"
                     >
                       <LayoutDashboard className="w-3 h-3" />
                       <span>Admin Portal</span>
@@ -533,8 +542,8 @@ export default function AccountPage() {
 
         {/* Global Toast Notice */}
         {addressNotice && (
-          <div className="mb-6 p-4 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/50 text-[#3D6318] text-xs font-bold flex items-center gap-2 shadow-xs">
-            <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0" />
+          <div className="mb-6 p-4 rounded-xl bg-[#F3FAF7] border border-[#10B981]/50 text-[#074230] text-xs font-bold flex items-center gap-2 shadow-xs">
+            <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0" />
             <span>{addressNotice}</span>
           </div>
         )}
@@ -544,19 +553,19 @@ export default function AccountPage() {
           {/* 1. My Orders */}
           <Link
             href="/orders"
-            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#95CF42] transition-all flex flex-col justify-between"
+            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#10B981] transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F3FAF7] text-[#074230] border border-[#10B981]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Package className="w-5 h-5" />
               </div>
-              <span className="text-[11px] font-semibold text-neutral-400 group-hover:text-[#6B9E3A] transition-colors flex items-center gap-0.5">
+              <span className="text-[11px] font-semibold text-neutral-400 group-hover:text-[#0B5D44] transition-colors flex items-center gap-0.5">
                 <span>View</span>
                 <ChevronRight className="w-3 h-3" />
               </span>
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#0B5D44] transition-colors leading-tight">
                 My Orders
               </h3>
               <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 mt-0.5 font-normal">
@@ -568,19 +577,19 @@ export default function AccountPage() {
           {/* 2. Order Tracking */}
           <Link
             href="/order-tracking"
-            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#95CF42] transition-all flex flex-col justify-between"
+            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#10B981] transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F3FAF7] text-[#074230] border border-[#10B981]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Truck className="w-5 h-5" />
               </div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold border border-[#95CF42]/40 leading-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#95CF42] animate-pulse" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F3FAF7] text-[#074230] text-[10px] font-bold border border-[#10B981]/40 leading-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
                 Live
               </span>
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#0B5D44] transition-colors leading-tight">
                 Order Tracking
               </h3>
               <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 mt-0.5 font-normal">
@@ -592,25 +601,25 @@ export default function AccountPage() {
           {/* 3. My Wishlist */}
           <Link
             href="/wishlist"
-            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#95CF42] transition-all flex flex-col justify-between"
+            className="group bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#10B981] transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F3FAF7] text-[#074230] border border-[#10B981]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <Heart className="w-5 h-5" />
               </div>
               {totalWishlistItems > 0 ? (
-                <span className="px-2 py-0.5 rounded-full bg-[#F4FBE8] text-[#3D6318] text-[10px] font-bold border border-[#95CF42]/40 leading-none">
+                <span className="px-2 py-0.5 rounded-full bg-[#F3FAF7] text-[#074230] text-[10px] font-bold border border-[#10B981]/40 leading-none">
                   {totalWishlistItems} saved
                 </span>
               ) : (
-                <span className="text-[11px] font-semibold text-neutral-400 group-hover:text-[#6B9E3A] transition-colors flex items-center gap-0.5">
+                <span className="text-[11px] font-semibold text-neutral-400 group-hover:text-[#0B5D44] transition-colors flex items-center gap-0.5">
                   <span>View</span>
                   <ChevronRight className="w-3 h-3" />
                 </span>
               )}
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#0B5D44] transition-colors leading-tight">
                 My Wishlist
               </h3>
               <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 mt-0.5 font-normal">
@@ -620,28 +629,27 @@ export default function AccountPage() {
           </Link>
 
           {/* 4. Shopping Bag */}
-          <button
-            type="button"
-            onClick={openCart}
-            className="group text-left bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#95CF42] transition-all flex flex-col justify-between cursor-pointer"
+          <Link
+            href="/cart"
+            className="group text-left bg-white rounded-2xl p-4 sm:p-5 border border-neutral-200/90 shadow-xs hover:shadow-md hover:border-[#0B5D44] transition-all flex flex-col justify-between cursor-pointer"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#F3FAF7] text-[#074230] border border-[#B8DFD1] flex items-center justify-center group-hover:scale-105 transition-transform">
                 <ShoppingBag className="w-5 h-5" />
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 text-[10px] font-bold border border-neutral-200 leading-none">
+              <span className="px-2 py-0.5 rounded-full bg-[#E6F4EF] text-[#074230] text-[10px] font-bold border border-[#B8DFD1] leading-none tabular-nums">
                 {totalItems} item{totalItems === 1 ? "" : "s"}
               </span>
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-[#0B5D44] transition-colors leading-tight">
                 Shopping Bag
               </h3>
               <p className="text-[11px] sm:text-xs text-neutral-500 line-clamp-1 mt-0.5 font-normal">
-                Express 1-click checkout cart
+                Review bag &amp; express checkout
               </p>
             </div>
-          </button>
+          </Link>
         </div>
 
         {/* ─── Delivery Addresses Management Section ─── */}
@@ -649,7 +657,7 @@ export default function AccountPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-neutral-100">
             <div>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-[#F3FAF7] text-[#074230] border border-[#10B981]/30 flex items-center justify-center">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
@@ -666,7 +674,7 @@ export default function AccountPage() {
             <button
               type="button"
               onClick={handleOpenAddAddress}
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold shadow-xs transition-colors cursor-pointer whitespace-nowrap self-start sm:self-center font-mograph"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer whitespace-nowrap self-start sm:self-center font-mograph"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Add New Address</span>
@@ -676,12 +684,15 @@ export default function AccountPage() {
           {/* Address Cards List */}
           <div className="pt-5">
             {loadingAddresses ? (
-              <div className="py-12 flex items-center justify-center">
-                <Loader2 className="w-7 h-7 text-[#6B9E3A] animate-spin" />
-              </div>
+              <VittalBrandLoader
+                label="Loading saved addresses…"
+                sublabel=""
+                size={48}
+                className="py-8"
+              />
             ) : addresses.length === 0 ? (
-              <div className="text-center py-10 px-4 rounded-xl bg-[#FAFCF6] border border-dashed border-neutral-300">
-                <div className="w-12 h-12 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center mx-auto mb-3">
+              <div className="text-center py-10 px-4 rounded-xl bg-[#F3FAF7] border border-dashed border-neutral-300">
+                <div className="w-12 h-12 rounded-xl bg-[#F3FAF7] text-[#074230] border border-[#10B981]/30 flex items-center justify-center mx-auto mb-3">
                   <MapPin className="w-6 h-6" />
                 </div>
                 <h3 className="text-sm font-bold text-neutral-900 mb-1">No Delivery Addresses Saved Yet</h3>
@@ -691,7 +702,7 @@ export default function AccountPage() {
                 <button
                   type="button"
                   onClick={handleOpenAddAddress}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold shadow-xs transition-colors cursor-pointer font-mograph"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer font-mograph"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Add First Address</span>
@@ -704,7 +715,7 @@ export default function AccountPage() {
                     key={addr.id}
                     className={`rounded-xl p-4 sm:p-5 border transition-all relative flex flex-col justify-between ${
                       addr.is_default
-                        ? "bg-[#F8FBEF] border-[#95CF42] shadow-xs ring-1 ring-[#95CF42]/30"
+                        ? "bg-[#F3FAF7] border-[#10B981] shadow-xs ring-1 ring-[#10B981]/30"
                         : "bg-white border-neutral-200 hover:border-neutral-300 shadow-xs"
                     }`}
                   >
@@ -724,7 +735,7 @@ export default function AccountPage() {
                         </div>
 
                         {addr.is_default ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#95CF42] text-black text-[10px] font-bold font-mograph">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#0B5D44] text-white text-[10px] font-bold font-mograph">
                             <Star className="w-2.5 h-2.5 fill-black text-black" />
                             Default
                           </span>
@@ -732,7 +743,7 @@ export default function AccountPage() {
                           <button
                             type="button"
                             onClick={() => handleSetDefaultAddress(addr.id)}
-                            className="text-[11px] font-semibold text-[#3D6318] hover:text-[#6B9E3A] hover:underline cursor-pointer"
+                            className="text-[11px] font-semibold text-[#074230] hover:text-[#0B5D44] hover:underline cursor-pointer"
                           >
                             Set Default
                           </button>
@@ -762,8 +773,8 @@ export default function AccountPage() {
 
                     {/* Action buttons */}
                     <div className="pt-2.5 border-t border-neutral-100 flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-[#3D6318] font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-[#6B9E3A]" />
+                      <span className="text-[11px] text-[#074230] font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-[#0B5D44]" />
                         <span>Ready for checkout</span>
                       </span>
 
@@ -773,7 +784,7 @@ export default function AccountPage() {
                           onClick={() => handleOpenEditAddress(addr)}
                           className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 transition-colors cursor-pointer"
                         >
-                          <Edit2 className="w-3 h-3 text-[#6B9E3A]" />
+                          <Edit2 className="w-3 h-3 text-[#0B5D44]" />
                           <span>Edit</span>
                         </button>
                         <button
@@ -796,8 +807,8 @@ export default function AccountPage() {
         {/* Dedicated Support Banner in Vittal Lifestyle Theme */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#111111] via-[#1a1c17] to-[#111111] text-white p-5 sm:p-6 shadow-md border border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div className="font-mograph">
-            <div className="flex items-center gap-2 text-[#95CF42] mb-1">
-              <Sparkles className="w-4 h-4 text-[#95CF42]" />
+            <div className="flex items-center gap-2 text-[#10B981] mb-1">
+              <Sparkles className="w-4 h-4 text-[#10B981]" />
               <span className="text-[11px] font-bold tracking-wide font-mograph">
                 24/7 Dedicated Support
               </span>
@@ -844,7 +855,7 @@ export default function AccountPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-[#F3FAF7] text-[#074230] border border-[#10B981]/30 flex items-center justify-center shadow-xs">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
@@ -876,7 +887,7 @@ export default function AccountPage() {
                     value={recipientName}
                     onChange={(e) => setRecipientName(e.target.value)}
                     placeholder="e.g. John Doe"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -890,7 +901,7 @@ export default function AccountPage() {
                     value={addressPhone}
                     onChange={(e) => setAddressPhone(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
@@ -905,7 +916,7 @@ export default function AccountPage() {
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                   placeholder="Flat / House No., Apartment, Street, Landmark"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all"
                 />
               </div>
 
@@ -920,7 +931,7 @@ export default function AccountPage() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="City"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -933,7 +944,7 @@ export default function AccountPage() {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     placeholder="State"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -947,7 +958,7 @@ export default function AccountPage() {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="6-digit PIN"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
@@ -965,7 +976,7 @@ export default function AccountPage() {
                       onClick={() => setTag(t)}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
                         tag === t
-                          ? "bg-[#95CF42] text-black border-[#95CF42] font-bold shadow-xs"
+                          ? "bg-[#0B5D44] text-white border-[#0B5D44] font-bold shadow-xs"
                           : "bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100"
                       }`}
                     >
@@ -984,7 +995,7 @@ export default function AccountPage() {
                   type="checkbox"
                   checked={isDefault}
                   onChange={(e) => setIsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded text-[#95CF42] focus:ring-[#95CF42] border-neutral-300 cursor-pointer accent-[#95CF42]"
+                  className="w-4 h-4 rounded text-[#10B981] focus:ring-[#10B981] border-neutral-300 cursor-pointer accent-[#10B981]"
                 />
                 <span className="text-xs font-medium text-neutral-700">
                   Make this my default delivery address
@@ -1002,7 +1013,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={addressSaving}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold transition-all shadow-md shadow-[#95CF42]/20 cursor-pointer disabled:opacity-50 font-mograph"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white text-xs font-bold transition-all shadow-md shadow-[#0B5D44]/20 cursor-pointer disabled:opacity-50 font-mograph"
                 >
                   {addressSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Address</span>
@@ -1026,7 +1037,7 @@ export default function AccountPage() {
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-[#F4FBE8] text-[#3D6318] border border-[#95CF42]/30 flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-[#F3FAF7] text-[#074230] border border-[#10B981]/30 flex items-center justify-center shadow-xs">
                 <User className="w-5 h-5" />
               </div>
               <div>
@@ -1047,8 +1058,8 @@ export default function AccountPage() {
             )}
 
             {profileSuccess && (
-              <div className="mb-4 p-3 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-semibold flex items-center gap-2">
-                <Check className="w-4 h-4 text-[#6B9E3A]" />
+              <div className="mb-4 p-3 rounded-xl bg-[#F3FAF7] border border-[#10B981]/40 text-[#074230] text-xs font-semibold flex items-center gap-2">
+                <Check className="w-4 h-4 text-[#0B5D44]" />
                 <span>Profile updated successfully!</span>
               </div>
             )}
@@ -1064,7 +1075,7 @@ export default function AccountPage() {
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
                   placeholder="Your full name"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all"
                 />
               </div>
 
@@ -1077,7 +1088,7 @@ export default function AccountPage() {
                   value={profilePhone}
                   onChange={(e) => setProfilePhone(e.target.value)}
                   placeholder="e.g. 9876543210"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#95CF42] focus:border-transparent transition-all"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent transition-all"
                 />
                 <p className="text-[11px] text-neutral-500 mt-1 font-normal">
                   Used for order tracking SMS, courier OTP, and delivery coordination.
@@ -1110,7 +1121,7 @@ export default function AccountPage() {
                 <button
                   type="submit"
                   disabled={profileSaving || profileSuccess}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold transition-all shadow-md shadow-[#95CF42]/20 cursor-pointer disabled:opacity-50 font-mograph"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white text-xs font-bold transition-all shadow-md shadow-[#0B5D44]/20 cursor-pointer disabled:opacity-50 font-mograph"
                 >
                   {profileSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>Save Changes</span>

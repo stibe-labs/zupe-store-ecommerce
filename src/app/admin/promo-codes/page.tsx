@@ -571,7 +571,7 @@ export default function AdminPromoCodesPage() {
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
             {loading ? (
               <div className="py-20 text-center space-y-3">
-                <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                <div className="w-8 h-8 border-2 border-[#0B5D44] border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-sm text-slate-500 font-medium">Loading promo codes from database...</p>
               </div>
             ) : filteredCoupons.length === 0 ? (

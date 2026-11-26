@@ -94,7 +94,7 @@ export default function AdminSidebar({
       href: "/admin/whatsapp",
       icon: MessageSquare,
       badge: "Live",
-      badgeColor: "bg-[#B8ED3E]/20 text-[#4A7C0F] border border-[#B8ED3E]/50",
+      badgeColor: "bg-[#10B981]/20 text-[#0B5D44] border border-[#10B981]/50",
       highlight: true,
     },
     {
@@ -135,7 +135,7 @@ export default function AdminSidebar({
       href: "/admin/calculator",
       icon: Calculator,
       badge: "Calc",
-      badgeColor: "bg-[#B8ED3E]/20 text-[#4A7C0F] border border-[#B8ED3E]/40",
+      badgeColor: "bg-[#10B981]/20 text-[#0B5D44] border border-[#10B981]/40",
     },
     { name: "Customers", href: "/admin/customers", icon: UserCheck },
     { name: "Settings", href: "/admin/settings", icon: Settings },
@@ -151,7 +151,7 @@ export default function AdminSidebar({
         />
       )}
 
-      {/* Sidebar Container — white with lime green accents */}
+      {/* Sidebar Container — white with Imperial Emerald & Champagne Gold accents */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-white text-neutral-700 flex flex-col justify-between overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-neutral-200/80 shadow-sm ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -160,20 +160,20 @@ export default function AdminSidebar({
         {/* Brand / Logo */}
         <div>
           <div className="h-16 flex items-center justify-between px-5 border-b border-neutral-100">
-            <Link href="/admin" className="flex items-center gap-3 group">
-              <div className="relative h-10 w-32 flex items-center justify-start group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
+            <Link href="/admin" className="flex items-center gap-2.5 group min-w-0">
+              <div className="relative h-9 w-32 flex items-center justify-start group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
                 <Image
-                  src="/vl-logo-nobg.png"
+                  src="/vl-logo-light.svg"
                   alt="Vittal Lifestyle"
                   width={128}
-                  height={40}
-                  className="object-contain w-auto h-9"
+                  height={36}
+                  className="object-contain w-auto h-8"
                   priority
                 />
               </div>
-              <div className="flex flex-col justify-center">
-                <span className="text-[9px] uppercase tracking-widest text-[#4A7C0F] font-bold bg-[#B8ED3E]/20 px-1.5 py-0.5 rounded-md">
-                  Admin ERP
+              <div className="flex flex-col justify-center shrink-0">
+                <span className="text-[9px] uppercase tracking-widest text-[#0B5D44] font-bold bg-[#E6F4EF] border border-[#B8DFD1] px-1.5 py-0.5 rounded-md">
+                  ERP
                 </span>
               </div>
             </Link>
@@ -202,14 +202,14 @@ export default function AdminSidebar({
                   onClick={onCloseMobile}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
                     isActive
-                      ? "bg-[#B8ED3E] text-[#111111] border-l-4 border-[#7ABF1E] shadow-sm font-bold"
-                      : "text-neutral-500 hover:text-[#111111] hover:bg-[#B8ED3E]/10"
+                      ? "bg-[#10B981] text-[#111111] border-l-4 border-[#7ABF1E] shadow-sm font-bold"
+                      : "text-neutral-500 hover:text-[#111111] hover:bg-[#10B981]/10"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <item.icon
                       className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                        isActive ? "text-[#111111]" : "text-neutral-400 group-hover:text-[#4A7C0F]"
+                        isActive ? "text-[#111111]" : "text-neutral-400 group-hover:text-[#0B5D44]"
                       }`}
                     />
                     <span>{item.name}</span>
@@ -236,7 +236,7 @@ export default function AdminSidebar({
 
         {/* Bottom Orders Sparkline Card & Brand Footnote */}
         <div className="p-4 space-y-3 border-t border-neutral-100">
-          <div className="p-3 rounded-xl bg-[#B8ED3E]/10 border border-[#B8ED3E]/40 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-[#10B981]/10 border border-[#10B981]/40 flex items-center justify-between">
             <div>
               <p className="text-[11px] uppercase tracking-wider text-neutral-500 font-semibold">
                 Total Live Orders
@@ -245,22 +245,22 @@ export default function AdminSidebar({
                 <span className="text-base font-bold text-[#111111]">
                   {totalOrders.toLocaleString()}
                 </span>
-                <span className="text-xs text-[#4A7C0F] font-medium flex items-center">
+                <span className="text-xs text-[#0B5D44] font-medium flex items-center">
                   <TrendingUp className="w-3 h-3 mr-0.5" /> {profitMargin}% margin
                 </span>
               </div>
             </div>
             {/* Mini Sparkline Bar Chart */}
             <div className="w-9 h-7 flex items-end justify-between gap-1 px-1">
-              <div className="w-1.5 h-3 bg-[#B8ED3E]/50 rounded-t" />
-              <div className="w-1.5 h-4 bg-[#B8ED3E]/80 rounded-t" />
-              <div className="w-1.5 h-6 bg-[#B8ED3E] rounded-t" />
+              <div className="w-1.5 h-3 bg-[#10B981]/50 rounded-t" />
+              <div className="w-1.5 h-4 bg-[#10B981]/80 rounded-t" />
+              <div className="w-1.5 h-6 bg-[#10B981] rounded-t" />
             </div>
           </div>
 
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-[#B8ED3E] text-[#111111] flex items-center justify-center text-xs font-black">
+              <div className="w-6 h-6 rounded-lg bg-[#10B981] text-[#111111] flex items-center justify-center text-xs font-black">
                 VL
               </div>
               <div>

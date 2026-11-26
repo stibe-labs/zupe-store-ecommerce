@@ -178,9 +178,9 @@ export function AuthCard({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-xl bg-[#F4FBE8] text-[#2E4D12] border border-[#95CF42]/40 shadow-xs flex items-start gap-3 relative overflow-hidden font-mograph"
+          className="mb-4 sm:mb-5 p-3.5 sm:p-4 rounded-xl bg-[#F3FAF7] text-[#0C1412] border border-[#10B981]/40 shadow-xs flex items-start gap-3 relative overflow-hidden font-mograph"
         >
-          <div className="w-7 h-7 rounded-full bg-[#95CF42] text-black font-bold text-sm flex items-center justify-center shrink-0 shadow-xs mt-0.5 font-mograph">
+          <div className="w-7 h-7 rounded-full bg-[#0B5D44] text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs mt-0.5 font-mograph">
             !
           </div>
           <div className="flex-1 min-w-0 font-mograph">
@@ -257,9 +257,9 @@ export function AuthCard({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-4 p-3 rounded-xl bg-[#F4FBE8] border border-[#95CF42]/40 text-[#3D6318] text-xs font-bold flex items-center gap-2.5 shadow-xs"
+              className="mb-4 p-3 rounded-xl bg-[#F3FAF7] border border-[#10B981]/40 text-[#074230] text-xs font-bold flex items-center gap-2.5 shadow-xs"
             >
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-[#6B9E3A]" />
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-[#0B5D44]" />
               <span>{success}</span>
             </motion.div>
           )}
@@ -277,7 +277,7 @@ export function AuthCard({
                   </span>
                 </div>
                 <div className="flex gap-2 font-mograph">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-neutral-200 bg-[#FAFCF6] text-neutral-900 text-sm font-bold select-none shrink-0 shadow-xs">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-neutral-200 bg-[#F3FAF7] text-neutral-900 text-sm font-bold select-none shrink-0 shadow-xs">
                     <span>🇮🇳</span>
                     <span>+91</span>
                   </div>
@@ -293,7 +293,7 @@ export function AuthCard({
                       placeholder="Enter 10-digit number"
                       value={phone}
                       onChange={handlePhoneChange}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-300 text-sm font-bold text-neutral-900 bg-white placeholder:text-neutral-400 placeholder:font-normal focus:outline-none focus:border-[#95CF42] focus:ring-4 focus:ring-[#95CF42]/20 shadow-xs transition-all font-mograph"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-300 text-sm font-bold text-neutral-900 bg-white placeholder:text-neutral-400 placeholder:font-normal focus:outline-none focus:border-[#10B981] focus:ring-4 focus:ring-[#10B981]/20 shadow-xs transition-all font-mograph"
                     />
                   </div>
                 </div>
@@ -302,10 +302,10 @@ export function AuthCard({
               <button
                 type="submit"
                 disabled={loading || phone.length !== 10}
-                className="w-full mt-3 py-3 px-5 rounded-full bg-[#95CF42] hover:bg-[#85BE33] active:bg-[#78AC2C] text-black font-bold text-sm font-mograph shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-3 min-h-[48px] py-3 px-5 rounded-full bg-[#0B5D44] hover:bg-[#074230] active:scale-[0.99] disabled:bg-neutral-200 disabled:text-neutral-500 disabled:shadow-none text-white font-bold text-sm font-mograph shadow-md shadow-[#0B5D44]/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-black" />
+                  <Loader2 className="w-5 h-5 animate-spin text-white" />
                 ) : (
                   <>
                     <span>Continue</span>
@@ -320,9 +320,9 @@ export function AuthCard({
           {step === "otp" && (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
               {/* Phone Info & Change button */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#FAFCF6] border border-neutral-200 text-xs shadow-xs">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#F3FAF7] border border-neutral-200 text-xs shadow-xs">
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-[#6B9E3A]" />
+                  <Phone className="w-4 h-4 text-[#0B5D44]" />
                   <span className="font-bold text-neutral-900 text-sm">
                     +91 {phone.length === 10 ? `${phone.slice(0, 5)} ${phone.slice(5)}` : phone}
                   </span>
@@ -334,7 +334,7 @@ export function AuthCard({
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="font-bold text-xs text-[#3D6318] hover:text-[#6B9E3A] hover:underline cursor-pointer"
+                  className="font-bold text-xs text-[#074230] hover:text-[#0B5D44] hover:underline cursor-pointer"
                 >
                   Change
                 </button>
@@ -350,7 +350,7 @@ export function AuthCard({
                     <Clock className="w-3.5 h-3.5 text-neutral-400" />
                     <span>
                       {expiryCountdown > 0 ? (
-                        <>Expires in <span className="font-mono text-[#3D6318] font-bold">{formatTime(expiryCountdown)}</span></>
+                        <>Expires in <span className="font-mono text-[#074230] font-bold">{formatTime(expiryCountdown)}</span></>
                       ) : (
                         <span className="text-red-600 font-bold">Code Expired</span>
                       )}
@@ -373,7 +373,7 @@ export function AuthCard({
                       setOtp(digits);
                       if (error) setError(null);
                     }}
-                    className="w-full text-center tracking-[0.5em] text-xl font-mono font-black py-3 rounded-xl border border-neutral-300 text-neutral-900 bg-white placeholder:text-neutral-300 placeholder:tracking-widest focus:outline-none focus:border-[#95CF42] focus:ring-4 focus:ring-[#95CF42]/20 shadow-xs transition-all font-mograph"
+                    className="w-full text-center tracking-[0.5em] text-xl font-mono font-black py-3 rounded-xl border border-neutral-300 text-neutral-900 bg-white placeholder:text-neutral-300 placeholder:tracking-widest focus:outline-none focus:border-[#10B981] focus:ring-4 focus:ring-[#10B981]/20 shadow-xs transition-all font-mograph"
                   />
                 </div>
 
@@ -383,7 +383,7 @@ export function AuthCard({
                     type="button"
                     disabled={loading || expiryCountdown > 120}
                     onClick={() => handleSendOtp()}
-                    className="text-xs font-bold text-[#3D6318] hover:text-[#6B9E3A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1 cursor-pointer font-mograph"
+                    className="text-xs font-bold text-[#074230] hover:text-[#0B5D44] disabled:opacity-40 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1 cursor-pointer font-mograph"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>
@@ -408,7 +408,7 @@ export function AuthCard({
                       placeholder="e.g. Alex Johnson"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-300 text-sm font-semibold text-neutral-900 bg-white placeholder:text-neutral-400 focus:outline-none focus:border-[#95CF42] focus:ring-4 focus:ring-[#95CF42]/20 shadow-xs transition-all font-mograph"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-300 text-sm font-semibold text-neutral-900 bg-white placeholder:text-neutral-400 focus:outline-none focus:border-[#10B981] focus:ring-4 focus:ring-[#10B981]/20 shadow-xs transition-all font-mograph"
                     />
                   </div>
                 </div>
@@ -418,10 +418,10 @@ export function AuthCard({
               <button
                 type="submit"
                 disabled={loading || otp.length < 6 || expiryCountdown <= 0}
-                className="w-full mt-2 py-3 px-4 rounded-full bg-[#95CF42] hover:bg-[#85BE33] active:bg-[#78AC2C] text-black font-bold text-sm font-mograph shadow-md hover:shadow-lg hover:shadow-[#95CF42]/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-2 min-h-[48px] py-3 px-4 rounded-full bg-[#0B5D44] hover:bg-[#074230] active:scale-[0.99] disabled:bg-neutral-200 disabled:text-neutral-500 disabled:shadow-none text-white font-bold text-sm font-mograph shadow-md shadow-[#0B5D44]/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-black" />
+                  <Loader2 className="w-5 h-5 animate-spin text-white" />
                 ) : (
                   <>
                     <span>Verify &amp; Continue</span>

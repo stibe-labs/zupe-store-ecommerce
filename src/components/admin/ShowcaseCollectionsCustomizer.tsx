@@ -260,7 +260,7 @@ export function ShowcaseCollectionsCustomizer({
   if (loading) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-xs">
-        <div className="w-8 h-8 border-3 border-[#FF7A00] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <div className="w-8 h-8 border-3 border-[#0B5D44] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
         <p className="text-sm font-semibold text-slate-500">
           Loading Showcase Collections...
         </p>
@@ -301,7 +301,7 @@ export function ShowcaseCollectionsCustomizer({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2 rounded-xl bg-[#6B9E3A] hover:bg-[#5C8931] text-white text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            className="px-5 py-2 rounded-xl bg-[#0B5D44] hover:bg-[#5C8931] text-white text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-50"
           >
             {saving ? (
               <>
@@ -333,7 +333,7 @@ export function ShowcaseCollectionsCustomizer({
               onClick={() => setActiveTab(sec.key)}
               className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                 isActive
-                  ? "bg-white border-[#6B9E3A] ring-2 ring-[#6B9E3A]/20 shadow-md"
+                  ? "bg-white border-[#0B5D44] ring-2 ring-[#0B5D44]/20 shadow-md"
                   : "bg-white/80 border-slate-200 hover:border-slate-300 hover:bg-white shadow-xs"
               }`}
             >
@@ -359,7 +359,7 @@ export function ShowcaseCollectionsCustomizer({
                   <span
                     className={`text-[11px] font-black px-2.5 py-0.5 rounded-full border ${
                       isActive
-                        ? "bg-[#EBF5DF] border-[#6B9E3A]/40 text-[#344C19]"
+                        ? "bg-[#E6F4EF] border-[#0B5D44]/40 text-[#074230]"
                         : "bg-slate-100 border-slate-200 text-slate-600"
                     }`}
                   >
@@ -409,7 +409,7 @@ export function ShowcaseCollectionsCustomizer({
                     }))
                   }
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    collections.bestSellersEnabled !== false ? "bg-[#6B9E3A]" : "bg-slate-300"
+                    collections.bestSellersEnabled !== false ? "bg-[#0B5D44]" : "bg-slate-300"
                   }`}
                   title="Enable/disable Best Sellers section on homepage"
                 >
@@ -421,7 +421,7 @@ export function ShowcaseCollectionsCustomizer({
                 </button>
                 <span
                   className={`text-xs font-black ${
-                    collections.bestSellersEnabled !== false ? "text-[#344C19]" : "text-slate-400"
+                    collections.bestSellersEnabled !== false ? "text-[#074230]" : "text-slate-400"
                   }`}
                 >
                   {collections.bestSellersEnabled !== false ? "Enabled" : "Disabled"}

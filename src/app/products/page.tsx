@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { VittalSkeletonGrid, VittalVerifiedBadge } from "@/components/VittalBrandLoader";
+import { CardAddToCartControl } from "@/components/CardAddToCartControl";
 import {
   DEFAULT_PRODUCTS,
   doesCategoryMatch,
@@ -63,7 +65,7 @@ const SORT_OPTIONS: {
   {
     value: "featured",
     label: "Featured & Curated",
-    icon: <Sparkles className="w-3.5 h-3.5 text-[#6B9E3A]" />,
+    icon: <Sparkles className="w-3.5 h-3.5 text-[#0B5D44]" />,
   },
   {
     value: "price-asc",
@@ -543,7 +545,7 @@ function CatalogProductImage({ product }: { product: Product }) {
 
   return (
     <div
-      className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5 group/cardimg"
+      className="relative aspect-square w-full rounded-2xl bg-gradient-to-b from-[#F3FAF7] via-[#F3FAF7] to-[#FFFFFF] p-3 flex items-center justify-center overflow-hidden mb-2.5 group/cardimg"
       onMouseEnter={() => {
         if (hasMultiple) setActiveIdx(1);
       }}
@@ -592,7 +594,7 @@ function CatalogProductImage({ product }: { product: Product }) {
               aria-label={`View photo ${idx + 1}`}
               className={`h-1.5 rounded-full transition-all cursor-pointer ${
                 activeIdx === idx
-                  ? "w-4 bg-[#6B9E3A] shadow-xs"
+                  ? "w-4 bg-[#0B5D44] shadow-xs"
                   : "w-1.5 bg-neutral-300/80 hover:bg-neutral-400"
               }`}
             />
@@ -950,7 +952,6 @@ function ProductsContent() {
 
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
-    openCart();
   };
 
   const handleToggleWishlist = (e: React.MouseEvent, product: Product) => {
@@ -967,49 +968,57 @@ function ProductsContent() {
   const currentSortOption = SORT_OPTIONS.find((o) => o.value === sortBy) || SORT_OPTIONS[0];
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900 flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E] font-mograph">
+    <div className="min-h-screen bg-white text-neutral-900 flex flex-col justify-between selection:bg-[#E6F4EF] selection:text-[#0C1412] font-mograph">
       <Navbar />
 
       {/* ===================================================================== */}
-      {/* 1. HERO BANNER: Clean White & Pastel Lime Aesthetic                    */}
+      {/* 1. EDITORIAL COLLECTION HEADER (Clean Breadcrumb + Dynamic Title)     */}
       {/* ===================================================================== */}
-      <div className="pt-3 sm:pt-4 md:pt-5 pb-3 sm:pb-4 bg-gradient-to-b from-[#F2F8EB]/70 via-[#F8FAF4] to-white border-b border-neutral-200/70 relative overflow-hidden">
-        {/* Ambient Subtle Lime Glows */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#95CF42]/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-[#E5F2D0]/40 rounded-full blur-[100px] pointer-events-none" />
-
+      <div className="pt-4 sm:pt-5 pb-4 sm:pb-5 bg-[#FAFBF9] border-b border-neutral-200/80 relative overflow-hidden">
         <div className="max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          {/* Breadcrumb - Reduced upper gap */}
-          <div className="flex items-center gap-2 text-xs text-neutral-500 mb-1.5 sm:mb-2 font-medium">
-            <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
+          {/* Structured Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-500 mb-2 font-medium">
+            <Link href="/" className="hover:text-[#0B5D44] transition-colors">
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
-            <span className="text-neutral-900 font-bold">Shop All Products</span>
-          </div>
+            <span className="text-[#0C1412] font-semibold">
+              {activeMainCat ? activeMainCat.name : "Shop All"}
+            </span>
+            {selectedSubcategory !== "All" && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+                <span className="text-[#0B5D44] font-bold">{selectedSubcategory}</span>
+              </>
+            )}
+          </nav>
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
             <div>
-              <h1 className="font-mograph font-bold text-2xl sm:text-3xl md:text-4xl text-neutral-950 tracking-tight">
-                Shop The Collection
+              <h1 className="font-movault font-extrabold text-2xl sm:text-3xl md:text-[34px] text-[#0C1412] tracking-[-0.025em] leading-tight">
+                {activeMainCat ? activeMainCat.name : "Shop The Collection"}
               </h1>
+              <p className="text-xs sm:text-sm text-neutral-500 mt-1 font-medium tabular-nums">
+                {filteredProducts.length} original {filteredProducts.length === 1 ? "item" : "items"} · Free insured express delivery above ₹1,499
+              </p>
             </div>
 
-            {/* Fast Search Input */}
-            <div className="w-full md:w-80 lg:w-96 relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            {/* Compact In-Catalog Filter Search (shown on mobile & when active query exists, clean pill on desktop) */}
+            <div className="w-full md:w-72 relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0B5D44]" />
               <input
                 type="text"
-                placeholder="Search supplements, outfits, dates, chocolates..."
+                placeholder="Filter this collection..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-white hover:bg-neutral-50/80 focus:bg-white text-neutral-900 placeholder:text-neutral-400 border border-neutral-200/90 focus:border-[#6B9E3A] focus:ring-2 focus:ring-[#6B9E3A]/20 text-xs sm:text-sm font-medium transition-all outline-none shadow-xs"
+                className="w-full pl-9 pr-9 py-2 rounded-full bg-white text-[#0C1412] placeholder:text-neutral-400 border border-neutral-200/90 focus:border-[#0B5D44] focus:ring-2 focus:ring-[#0B5D44]/15 text-sm sm:text-xs font-medium transition-all outline-none"
               />
               {searchQuery && (
                 <button
+                  type="button"
                   onClick={() => setSearchQuery("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 transition-colors cursor-pointer"
-                  aria-label="Clear search"
+                  aria-label="Clear filter"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1032,7 +1041,7 @@ function ProductsContent() {
                 onClick={() => handleCategorySelect("All")}
                 className="hover:text-neutral-950 font-medium flex items-center gap-1 cursor-pointer transition-colors"
               >
-                <ArrowLeft className="w-3 h-3 text-[#6B9E3A]" />
+                <ArrowLeft className="w-3 h-3 text-[#0B5D44]" />
                 <span>All Categories</span>
               </button>
               <ChevronRight className="w-3 h-3 text-neutral-400 shrink-0" />
@@ -1041,7 +1050,7 @@ function ProductsContent() {
                 onClick={() => handleSubcategorySelect("All")}
                 className={`transition-colors cursor-pointer ${
                   selectedSubcategory === "All"
-                    ? "text-[#6B9E3A] font-bold"
+                    ? "text-[#0B5D44] font-bold"
                     : "font-medium hover:text-neutral-950"
                 }`}
               >
@@ -1050,7 +1059,7 @@ function ProductsContent() {
               {selectedSubcategory !== "All" && (
                 <>
                   <ChevronRight className="w-3 h-3 text-neutral-400 shrink-0" />
-                  <span className="text-[#6B9E3A] font-bold">{selectedSubcategory}</span>
+                  <span className="text-[#0B5D44] font-bold">{selectedSubcategory}</span>
                 </>
               )}
             </div>
@@ -1067,28 +1076,21 @@ function ProductsContent() {
                 <button
                   type="button"
                   onClick={() => handleCategorySelect("All")}
-                  className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
+                  className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[76px] xs:w-[84px] sm:w-[92px] md:w-[102px] lg:w-[112px]"
                 >
-                  <div className="w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center border-2 border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md scale-[1.03]">
-                    <Image
-                      src="/vittal/banner-hero-green-texture.jpg"
-                      alt=""
-                      fill
-                      sizes="(max-width: 768px) 85px, 110px"
-                      className="object-cover object-top pointer-events-none select-none opacity-90"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
-                    <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
+                  <div className="w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#E6F4EF] via-[#F4FAF7] to-white transition-all duration-300 flex items-end justify-center border-2 border-[#0B5D44] ring-2 ring-[#0B5D44]/25 shadow-md scale-[1.02]">
+                    <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-[#0B5D44]/[0.12] via-[#C59B27]/[0.05] to-transparent pointer-events-none" />
+                    <div className="relative z-10 w-full h-[88%] sm:h-[90%] flex items-end justify-center px-1.5 xs:px-2">
                       <Image
                         src="/vittal/cat-icon-all-categories-trans.png"
                         alt="All Categories"
                         width={110}
                         height={110}
-                        className="w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 scale-100 drop-shadow-[0_4px_8px_rgba(107,158,58,0.25)]"
+                        className="w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 scale-100 drop-shadow-[0_4px_8px_rgba(11,93,68,0.18)]"
                       />
                     </div>
                   </div>
-                  <span className="mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 text-[#6B9E3A] font-bold">
+                  <span className="mt-1.5 text-[10.5px] xs:text-[11px] sm:text-xs text-center line-clamp-1 text-[#0B5D44] font-bold">
                     All Categories
                   </span>
                 </button>
@@ -1099,28 +1101,21 @@ function ProductsContent() {
                     key={cat.id}
                     type="button"
                     onClick={() => handleCategorySelect(cat.query)}
-                    className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
+                    className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[76px] xs:w-[84px] sm:w-[92px] md:w-[102px] lg:w-[112px]"
                   >
-                    <div className="w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md">
-                      <Image
-                        src="/vittal/banner-hero-green-texture.jpg"
-                        alt=""
-                        fill
-                        sizes="(max-width: 768px) 85px, 110px"
-                        className="object-cover object-top pointer-events-none select-none opacity-90"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
-                      <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
+                    <div className="w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#E6F4EF] via-[#F4FAF7] to-white transition-all duration-300 flex items-end justify-center border border-[#D4E9E0] group-hover:border-[#0B5D44]/55 shadow-2xs group-hover:shadow-md">
+                      <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-[#0B5D44]/[0.09] via-[#C59B27]/[0.03] to-transparent pointer-events-none" />
+                      <div className="relative z-10 w-full h-[88%] sm:h-[90%] flex items-end justify-center px-1.5 xs:px-2">
                         <Image
                           src={cat.image}
                           alt={cat.name}
                           width={110}
                           height={110}
-                          className="w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-[1.02]"
+                          className="w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 drop-shadow-[0_4px_8px_rgba(12,20,18,0.12)] group-hover:scale-[1.03]"
                         />
                       </div>
                     </div>
-                    <span className="mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 font-semibold text-neutral-800 group-hover:text-[#6B9E3A] transition-colors">
+                    <span className="mt-1.5 text-[10.5px] xs:text-[11px] sm:text-xs text-center line-clamp-1 font-semibold text-[#0C1412] group-hover:text-[#0B5D44] transition-colors">
                       {cat.name}
                     </span>
                   </button>
@@ -1132,7 +1127,7 @@ function ProductsContent() {
                 {/* DRILL-DOWN MODE: Active Category in Slot 1 + Subcategories    */}
                 {/* ============================================================= */}
 
-                {/* 1. Active Main Category Tile in Slot 1 (clicking toggles subcategory/back to root) */}
+                {/* 1. Active Main Category Tile in Slot 1 */}
                 <button
                   type="button"
                   onClick={() => {
@@ -1142,32 +1137,25 @@ function ProductsContent() {
                       handleCategorySelect("All");
                     }
                   }}
-                  className="group relative flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
+                  className="group relative flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[76px] xs:w-[84px] sm:w-[92px] md:w-[102px] lg:w-[112px]"
                   title={selectedSubcategory !== "All" ? `Show all ${activeMainCat.name}` : "Back to All Categories"}
                 >
                   <div
-                    className={`w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center ${
+                    className={`w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#E6F4EF] via-[#F4FAF7] to-white transition-all duration-300 flex items-end justify-center ${
                       selectedSubcategory === "All"
-                        ? "border-2 border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md scale-[1.03]"
-                        : "border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md"
+                        ? "border-2 border-[#0B5D44] ring-2 ring-[#0B5D44]/25 shadow-md scale-[1.02]"
+                        : "border border-[#D4E9E0] group-hover:border-[#0B5D44]/55 shadow-2xs group-hover:shadow-md"
                     }`}
                   >
-                    <Image
-                      src="/vittal/banner-hero-green-texture.jpg"
-                      alt=""
-                      fill
-                      sizes="(max-width: 768px) 85px, 110px"
-                      className="object-cover object-top pointer-events-none select-none opacity-90"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
+                    <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-[#0B5D44]/[0.11] via-[#C59B27]/[0.04] to-transparent pointer-events-none" />
 
                     {/* Subtle Back Badge on top-left of Card 1 */}
-                    <div className="absolute top-1 left-1 z-20 px-1 xs:px-1.5 py-0.5 rounded-full bg-black/75 hover:bg-black text-[8px] xs:text-[9px] text-white font-bold backdrop-blur-xs flex items-center gap-0.5 shadow-xs transition-colors">
-                      <ArrowLeft className="w-2.5 h-2.5 text-[#9CD33B]" />
+                    <div className="absolute top-1 left-1 z-20 px-1.5 py-0.5 rounded-full bg-[#0C1412]/85 hover:bg-[#0C1412] text-[8.5px] xs:text-[9px] text-white font-bold backdrop-blur-xs flex items-center gap-0.5 shadow-xs transition-colors">
+                      <ArrowLeft className="w-2.5 h-2.5 text-[#E5C469]" />
                       <span>All</span>
                     </div>
 
-                    <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
+                    <div className="relative z-10 w-full h-[88%] sm:h-[90%] flex items-end justify-center px-1.5 xs:px-2">
                       <Image
                         src={activeMainCat.image}
                         alt={activeMainCat.name}
@@ -1175,17 +1163,17 @@ function ProductsContent() {
                         height={110}
                         className={`w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 ${
                           selectedSubcategory === "All"
-                            ? "scale-100 drop-shadow-[0_4px_8px_rgba(107,158,58,0.25)]"
-                            : "drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-[1.02]"
+                            ? "scale-100 drop-shadow-[0_4px_8px_rgba(11,93,68,0.18)]"
+                            : "drop-shadow-[0_4px_8px_rgba(12,20,18,0.12)] group-hover:scale-[1.03]"
                         }`}
                       />
                     </div>
                   </div>
                   <span
-                    className={`mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 transition-colors ${
+                    className={`mt-1.5 text-[10.5px] xs:text-[11px] sm:text-xs text-center line-clamp-1 transition-colors ${
                       selectedSubcategory === "All"
-                        ? "text-[#6B9E3A] font-bold"
-                        : "font-semibold text-neutral-800 group-hover:text-[#6B9E3A]"
+                        ? "text-[#0B5D44] font-bold"
+                        : "font-semibold text-[#0C1412] group-hover:text-[#0B5D44]"
                     }`}
                   >
                     All {activeMainCat.shortName || activeMainCat.name}
@@ -1203,24 +1191,17 @@ function ProductsContent() {
                       key={subcat.id}
                       type="button"
                       onClick={() => handleSubcategorySelect(subcat.query)}
-                      className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[74px] xs:w-[82px] sm:w-[90px] md:w-[100px] lg:w-[110px]"
+                      className="group flex flex-col items-center shrink-0 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none w-[76px] xs:w-[84px] sm:w-[92px] md:w-[102px] lg:w-[112px]"
                     >
                       <div
-                        className={`w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#9CD33B] via-[#E2F5B4] to-white transition-all duration-300 flex items-end justify-center ${
+                        className={`w-full relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-[#E6F4EF] via-[#F4FAF7] to-white transition-all duration-300 flex items-end justify-center ${
                           isSubSelected
-                            ? "border-2 border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md scale-[1.03]"
-                            : "border border-neutral-200/80 group-hover:border-[#6B9E3A]/60 shadow-2xs group-hover:shadow-md"
+                            ? "border-2 border-[#0B5D44] ring-2 ring-[#0B5D44]/25 shadow-md scale-[1.02]"
+                            : "border border-[#D4E9E0] group-hover:border-[#0B5D44]/55 shadow-2xs group-hover:shadow-md"
                         }`}
                       >
-                        <Image
-                          src="/vittal/banner-hero-green-texture.jpg"
-                          alt=""
-                          fill
-                          sizes="(max-width: 768px) 85px, 110px"
-                          className="object-cover object-top pointer-events-none select-none opacity-90"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-15% via-white/50 via-65% to-white to-95% pointer-events-none" />
-                        <div className="relative z-10 w-full h-[90%] xs:h-[92%] sm:h-[94%] flex items-end justify-center px-1.5 xs:px-2">
+                        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-[#0B5D44]/[0.09] via-[#C59B27]/[0.03] to-transparent pointer-events-none" />
+                        <div className="relative z-10 w-full h-[88%] sm:h-[90%] flex items-end justify-center px-1.5 xs:px-2">
                           <Image
                             src={subcat.image}
                             alt={subcat.name}
@@ -1228,8 +1209,8 @@ function ProductsContent() {
                             height={110}
                             className={`w-full h-full object-contain object-bottom pointer-events-none select-none transition-transform duration-300 ${
                               isSubSelected
-                                ? "scale-100 drop-shadow-[0_4px_8px_rgba(107,158,58,0.25)]"
-                                : "drop-shadow-[0_4px_8px_rgba(0,0,0,0.12)] group-hover:scale-[1.02]"
+                                ? "scale-100 drop-shadow-[0_4px_8px_rgba(11,93,68,0.18)]"
+                                : "drop-shadow-[0_4px_8px_rgba(12,20,18,0.12)] group-hover:scale-[1.03]"
                             }`}
                           />
                         </div>
@@ -1237,8 +1218,8 @@ function ProductsContent() {
                       <span
                         className={`mt-1.5 text-[10px] xs:text-[11px] sm:text-xs text-center line-clamp-1 transition-colors ${
                           isSubSelected
-                            ? "text-[#6B9E3A] font-bold"
-                            : "font-semibold text-neutral-800 group-hover:text-[#6B9E3A]"
+                            ? "text-[#0B5D44] font-bold"
+                            : "font-semibold text-neutral-800 group-hover:text-[#0B5D44]"
                         }`}
                       >
                         {subcat.name}
@@ -1262,7 +1243,7 @@ function ProductsContent() {
             Showing <span className="text-neutral-950 font-bold">{filteredProducts.length}</span>{" "}
             {filteredProducts.length === 1 ? "product" : "products"}
             {selectedCategory !== "All" && (
-              <span className="ml-1 text-[#6B9E3A] font-bold">
+              <span className="ml-1 text-[#0B5D44] font-bold">
                 in &ldquo;
                 {selectedSubcategory !== "All"
                   ? `${activeMainCat ? activeMainCat.name : selectedCategory} › ${selectedSubcategory}`
@@ -1280,7 +1261,7 @@ function ProductsContent() {
               onClick={() => setMobileFilterOpen(true)}
               className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 bg-white border border-neutral-200/90 rounded-xl text-xs font-bold text-neutral-900 shadow-xs hover:bg-neutral-50 cursor-pointer"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#6B9E3A]" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#0B5D44]" />
               <span>Filters</span>
               {totalAppliedFiltersCount > 0 && (
                 <span className="w-4 h-4 rounded-full bg-[#111111] text-white text-[10px] flex items-center justify-center font-bold">
@@ -1323,7 +1304,7 @@ function ProductsContent() {
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                           sortBy === opt.value
-                            ? "bg-[#E5F2D0] text-[#3B581C]"
+                            ? "bg-[#E6F4EF] text-[#074230]"
                             : "text-neutral-700 hover:bg-neutral-50"
                         }`}
                       >
@@ -1331,7 +1312,7 @@ function ProductsContent() {
                           {opt.icon}
                           <span>{opt.label}</span>
                         </div>
-                        {sortBy === opt.value && <Check className="w-3.5 h-3.5 text-[#3B581C]" />}
+                        {sortBy === opt.value && <Check className="w-3.5 h-3.5 text-[#074230]" />}
                       </button>
                     ))}
                   </motion.div>
@@ -1343,9 +1324,9 @@ function ProductsContent() {
 
         {/* Active Filters Chips Bar */}
         {totalAppliedFiltersCount > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4 p-2 sm:p-2.5 rounded-2xl bg-[#F8FAF4] border border-[#E5F2D0]">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4 p-2 sm:p-2.5 rounded-2xl bg-[#F3FAF7] border border-[#E6F4EF]">
             <span className="text-[11px] sm:text-xs font-bold text-neutral-600 mr-1 flex items-center gap-1">
-              <SlidersHorizontal className="w-3 h-3 text-[#6B9E3A]" />
+              <SlidersHorizontal className="w-3 h-3 text-[#0B5D44]" />
               Active:
             </span>
 
@@ -1365,7 +1346,7 @@ function ProductsContent() {
 
             {/* Subcategory Chip */}
             {selectedSubcategory && selectedSubcategory !== "All" && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E5F2D0] border border-[#6B9E3A]/40 text-[#2C4815] text-xs font-bold shadow-2xs">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E6F4EF] border border-[#0B5D44]/40 text-[#2C4815] text-xs font-bold shadow-2xs">
                 <span>{selectedSubcategory}</span>
                 <button
                   onClick={() => handleSubcategorySelect("All")}
@@ -1424,7 +1405,7 @@ function ProductsContent() {
               values.map((val) => (
                 <span
                   key={`${facetId}-${val}`}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E5F2D0] text-[#3B581C] border border-[#D5E9BC] text-xs font-semibold shadow-2xs"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E6F4EF] text-[#074230] border border-[#B8DFD1] text-xs font-semibold shadow-2xs"
                 >
                   <span>{val}</span>
                   <button
@@ -1441,7 +1422,7 @@ function ProductsContent() {
             {/* Reset All Button */}
             <button
               onClick={handleResetAllFilters}
-              className="text-xs font-bold text-[#6B9E3A] hover:text-[#4F7529] hover:underline flex items-center gap-1 ml-auto cursor-pointer"
+              className="text-xs font-bold text-[#0B5D44] hover:text-[#4F7529] hover:underline flex items-center gap-1 ml-auto cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Clear All</span>
@@ -1457,13 +1438,13 @@ function ProductsContent() {
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-neutral-200/70">
               <span className="text-sm font-bold text-neutral-950 flex items-center gap-2 font-mograph">
-                <SlidersHorizontal className="w-4 h-4 text-[#6B9E3A]" />
+                <SlidersHorizontal className="w-4 h-4 text-[#0B5D44]" />
                 Filters
               </span>
               {totalAppliedFiltersCount > 0 && (
                 <button
                   onClick={handleResetAllFilters}
-                  className="text-xs font-bold text-[#6B9E3A] hover:underline flex items-center gap-1 cursor-pointer font-mograph"
+                  className="text-xs font-bold text-[#0B5D44] hover:underline flex items-center gap-1 cursor-pointer font-mograph"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Reset All</span>
@@ -1477,7 +1458,7 @@ function ProductsContent() {
                 <label className="text-xs font-bold text-neutral-800 uppercase tracking-wide font-mograph">
                   Max Budget
                 </label>
-                <span className="text-xs font-bold text-[#3B581C] font-mono px-2 py-0.5 rounded-full bg-[#E5F2D0]">
+                <span className="text-xs font-bold text-[#074230] font-mono px-2 py-0.5 rounded-full bg-[#E6F4EF]">
                   ₹{maxPrice.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -1488,7 +1469,7 @@ function ProductsContent() {
                 step={250}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-[#6B9E3A] cursor-pointer"
+                className="w-full accent-[#0B5D44] cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-neutral-400 font-medium mt-1">
                 <span>₹500</span>
@@ -1503,7 +1484,7 @@ function ProductsContent() {
                   type="checkbox"
                   checked={onlyInStock}
                   onChange={(e) => setOnlyInStock(e.target.checked)}
-                  className="w-4 h-4 rounded border-neutral-300 text-[#6B9E3A] accent-[#6B9E3A] cursor-pointer"
+                  className="w-4 h-4 rounded border-neutral-300 text-[#0B5D44] accent-[#0B5D44] cursor-pointer"
                 />
                 <span className="text-xs font-semibold text-neutral-800">
                   In-Stock Items Only
@@ -1538,7 +1519,7 @@ function ProductsContent() {
                         onClick={() => handleCategorySelect(cat.query)}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer text-left ${
                           isCatSelected && selectedSubcategory === "All"
-                            ? "bg-[#E5F2D0] text-[#3B581C] font-bold shadow-2xs"
+                            ? "bg-[#E6F4EF] text-[#074230] font-bold shadow-2xs"
                             : isCatSelected
                             ? "bg-neutral-100 text-neutral-900 font-semibold"
                             : "text-neutral-600 hover:text-neutral-950 hover:bg-neutral-50 font-medium"
@@ -1546,13 +1527,13 @@ function ProductsContent() {
                       >
                         <span>{cat.name}</span>
                         {isCatSelected && selectedSubcategory === "All" && (
-                          <Check className="w-3.5 h-3.5 text-[#3B581C]" />
+                          <Check className="w-3.5 h-3.5 text-[#074230]" />
                         )}
                       </button>
 
                       {/* Indented Subcategories when Department is Active */}
                       {isCatSelected && matchingStoreCat && matchingStoreCat.subcategories.length > 0 && (
-                        <div className="pl-3 space-y-1 border-l-2 border-[#6B9E3A]/30 ml-2.5 pt-1 pb-1">
+                        <div className="pl-3 space-y-1 border-l-2 border-[#0B5D44]/30 ml-2.5 pt-1 pb-1">
                           {matchingStoreCat.subcategories.map((sub) => {
                             const isSubSelected =
                               selectedSubcategory.toLowerCase() === sub.query.toLowerCase() ||
@@ -1564,7 +1545,7 @@ function ProductsContent() {
                                 onClick={() => handleSubcategorySelect(sub.query)}
                                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer text-left ${
                                   isSubSelected
-                                    ? "bg-[#6B9E3A] text-white font-bold shadow-2xs"
+                                    ? "bg-[#0B5D44] text-white font-bold shadow-2xs"
                                     : "text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100 font-medium"
                                 }`}
                               >
@@ -1596,7 +1577,7 @@ function ProductsContent() {
                     <span className="uppercase tracking-wide">{group.name}</span>
                     <div className="flex items-center gap-1.5">
                       {selectedValuesInGroup.length > 0 && (
-                        <span className="w-4 h-4 rounded-full bg-[#E5F2D0] text-[#3B581C] text-[10px] font-bold flex items-center justify-center">
+                        <span className="w-4 h-4 rounded-full bg-[#E6F4EF] text-[#074230] text-[10px] font-bold flex items-center justify-center">
                           {selectedValuesInGroup.length}
                         </span>
                       )}
@@ -1629,7 +1610,7 @@ function ProductsContent() {
                                 key={opt.value}
                                 className={`flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-xs select-none ${
                                   isChecked
-                                    ? "bg-[#F4F9EE] text-[#284214] font-semibold"
+                                    ? "bg-[#F4F9EE] text-[#074230] font-semibold"
                                     : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
                                 }`}
                               >
@@ -1638,7 +1619,7 @@ function ProductsContent() {
                                     type="checkbox"
                                     checked={isChecked}
                                     onChange={() => handleFacetToggle(group.id, opt.value)}
-                                    className="w-3.5 h-3.5 rounded border-neutral-300 text-[#6B9E3A] accent-[#6B9E3A] cursor-pointer"
+                                    className="w-3.5 h-3.5 rounded border-neutral-300 text-[#0B5D44] accent-[#0B5D44] cursor-pointer"
                                   />
                                   <span>{opt.label}</span>
                                 </div>
@@ -1656,16 +1637,8 @@ function ProductsContent() {
               );
             })}
 
-            {/* Trust Certification Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-b from-[#F2F8EB] to-[#FAFCF7] border border-[#D5E9BC]/70 text-center space-y-1 shadow-2xs">
-              <Award className="w-5 h-5 text-[#6B9E3A] mx-auto mb-1" />
-              <p className="text-xs font-bold text-[#15230D] uppercase tracking-wide font-mograph">
-                100% Lab Tested &amp; Pure
-              </p>
-              <p className="text-[11px] text-[#415C29] leading-snug font-normal">
-                Direct brand sourcing with verified purity, authentic nutrition, and express pan-India insured shipping.
-              </p>
-            </div>
+            {/* Trust Certification Card (Interactive Logo #80 Verified Stamp) */}
+            <VittalVerifiedBadge compact />
           </aside>
 
           {/* ================================================================= */}
@@ -1674,7 +1647,7 @@ function ProductsContent() {
           <main className="lg:col-span-3">
             {filteredProducts.length === 0 ? (
               <div className="bg-white rounded-3xl border border-neutral-200/80 p-12 text-center shadow-xs text-neutral-900">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-[#F2F8EB] flex items-center justify-center mb-4 text-[#6B9E3A]">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-[#F3FAF7] flex items-center justify-center mb-4 text-[#0B5D44]">
                   <Search className="w-8 h-8" />
                 </div>
                 <h3 className="text-lg font-bold text-neutral-950 mb-1 font-mograph">
@@ -1726,20 +1699,22 @@ function ProductsContent() {
                       layout
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="group relative rounded-3xl bg-white border border-neutral-200/80 hover:border-[#6B9E3A]/50 p-3 sm:p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+                      className="group relative rounded-3xl bg-white border border-neutral-200/80 hover:border-[#0B5D44]/50 p-3 sm:p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1"
                     >
-                      {/* Wishlist Heart Icon */}
+                      {/* Wishlist Heart Icon (44px accessible hit zone) */}
                       <button
                         type="button"
                         onClick={(e) => handleToggleWishlist(e, product)}
-                        className="absolute top-3.5 right-3.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-neutral-400 hover:text-rose-500 transition-colors shadow-2xs cursor-pointer"
-                        aria-label="Wishlist"
+                        className="absolute top-2.5 right-2.5 z-10 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+                        aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
                       >
-                        <Heart
-                          className={`w-4 h-4 transition-colors ${
-                            wishlisted ? "fill-rose-500 text-rose-500" : "stroke-current"
-                          }`}
-                        />
+                        <span className="w-8 h-8 rounded-full bg-white/95 border border-neutral-200/70 hover:bg-white flex items-center justify-center text-neutral-500 hover:text-rose-500 transition-colors shadow-2xs">
+                          <Heart
+                            className={`w-4 h-4 transition-colors ${
+                              wishlisted ? "fill-rose-500 text-rose-500" : "stroke-current"
+                            }`}
+                          />
+                        </span>
                       </button>
 
                       {/* Product Image with Hover / Multi-Image Preview */}
@@ -1747,19 +1722,25 @@ function ProductsContent() {
 
                       {/* Product Metadata */}
                       <div>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="font-mograph text-[10px] font-bold uppercase tracking-wider text-[#0B5D44] truncate">
+                            {shortCategory}
+                          </span>
+                          <span className="inline-flex items-center gap-0.5 text-[10.5px] font-bold text-neutral-700 tabular-nums shrink-0">
+                            <Star className="w-3 h-3 fill-[#C59B27] text-[#C59B27]" />
+                            {(product.rating ?? 4.8).toFixed(1)}
+                          </span>
+                        </div>
+
                         <Link href={`/products/${product.id || product.slug}`} className="block">
-                          <h3 className="font-mograph font-semibold text-xs sm:text-sm text-neutral-900 group-hover:text-[#6B9E3A] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-0.5">
+                          <h3 className="font-mograph font-semibold text-xs sm:text-sm text-[#0C1412] group-hover:text-[#0B5D44] transition-colors leading-snug line-clamp-2 min-h-[34px] sm:min-h-[38px] mb-1.5">
                             {product.name}
                           </h3>
                         </Link>
 
-                        <p className="font-mograph text-[10px] sm:text-xs text-neutral-500 font-medium mb-1.5 truncate">
-                          {shortCategory}
-                        </p>
-
                         {/* Price Row */}
-                        <div className="flex items-baseline gap-1.5 mb-2">
-                          <span className="font-mograph text-sm sm:text-base font-extrabold text-neutral-950">
+                        <div className="flex items-baseline gap-1.5 mb-2.5 tabular-nums">
+                          <span className="font-mograph text-sm sm:text-base font-extrabold text-[#0C1412]">
                             ₹{product.price.toLocaleString("en-IN")}
                           </span>
                           {product.mrp && product.mrp > product.price && (
@@ -1772,22 +1753,14 @@ function ProductsContent() {
                         {/* Discount Badge & Add to Cart Button */}
                         <div className="flex items-center justify-between gap-2">
                           {discountPercent ? (
-                            <span className="bg-[#E5F2D0] text-[#3B581C] text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center">
+                            <span className="bg-[#E6F4EF] text-[#074230] text-[10px] sm:text-[11px] font-bold tabular-nums px-2.5 py-0.5 rounded-full inline-flex items-center">
                               {discountPercent}% OFF
                             </span>
                           ) : (
-                            <span className="text-[10px] text-neutral-500 font-medium">In Stock</span>
+                            <span className="text-[10px] text-[#0B5D44] font-semibold">100% Original</span>
                           )}
 
-                          <button
-                            type="button"
-                            onClick={() => handleAddToCart(product)}
-                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-[#E5F2D0] hover:bg-[#D5EBBF] text-[#3B581C] hover:text-[#284214] flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
-                            aria-label="Add to cart"
-                            title="Add to cart"
-                          >
-                            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
-                          </button>
+                          <CardAddToCartControl product={product} />
                         </div>
                       </div>
                     </motion.div>
@@ -1821,14 +1794,14 @@ function ProductsContent() {
             >
               <div className="flex items-center justify-between pb-3 border-b border-neutral-200">
                 <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-[#6B9E3A]" />
+                  <SlidersHorizontal className="w-4 h-4 text-[#0B5D44]" />
                   <h3 className="font-bold text-base text-neutral-950 font-mograph">Filter Products</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   {totalAppliedFiltersCount > 0 && (
                     <button
                       onClick={handleResetAllFilters}
-                      className="text-xs font-bold text-[#6B9E3A] hover:underline cursor-pointer"
+                      className="text-xs font-bold text-[#0B5D44] hover:underline cursor-pointer"
                     >
                       Reset All
                     </button>
@@ -1849,7 +1822,7 @@ function ProductsContent() {
                   <label className="text-xs font-bold text-neutral-800 uppercase tracking-wide font-mograph">
                     Max Budget
                   </label>
-                  <span className="text-xs font-bold text-[#3B581C] font-mono px-2 py-0.5 rounded-full bg-[#E5F2D0]">
+                  <span className="text-xs font-bold text-[#074230] font-mono px-2 py-0.5 rounded-full bg-[#E6F4EF]">
                     ₹{maxPrice.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -1860,7 +1833,7 @@ function ProductsContent() {
                   step={250}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full accent-[#6B9E3A]"
+                  className="w-full accent-[#0B5D44]"
                 />
               </div>
 
@@ -1871,7 +1844,7 @@ function ProductsContent() {
                     type="checkbox"
                     checked={onlyInStock}
                     onChange={(e) => setOnlyInStock(e.target.checked)}
-                    className="w-4 h-4 rounded border-neutral-300 text-[#6B9E3A] accent-[#6B9E3A]"
+                    className="w-4 h-4 rounded border-neutral-300 text-[#0B5D44] accent-[#0B5D44]"
                   />
                   <span className="text-xs font-semibold text-neutral-800">
                     In-Stock Items Only
@@ -1919,7 +1892,7 @@ function ProductsContent() {
                         onClick={() => handleSubcategorySelect("All")}
                         className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                           selectedSubcategory === "All"
-                            ? "bg-[#6B9E3A] text-white font-bold"
+                            ? "bg-[#0B5D44] text-white font-bold"
                             : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200/70"
                         }`}
                       >
@@ -1936,7 +1909,7 @@ function ProductsContent() {
                             onClick={() => handleSubcategorySelect(sub.query)}
                             className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                               isSubSelected
-                                ? "bg-[#6B9E3A] text-white font-bold"
+                                ? "bg-[#0B5D44] text-white font-bold"
                                 : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200/70"
                             }`}
                           >
@@ -1969,7 +1942,7 @@ function ProductsContent() {
                             key={opt.value}
                             className={`flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer text-xs transition-colors ${
                               isChecked
-                                ? "bg-[#E5F2D0] text-[#3B581C] font-bold"
+                                ? "bg-[#E6F4EF] text-[#074230] font-bold"
                                 : "bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
                             }`}
                           >
@@ -1978,7 +1951,7 @@ function ProductsContent() {
                                 type="checkbox"
                                 checked={isChecked}
                                 onChange={() => handleFacetToggle(group.id, opt.value)}
-                                className="w-4 h-4 rounded border-neutral-300 text-[#6B9E3A] accent-[#6B9E3A]"
+                                className="w-4 h-4 rounded border-neutral-300 text-[#0B5D44] accent-[#0B5D44]"
                               />
                               <span>{opt.label}</span>
                             </div>
@@ -2012,16 +1985,7 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-white text-neutral-900 flex items-center justify-center font-mograph">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-[#6B9E3A] border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm font-bold text-neutral-600 font-mograph">Loading catalog...</p>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<VittalSkeletonGrid count={8} label="Loading verified catalog…" />}>
       <ProductsContent />
     </Suspense>
   );

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #ffffff; border-radius: 20px; border: 1px solid #f0f0f0;">
           <div style="text-align: center; margin-bottom: 24px;">
             <h1 style="color: #111111; font-size: 26px; font-weight: 800; margin: 0;">
-              Vittal <span style="color: #4A7C0F;">Lifestyle</span>
+              Vittal <span style="color: #0B5D44;">Lifestyle</span>
             </h1>
             <p style="color: #888888; font-size: 11px; margin-top: 4px;">from ${companyEmail}</p>
           </div>

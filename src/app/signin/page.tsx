@@ -4,10 +4,12 @@ import React, { useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { AuthCard } from "@/components/AuthCard";
 import { siteConfig } from "@/config/siteConfig";
+import { BRAND_80_THEMES, Logo80AnimatedMark } from "@/components/Logo80AnimatedMark";
+import { VittalBrandLoader } from "@/components/VittalBrandLoader";
 
 function SignInContent() {
   const router = useRouter();
@@ -38,38 +40,44 @@ function SignInContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFCF6] text-neutral-900 font-mograph">
-        <div className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white border border-neutral-200 shadow-xl">
-          <Loader2 className="w-8 h-8 animate-spin text-[#6B9E3A]" />
-          <p className="text-sm font-bold text-neutral-800">Loading your session...</p>
-        </div>
-      </div>
+      <VittalBrandLoader
+        fullScreen
+        label="Loading your session…"
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFCF6] text-neutral-900 flex flex-col justify-between font-mograph selection:bg-[#E2F5B4] selection:text-[#2E4D12]">
-      {/* Top Header */}
-      <header className="w-full bg-white border-b border-neutral-200/90 py-3 sm:py-3.5 shadow-xs">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 w-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <Image
-              src={siteConfig.logoUrl}
-              alt={siteConfig.name}
-              width={140}
-              height={42}
-              className="h-8 sm:h-9 w-auto object-contain group-hover:scale-105 transition-transform"
-              priority
-            />
-          </Link>
-
+    <div className="min-h-screen bg-[#F3FAF7] text-neutral-900 flex flex-col justify-between font-mograph selection:bg-[#E6F4EF] selection:text-[#0C1412]">
+      {/* Minimal Flagship Auth Header */}
+      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-neutral-200/80 shadow-[0_1px_12px_rgba(7,20,16,0.03)]">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between relative">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold bg-[#95CF42] hover:bg-[#85BE33] text-black px-5 py-2 rounded-full shadow-xs hover:shadow-md transition-all cursor-pointer font-mograph"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-neutral-600 hover:text-[#0B5D44] transition-colors py-2 pr-2"
           >
-            <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
-            <span>Back to Store</span>
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">Back to Store</span>
+            <span className="sm:hidden">Store</span>
           </Link>
+
+          <div className="absolute left-1/2 -translate-x-1/2">
+            <Link href="/" className="inline-flex items-center gap-2 group" aria-label={siteConfig.name}>
+              <Logo80AnimatedMark
+                theme={BRAND_80_THEMES[0]}
+                surface="light"
+                mode="hover-press"
+                size={34}
+                withWordmark
+              />
+            </Link>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#F3FAF7] border border-[#B8DFD1]/90 text-[10.5px] sm:text-[11px] font-bold text-[#074230]">
+            <Lock className="w-3 h-3 text-[#0B5D44] shrink-0" />
+            <span className="hidden xs:inline">Secure Sign-In</span>
+            <span className="xs:hidden">Secure</span>
+          </div>
         </div>
       </header>
 
@@ -98,12 +106,10 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#FAFCF6]">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-[#6B9E3A]" />
-            <p className="text-sm font-semibold text-neutral-500">Loading sign in...</p>
-          </div>
-        </div>
+        <VittalBrandLoader
+          fullScreen
+          label="Loading sign in…"
+        />
       }
     >
       <SignInContent />

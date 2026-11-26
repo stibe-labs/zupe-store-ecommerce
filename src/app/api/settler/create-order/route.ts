@@ -60,13 +60,31 @@ export async function POST(req: NextRequest) {
 
     const invoiceId = invoiceRes.invoice?.id;
     if (!invoiceRes.success || !invoiceId) {
-      throw new Error(invoiceRes.error || "Failed to create Settler invoice");
+      console.error("[Settler] Create invoice failed:", invoiceRes.error || invoiceRes);
+      return NextResponse.json(
+        {
+          success: false,
+          code: "GATEWAY_UNAVAILABLE",
+          error:
+            "Online payment gateway is temporarily unavailable. Please retry in a moment or place your order via WhatsApp Concierge.",
+        },
+        { status: 503 }
+      );
     }
 
     // 3. Initiate Cashfree Order on Settler
     const orderRes = await initiateSettlerOrder(invoiceId);
     if (!orderRes.success || !orderRes.cashfreeOrderId) {
-      throw new Error(orderRes.error || "Failed to initiate Settler payment order");
+      console.error("[Settler] Initiate order failed:", orderRes.error || orderRes);
+      return NextResponse.json(
+        {
+          success: false,
+          code: "GATEWAY_UNAVAILABLE",
+          error:
+            "Unable to start your payment session right now. Please try again or complete your order via WhatsApp Concierge.",
+        },
+        { status: 503 }
+      );
     }
 
     // 4. Generate Dynamic UPI QR & App Links
@@ -103,9 +121,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: err.message || "Failed to initialize payment with Settler Gateway",
+        code: "GATEWAY_UNAVAILABLE",
+        error:
+          "Online payment is temporarily unavailable. Please retry in a moment or place your order via WhatsApp Concierge.",
       },
-      { status: 500 }
+      { status: 503 }
     );
   }
 }

@@ -9,6 +9,7 @@ import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck, AlertCircle, Sp
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
+import { BRAND_80_THEMES, Logo80AnimatedMark } from "@/components/Logo80AnimatedMark";
 
 export function CartDrawer() {
   const router = useRouter();
@@ -73,13 +74,19 @@ export function CartDrawer() {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-neutral-200/80 bg-white">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#E5F2D0] flex items-center justify-center text-[#3B581C]">
-                  <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
+                <div className="w-9 h-9 rounded-xl bg-[#E6F4EF] flex items-center justify-center shrink-0">
+                  <Logo80AnimatedMark
+                    theme={BRAND_80_THEMES[0]}
+                    surface="light"
+                    mode={totalItems > 0 ? "add-to-bag" : "idle"}
+                    replayKey={totalItems}
+                    size={26}
+                  />
                 </div>
                 <h2 className="font-bold text-lg text-neutral-950 tracking-tight">
                   Your Cart
                 </h2>
-                <span className="text-xs font-bold bg-[#E5F2D0] text-[#3B581C] px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-bold tabular-nums bg-[#E6F4EF] text-[#074230] px-2.5 py-0.5 rounded-full">
                   {totalItems} {totalItems === 1 ? "item" : "items"}
                 </span>
               </div>
@@ -94,21 +101,21 @@ export function CartDrawer() {
 
             {/* Free Shipping Progress */}
             {cart.length > 0 && (
-              <div className="px-5 py-3.5 bg-[#F2F8EB] border-b border-[#D5EBBF]">
+              <div className="px-5 py-3.5 bg-[#F3FAF7] border-b border-[#B8DFD1]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-[#284214]">
-                    <Truck className="w-4 h-4 text-[#6B9E3A] shrink-0" />
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-[#074230]">
+                    <Truck className="w-4 h-4 text-[#0B5D44] shrink-0" />
                     {freeShippingRemaining > 0
                       ? `Add ₹${freeShippingRemaining.toLocaleString("en-IN")} more for free express shipping`
                       : "🎉 You've unlocked free express shipping!"}
                   </span>
-                  <span className="text-[11px] font-bold text-[#3B581C]">
+                  <span className="text-[11px] font-bold text-[#074230]">
                     {Math.round(shippingProgress)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-[#D5EBBF] rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#B8DFD1] rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[#9CD33B] to-[#6B9E3A] rounded-full"
+                    className="h-full bg-gradient-to-r from-[#10B981] to-[#0B5D44] rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${shippingProgress}%` }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
@@ -125,8 +132,13 @@ export function CartDrawer() {
             >
               {cart.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                  <div className="w-20 h-20 rounded-2xl bg-[#E5F2D0] flex items-center justify-center mb-4 text-[#3B581C]">
-                    <ShoppingBag className="w-10 h-10 stroke-[1.5]" />
+                  <div className="w-24 h-24 rounded-3xl bg-[#F3FAF7] border border-[#B8DFD1]/60 flex items-center justify-center mb-4">
+                    <Logo80AnimatedMark
+                      theme={BRAND_80_THEMES[0]}
+                      surface="light"
+                      mode="ambient"
+                      size={58}
+                    />
                   </div>
                   <p className="text-base font-bold text-neutral-950 mb-1 tracking-tight">Your cart is empty</p>
                   <p className="text-xs text-neutral-500 max-w-xs mb-5">
@@ -163,7 +175,7 @@ export function CartDrawer() {
                         <Link
                           href={`/products/${item.id}`}
                           onClick={closeCart}
-                          className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-b from-[#F2F8EB] via-[#F8FAF4] to-[#FFFFFF] border border-neutral-200/70 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity relative"
+                          className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-b from-[#F3FAF7] via-[#F3FAF7] to-[#FFFFFF] border border-neutral-200/70 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity relative"
                         >
                           <Image
                             src={item.poster_image}
@@ -185,7 +197,7 @@ export function CartDrawer() {
                             <Link
                               href={`/products/${item.id}`}
                               onClick={closeCart}
-                              className="hover:text-[#6B9E3A] transition-colors block"
+                              className="hover:text-[#0B5D44] transition-colors block"
                             >
                               <p className="text-sm font-bold text-neutral-950 truncate">
                                 {item.name}
@@ -197,7 +209,7 @@ export function CartDrawer() {
                                 ⚠️ Out of Stock
                               </span>
                             ) : item.offer_label ? (
-                              <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E5F2D0] text-[#3B581C] border border-[#95CF42]/30">
+                              <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F4EF] text-[#074230] border border-[#10B981]/30">
                                 ✨ {item.offer_label}
                               </span>
                             ) : null}
@@ -260,7 +272,7 @@ export function CartDrawer() {
                 {savings > 0 && (
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-neutral-500 font-medium">You&apos;re saving</span>
-                    <span className="font-bold text-[#6B9E3A]">₹{savings.toLocaleString("en-IN")}</span>
+                    <span className="font-bold text-[#0B5D44]">₹{savings.toLocaleString("en-IN")}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
@@ -293,7 +305,7 @@ export function CartDrawer() {
                     className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-black font-movault text-base tracking-wider uppercase transition-all ${
                       hasOutOfStockItems
                         ? "bg-neutral-200 text-neutral-400 cursor-not-allowed opacity-80"
-                        : "bg-[#95CF42] hover:bg-[#85BE33] text-neutral-950 shadow-md shadow-[#95CF42]/20 hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                        : "bg-[#10B981] hover:bg-[#10B981] text-neutral-950 shadow-md shadow-[#10B981]/20 hover:shadow-lg active:scale-[0.99] cursor-pointer"
                     }`}
                   >
                     {hasOutOfStockItems ? "⚠️ Remove Out of Stock Items" : "Proceed to Checkout"}

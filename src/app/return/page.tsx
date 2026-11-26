@@ -24,13 +24,13 @@ export const metadata = {
 
 export default function ReturnPolicyPage() {
   return (
-    <div className="min-h-screen bg-white text-neutral-700 flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E] font-mograph">
+    <div className="min-h-screen bg-white text-neutral-700 flex flex-col justify-between selection:bg-[#E6F4EF] selection:text-[#0C1412] font-mograph">
       <Navbar />
 
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16 w-full">
         {/* Navigation Breadcrumb */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-500 mb-6 font-medium">
-          <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
+          <Link href="/" className="hover:text-[#0B5D44] transition-colors">
             Home
           </Link>
           <BreadcrumbChevron className="w-3.5 h-3.5 text-neutral-400" />
@@ -39,8 +39,8 @@ export default function ReturnPolicyPage() {
 
         {/* Header Intro */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5F2D0] text-[#3B581C] text-xs font-semibold mb-3 shadow-2xs">
-            <RotateCcw className="w-3.5 h-3.5 text-[#6B9E3A]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F4EF] text-[#074230] text-xs font-semibold mb-3 shadow-2xs">
+            <RotateCcw className="w-3.5 h-3.5 text-[#0B5D44]" />
             <span>Customer Protection • 7-Day Replacement Guarantee</span>
           </div>
 
@@ -52,7 +52,7 @@ export default function ReturnPolicyPage() {
           </p>
 
           {/* Intro card */}
-          <div className="mt-5 bg-[#F8FAF4] border border-[#E5F2D0] rounded-2xl p-5 shadow-2xs text-xs sm:text-sm text-neutral-700 leading-relaxed">
+          <div className="mt-5 bg-[#F3FAF7] border border-[#E6F4EF] rounded-2xl p-5 shadow-2xs text-xs sm:text-sm text-neutral-700 leading-relaxed">
             At <strong className="font-semibold text-neutral-950">Vittal Lifestyle</strong>, every item is quality-inspected and dispatched in factory-sealed tamper-evident packaging. To protect your purchase against transit damage or rare packaging anomalies, we provide a structured{" "}
             <strong className="font-semibold text-neutral-950">7-Day Replacement Guarantee</strong>.
           </div>
@@ -61,7 +61,7 @@ export default function ReturnPolicyPage() {
         {/* 4 Feature Highlight Cards */}
         <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white border border-neutral-200/80 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="w-9 h-9 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mb-3">
               <Video className="w-4 h-4" />
             </div>
             <h4 className="font-bold text-xs sm:text-sm text-neutral-950 leading-tight font-mograph tracking-tight">Unboxing Video</h4>
@@ -71,7 +71,7 @@ export default function ReturnPolicyPage() {
           </div>
 
           <div className="bg-white border border-neutral-200/80 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="w-9 h-9 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mb-3">
               <Clock className="w-4 h-4" />
             </div>
             <h4 className="font-bold text-xs sm:text-sm text-neutral-950 leading-tight font-mograph tracking-tight">48-Hour Notice</h4>
@@ -81,7 +81,7 @@ export default function ReturnPolicyPage() {
           </div>
 
           <div className="bg-white border border-neutral-200/80 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="w-9 h-9 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mb-3">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <h4 className="font-bold text-xs sm:text-sm text-neutral-950 leading-tight font-mograph tracking-tight">7-Day Replacement</h4>
@@ -91,7 +91,7 @@ export default function ReturnPolicyPage() {
           </div>
 
           <div className="bg-white border border-neutral-200/80 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="w-9 h-9 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mb-3">
               <CreditCard className="w-4 h-4" />
             </div>
             <h4 className="font-bold text-xs sm:text-sm text-neutral-950 leading-tight font-mograph tracking-tight">100% Refunds</h4>
@@ -106,19 +106,19 @@ export default function ReturnPolicyPage() {
           {/* Section 1 */}
           <section className="space-y-3">
             <div className="flex items-center gap-2.5 text-neutral-950 font-bold text-base sm:text-lg border-b border-neutral-200/70 pb-2.5 font-mograph tracking-tight">
-              <PackageCheck className="w-5 h-5 text-[#6B9E3A]" />
+              <PackageCheck className="w-5 h-5 text-[#0B5D44]" />
               <h2>1. Return &amp; Exchange Eligibility</h2>
             </div>
             <p>To maintain the highest hygiene, health, and quality standards:</p>
             <ul className="space-y-2 list-none pl-1">
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
                 <span>
                   <strong className="text-neutral-950">Nutrition &amp; Food (Supplements, Dates, Nuts, Chocolates):</strong> Due to health &amp; safety protocols, consumables are eligible for replacement if received damaged, leaked, or incorrect. If returning for variant exchange, the factory container seal must be completely unopened and untampered.
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
                 <span>
                   <strong className="text-neutral-950">Activewear &amp; Apparels:</strong> Must be unwashed, unworn, and have all original brand tags attached in original poly packaging.
                 </span>
@@ -129,7 +129,7 @@ export default function ReturnPolicyPage() {
           {/* Section 2 */}
           <section className="space-y-3">
             <div className="flex items-center gap-2.5 text-neutral-950 font-bold text-base sm:text-lg border-b border-neutral-200/70 pb-2.5 font-mograph tracking-tight">
-              <RotateCcw className="w-5 h-5 text-[#6B9E3A]" />
+              <RotateCcw className="w-5 h-5 text-[#0B5D44]" />
               <h2>2. Order Cancellation Prior to Dispatch</h2>
             </div>
             <p>
@@ -139,7 +139,7 @@ export default function ReturnPolicyPage() {
         </div>
 
         {/* Contact Help Strip */}
-        <div className="mt-6 bg-gradient-to-r from-[#F2F8EB] to-[#EBF5DF] rounded-3xl p-6 sm:p-8 border border-[#D5E9BC]/70 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="mt-6 bg-gradient-to-r from-[#F3FAF7] to-[#E6F4EF] rounded-3xl p-6 sm:p-8 border border-[#B8DFD1]/70 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neutral-950 font-mograph tracking-tight">
               Need to Initiate a Return or Exchange?
@@ -153,7 +153,7 @@ export default function ReturnPolicyPage() {
               href={`mailto:${siteConfig.supportEmail}`}
               className="inline-flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-800 text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-neutral-200/80 transition-colors shadow-2xs"
             >
-              <Mail className="w-4 h-4 text-[#6B9E3A]" />
+              <Mail className="w-4 h-4 text-[#0B5D44]" />
               {siteConfig.supportEmail}
             </a>
             <a

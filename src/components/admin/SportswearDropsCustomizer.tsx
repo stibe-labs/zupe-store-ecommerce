@@ -314,7 +314,7 @@ export function SportswearDropsCustomizer({
   if (loading) {
     return (
       <div className="p-12 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
-        <RefreshCw className="w-6 h-6 animate-spin text-[#6B9E3A]" />
+        <RefreshCw className="w-6 h-6 animate-spin text-[#0B5D44]" />
         <span className="font-mograph font-medium">Loading Sportswear Drops customizer...</span>
       </div>
     );
@@ -326,13 +326,13 @@ export function SportswearDropsCustomizer({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-1.5 rounded-lg bg-[#E2F5B4] text-[#3D6318]">
-              <ShoppingBag className="w-5 h-5 text-[#4A7220]" />
+            <span className="p-1.5 rounded-lg bg-[#E6F4EF] text-[#074230]">
+              <ShoppingBag className="w-5 h-5 text-[#0B5D44]" />
             </span>
             <h2 className="text-lg font-black text-slate-900 tracking-tight font-movault">
               Sportswear Drops Cards Customizer
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E2F5B4] text-[#3D6318]">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E6F4EF] text-[#074230]">
               3 Active Cards
             </span>
             {isDirty ? (
@@ -368,7 +368,7 @@ export function SportswearDropsCustomizer({
             disabled={saving}
             className={`px-5 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all shadow-xs cursor-pointer ${
               isDirty
-                ? "bg-[#6B9E3A] hover:bg-[#58842F] text-white shadow-[#6B9E3A]/20"
+                ? "bg-[#0B5D44] hover:bg-[#58842F] text-white shadow-[#0B5D44]/20"
                 : "bg-slate-900 hover:bg-slate-800 text-white"
             }`}
           >
@@ -391,11 +391,11 @@ export function SportswearDropsCustomizer({
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-[#6B9E3A]" />
+            <Eye className="w-4 h-4 text-[#0B5D44]" />
             <span className="text-xs font-black uppercase tracking-wider text-slate-700 font-movault">
               Live Interactive Preview:
             </span>
-            <span className="text-xs font-bold text-[#4A7220] bg-[#E2F5B4]/60 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-[#0B5D44] bg-[#E6F4EF]/60 px-2 py-0.5 rounded-md">
               Editing: {currentCard?.title || `Card #${selectedCardIndex + 1}`}
             </span>
           </div>
@@ -443,15 +443,15 @@ export function SportswearDropsCustomizer({
             }`}
           >
             {/* Top Campaign Header Banner Preview */}
-            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#EBF5DF] via-[#E2F0CE] to-[#D5E9BB] border border-[#D5E9BC]/70 p-4 sm:p-6 text-center mb-4 shadow-xs">
-              <h3 className="relative font-movault text-xl sm:text-2xl md:text-3xl font-extrabold text-[#15230D] tracking-wide mb-1">
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#E6F4EF] via-[#E6F4EF] to-[#B8DFD1] border border-[#B8DFD1]/70 p-4 sm:p-6 text-center mb-4 shadow-xs">
+              <h3 className="relative font-movault text-xl sm:text-2xl md:text-3xl font-extrabold text-[#0C1412] tracking-wide mb-1">
                 {draftConfig.bannerHeadingPrefix}{" "}
-                <span className="font-mograph italic font-bold text-[#6B9E3A]">
+                <span className="font-mograph italic font-bold text-[#0B5D44]">
                   {draftConfig.bannerHeadingHighlight}
                 </span>{" "}
                 {draftConfig.bannerHeadingSuffix}
               </h3>
-              <p className="relative font-movault text-[11px] sm:text-xs md:text-sm font-bold text-[#415C29] tracking-[0.2em] uppercase">
+              <p className="relative font-movault text-[11px] sm:text-xs md:text-sm font-bold text-[#074230] tracking-[0.2em] uppercase">
                 {draftConfig.bannerHashtag}
               </p>
             </div>
@@ -472,12 +472,12 @@ export function SportswearDropsCustomizer({
                       onClick={() => setSelectedCardIndex(0)}
                       className={`group w-[43%] rounded-2xl bg-white border p-4 flex flex-row items-stretch justify-between gap-4 transition-all duration-200 cursor-pointer relative ${
                         isSelected
-                          ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md"
+                          ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/30 shadow-md"
                           : "border-neutral-200 hover:border-neutral-300"
                       }`}
                     >
                       {isSelected && (
-                        <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-[#6B9E3A] text-white text-[10px] font-black uppercase tracking-wider shadow-xs z-20">
+                        <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-[#0B5D44] text-white text-[10px] font-black uppercase tracking-wider shadow-xs z-20">
                           Active Selection
                         </span>
                       )}
@@ -491,7 +491,7 @@ export function SportswearDropsCustomizer({
                           <span className="font-mograph text-[10px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                             {card.priceLabel || "Starting At"}
                           </span>
-                          <span className="font-movault text-xl lg:text-2xl font-black text-[#6B9E3A] tracking-tight">
+                          <span className="font-movault text-xl lg:text-2xl font-black text-[#0B5D44] tracking-tight">
                             {card.price}
                           </span>
                         </div>
@@ -501,7 +501,7 @@ export function SportswearDropsCustomizer({
                       <div
                         onMouseDown={(e) => handleFrameMouseDown(e, 0)}
                         className={`relative w-[48%] self-stretch min-h-[180px] rounded-xl overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200/60 select-none ${
-                          isSelected ? (isDragging ? "cursor-grabbing" : "cursor-grab ring-1 ring-[#6B9E3A]") : ""
+                          isSelected ? (isDragging ? "cursor-grabbing" : "cursor-grab ring-1 ring-[#0B5D44]") : ""
                         }`}
                         title="Click and drag to position image inside frame"
                       >
@@ -548,12 +548,12 @@ export function SportswearDropsCustomizer({
                       onClick={() => setSelectedCardIndex(1)}
                       className={`group w-[28.5%] rounded-2xl bg-white border p-4 flex flex-col justify-between gap-3 transition-all duration-200 cursor-pointer relative ${
                         isSelected
-                          ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md"
+                          ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/30 shadow-md"
                           : "border-neutral-200 hover:border-neutral-300"
                       }`}
                     >
                       {isSelected && (
-                        <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-[#6B9E3A] text-white text-[10px] font-black uppercase tracking-wider shadow-xs z-20">
+                        <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-[#0B5D44] text-white text-[10px] font-black uppercase tracking-wider shadow-xs z-20">
                           Active Selection
                         </span>
                       )}
@@ -562,7 +562,7 @@ export function SportswearDropsCustomizer({
                       <div
                         onMouseDown={(e) => handleFrameMouseDown(e, 1)}
                         className={`relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0 select-none ${
-                          isSelected ? (isDragging ? "cursor-grabbing" : "cursor-grab ring-1 ring-[#6B9E3A]") : ""
+                          isSelected ? (isDragging ? "cursor-grabbing" : "cursor-grab ring-1 ring-[#0B5D44]") : ""
                         }`}
                         title="Click and drag to position image inside frame"
                       >
@@ -602,7 +602,7 @@ export function SportswearDropsCustomizer({
                           <span className="font-mograph text-[9px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                             {card.priceLabel || "Starting At"}
                           </span>
-                          <span className="font-movault text-base lg:text-lg font-black text-[#6B9E3A] tracking-tight">
+                          <span className="font-movault text-base lg:text-lg font-black text-[#0B5D44] tracking-tight">
                             {card.price}
                           </span>
                         </div>
@@ -625,12 +625,12 @@ export function SportswearDropsCustomizer({
                       onClick={() => setSelectedCardIndex(2)}
                       className={`group w-[28.5%] rounded-2xl bg-white border p-4 flex flex-col justify-between gap-3 transition-all duration-200 cursor-pointer relative ${
                         isSelected
-                          ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md"
+                          ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/30 shadow-md"
                           : "border-neutral-200 hover:border-neutral-300"
                       }`}
                     >
                       {isSelected && (
-                        <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-[#6B9E3A] text-white text-[10px] font-black uppercase tracking-wider shadow-xs z-20">
+                        <span className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-[#0B5D44] text-white text-[10px] font-black uppercase tracking-wider shadow-xs z-20">
                           Active Selection
                         </span>
                       )}
@@ -639,7 +639,7 @@ export function SportswearDropsCustomizer({
                       <div
                         onMouseDown={(e) => handleFrameMouseDown(e, 2)}
                         className={`relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200/60 shrink-0 select-none ${
-                          isSelected ? (isDragging ? "cursor-grabbing" : "cursor-grab ring-1 ring-[#6B9E3A]") : ""
+                          isSelected ? (isDragging ? "cursor-grabbing" : "cursor-grab ring-1 ring-[#0B5D44]") : ""
                         }`}
                         title="Click and drag to position image inside frame"
                       >
@@ -679,7 +679,7 @@ export function SportswearDropsCustomizer({
                           <span className="font-mograph text-[9px] text-neutral-500 font-bold uppercase tracking-wider block mb-0.5">
                             {card.priceLabel || "Starting At"}
                           </span>
-                          <span className="font-movault text-base lg:text-lg font-black text-[#6B9E3A] tracking-tight">
+                          <span className="font-movault text-base lg:text-lg font-black text-[#0B5D44] tracking-tight">
                             {card.price}
                           </span>
                         </div>
@@ -707,12 +707,12 @@ export function SportswearDropsCustomizer({
                       onClick={() => setSelectedCardIndex(0)}
                       className={`group rounded-2xl bg-white border p-2.5 flex flex-col justify-between h-full transition-all duration-200 cursor-pointer relative ${
                         isSelected
-                          ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md"
+                          ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/30 shadow-md"
                           : "border-neutral-200"
                       }`}
                     >
                       {isSelected && (
-                        <span className="absolute -top-2 left-2 px-1.5 py-0.5 rounded-full bg-[#6B9E3A] text-white text-[8px] font-black uppercase tracking-wider z-20">
+                        <span className="absolute -top-2 left-2 px-1.5 py-0.5 rounded-full bg-[#0B5D44] text-white text-[8px] font-black uppercase tracking-wider z-20">
                           Active
                         </span>
                       )}
@@ -751,7 +751,7 @@ export function SportswearDropsCustomizer({
                           <span className="font-mograph text-[8px] text-neutral-500 font-bold uppercase tracking-wider block">
                             {card.priceLabel || "Starting At"}
                           </span>
-                          <span className="font-movault text-sm font-black text-[#6B9E3A] tracking-tight">
+                          <span className="font-movault text-sm font-black text-[#0B5D44] tracking-tight">
                             {card.price}
                           </span>
                         </div>
@@ -775,7 +775,7 @@ export function SportswearDropsCustomizer({
                         onClick={() => setSelectedCardIndex(1)}
                         className={`group rounded-2xl bg-white border p-2 flex flex-col justify-between flex-1 transition-all duration-200 cursor-pointer relative ${
                           isSelected
-                            ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md"
+                            ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/30 shadow-md"
                             : "border-neutral-200"
                         }`}
                       >
@@ -810,7 +810,7 @@ export function SportswearDropsCustomizer({
                             <h4 className="font-movault text-[10px] font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate">
                               {card.title}
                             </h4>
-                            <span className="font-movault text-xs font-black text-[#6B9E3A] tracking-tight block">
+                            <span className="font-movault text-xs font-black text-[#0B5D44] tracking-tight block">
                               {card.price}
                             </span>
                           </div>
@@ -833,7 +833,7 @@ export function SportswearDropsCustomizer({
                         onClick={() => setSelectedCardIndex(2)}
                         className={`group rounded-2xl bg-white border p-2 flex flex-col justify-between flex-1 transition-all duration-200 cursor-pointer relative ${
                           isSelected
-                            ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/30 shadow-md"
+                            ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/30 shadow-md"
                             : "border-neutral-200"
                         }`}
                       >
@@ -868,7 +868,7 @@ export function SportswearDropsCustomizer({
                             <h4 className="font-movault text-[10px] font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate">
                               {card.title}
                             </h4>
-                            <span className="font-movault text-xs font-black text-[#6B9E3A] tracking-tight block">
+                            <span className="font-movault text-xs font-black text-[#0B5D44] tracking-tight block">
                               {card.price}
                             </span>
                           </div>
@@ -887,7 +887,7 @@ export function SportswearDropsCustomizer({
       {/* 3. Header Banner Customization Section */}
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Type className="w-4 h-4 text-[#6B9E3A]" />
+          <Type className="w-4 h-4 text-[#0B5D44]" />
           <h3 className="text-sm font-black text-slate-900 font-movault uppercase tracking-wider">
             Upper Campaign Banner: Texts &amp; Hashtag
           </h3>
@@ -903,7 +903,7 @@ export function SportswearDropsCustomizer({
               value={draftConfig.bannerHeadingPrefix ?? "Fresh"}
               onChange={(e) => handleUpdateBanner("bannerHeadingPrefix", e.target.value)}
               placeholder="Fresh"
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B9E3A] focus:outline-hidden"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#0B5D44] focus:outline-hidden"
             />
           </div>
 
@@ -916,7 +916,7 @@ export function SportswearDropsCustomizer({
               value={draftConfig.bannerHeadingHighlight ?? "Sportswear"}
               onChange={(e) => handleUpdateBanner("bannerHeadingHighlight", e.target.value)}
               placeholder="Sportswear"
-              className="w-full px-3 py-2 text-xs border border-[#6B9E3A] bg-[#E2F5B4]/10 rounded-xl text-[#3D6318] font-bold focus:outline-hidden"
+              className="w-full px-3 py-2 text-xs border border-[#0B5D44] bg-[#E6F4EF]/10 rounded-xl text-[#074230] font-bold focus:outline-hidden"
             />
           </div>
 
@@ -929,14 +929,14 @@ export function SportswearDropsCustomizer({
               value={draftConfig.bannerHeadingSuffix ?? "Drops"}
               onChange={(e) => handleUpdateBanner("bannerHeadingSuffix", e.target.value)}
               placeholder="Drops"
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B9E3A] focus:outline-hidden"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#0B5D44] focus:outline-hidden"
             />
           </div>
         </div>
 
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-            <Hash className="w-3.5 h-3.5 text-[#6B9E3A]" />
+            <Hash className="w-3.5 h-3.5 text-[#0B5D44]" />
             <span>Campaign Hashtag / Subtitle</span>
           </label>
           <input
@@ -944,7 +944,7 @@ export function SportswearDropsCustomizer({
             value={draftConfig.bannerHashtag ?? "#EngineeredForEveryMove"}
             onChange={(e) => handleUpdateBanner("bannerHashtag", e.target.value)}
             placeholder="#EngineeredForEveryMove"
-            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B9E3A] focus:outline-hidden"
+            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#0B5D44] focus:outline-hidden"
           />
 
           <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -956,7 +956,7 @@ export function SportswearDropsCustomizer({
                 onClick={() => handleUpdateBanner("bannerHashtag", tag)}
                 className={`text-[10px] font-bold px-2 py-0.5 rounded-md border transition-all cursor-pointer ${
                   draftConfig.bannerHashtag === tag
-                    ? "bg-[#6B9E3A] text-white border-[#6B9E3A]"
+                    ? "bg-[#0B5D44] text-white border-[#0B5D44]"
                     : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
                 }`}
               >
@@ -971,7 +971,7 @@ export function SportswearDropsCustomizer({
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-[#6B9E3A]" />
+            <Sliders className="w-4 h-4 text-[#0B5D44]" />
             <h3 className="text-sm font-black text-slate-900 font-movault uppercase tracking-wider">
               Card Customization &amp; Image Framing
             </h3>
@@ -989,7 +989,7 @@ export function SportswearDropsCustomizer({
                   onClick={() => setSelectedCardIndex(idx)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                     isActive
-                      ? "bg-[#6B9E3A] text-white shadow-xs"
+                      ? "bg-[#0B5D44] text-white shadow-xs"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
@@ -1012,7 +1012,7 @@ export function SportswearDropsCustomizer({
               value={currentCard?.title || ""}
               onChange={(e) => handleUpdateCurrentCard("title", e.target.value)}
               placeholder="e.g. Sports Wear"
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B9E3A] focus:outline-hidden"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#0B5D44] focus:outline-hidden"
             />
           </div>
 
@@ -1025,7 +1025,7 @@ export function SportswearDropsCustomizer({
               value={currentCard?.price || ""}
               onChange={(e) => handleUpdateCurrentCard("price", e.target.value)}
               placeholder="e.g. ₹999*"
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B9E3A] focus:outline-hidden font-bold text-[#6B9E3A]"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#0B5D44] focus:outline-hidden font-bold text-[#0B5D44]"
             />
           </div>
 
@@ -1038,7 +1038,7 @@ export function SportswearDropsCustomizer({
               value={currentCard?.priceLabel || "Starting At"}
               onChange={(e) => handleUpdateCurrentCard("priceLabel", e.target.value)}
               placeholder="Starting At"
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B9E3A] focus:outline-hidden"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#0B5D44] focus:outline-hidden"
             />
           </div>
         </div>
@@ -1046,7 +1046,7 @@ export function SportswearDropsCustomizer({
         {/* Redirect Product Category URL */}
         <div className="space-y-2">
           <label className="block text-xs font-bold text-slate-700 flex items-center gap-1.5">
-            <LinkIcon className="w-3.5 h-3.5 text-[#6B9E3A]" />
+            <LinkIcon className="w-3.5 h-3.5 text-[#0B5D44]" />
             <span>Redirect Product Category Page URL</span>
           </label>
           <div className="flex flex-col sm:flex-row gap-2">
@@ -1055,7 +1055,7 @@ export function SportswearDropsCustomizer({
               value={currentCard?.linkUrl || "/products?category=Outfits"}
               onChange={(e) => handleUpdateCurrentCard("linkUrl", e.target.value)}
               placeholder="/products?category=Outfits"
-              className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B9E3A] focus:outline-hidden font-mono"
+              className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#0B5D44] focus:outline-hidden font-mono"
             />
 
             <select
@@ -1088,11 +1088,11 @@ export function SportswearDropsCustomizer({
         <div className="space-y-3">
           <label className="block text-xs font-bold text-slate-700 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
-              <Upload className="w-3.5 h-3.5 text-[#6B9E3A]" />
+              <Upload className="w-3.5 h-3.5 text-[#0B5D44]" />
               <span>Card Image Source</span>
             </span>
             {uploadingImage && (
-              <span className="text-xs text-[#6B9E3A] font-bold flex items-center gap-1">
+              <span className="text-xs text-[#0B5D44] font-bold flex items-center gap-1">
                 <RefreshCw className="w-3 h-3 animate-spin" /> Uploading image...
               </span>
             )}
@@ -1104,7 +1104,7 @@ export function SportswearDropsCustomizer({
               value={currentCard?.image || ""}
               onChange={(e) => handleUpdateCurrentCard("image", e.target.value)}
               placeholder="e.g. /vittal/drop-teveo-run.jpg or https://..."
-              className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#6B9E3A] focus:outline-hidden font-mono"
+              className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-xl focus:border-[#0B5D44] focus:outline-hidden font-mono"
             />
 
             <label className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
@@ -1134,7 +1134,7 @@ export function SportswearDropsCustomizer({
                     onClick={() => handleUpdateCurrentCard("image", preset.url)}
                     className={`p-2 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer ${
                       isSelected
-                        ? "border-[#6B9E3A] bg-[#E2F5B4]/20 ring-1 ring-[#6B9E3A]"
+                        ? "border-[#0B5D44] bg-[#E6F4EF]/20 ring-1 ring-[#0B5D44]"
                         : "border-slate-200 hover:bg-slate-50"
                     }`}
                   >
@@ -1161,7 +1161,7 @@ export function SportswearDropsCustomizer({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 font-movault flex items-center gap-1.5">
-                <Move className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                <Move className="w-3.5 h-3.5 text-[#0B5D44]" />
                 <span>Image Framing &amp; Positioning (Card #{selectedCardIndex + 1})</span>
               </h4>
               <p className="text-[11px] text-slate-500 font-mograph">
@@ -1201,7 +1201,7 @@ export function SportswearDropsCustomizer({
           <div className="bg-neutral-50/80 rounded-2xl p-5 border border-neutral-200/80 space-y-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-neutral-700">
-                Adjusting: <span className="text-[#4A7220] uppercase font-extrabold">{controlViewTab} View</span>
+                Adjusting: <span className="text-[#0B5D44] uppercase font-extrabold">{controlViewTab} View</span>
               </span>
               <button
                 type="button"
@@ -1227,10 +1227,10 @@ export function SportswearDropsCustomizer({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="flex items-center gap-1.5 text-neutral-800">
-                  <ZoomIn className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                  <ZoomIn className="w-3.5 h-3.5 text-[#0B5D44]" />
                   <span>Zoom / Scale:</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#3D6318] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#074230] font-bold">
                   {activeScale}%
                 </span>
               </div>
@@ -1255,7 +1255,7 @@ export function SportswearDropsCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentCard(isDesktopControl ? "desktopScale" : "mobileScale", val);
                   }}
-                  className="w-full accent-[#85BE33] cursor-pointer"
+                  className="w-full accent-[#10B981] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1274,10 +1274,10 @@ export function SportswearDropsCustomizer({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="flex items-center gap-1.5 text-neutral-800">
-                  <Move className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                  <Move className="w-3.5 h-3.5 text-[#0B5D44]" />
                   <span>Move Left / Right (X Offset):</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#3D6318] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#074230] font-bold">
                   {activeOffsetX === 0
                     ? "Centered (0px)"
                     : activeOffsetX < 0
@@ -1307,7 +1307,7 @@ export function SportswearDropsCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentCard(isDesktopControl ? "desktopOffsetX" : "mobileOffsetX", val);
                   }}
-                  className="w-full accent-[#85BE33] cursor-pointer"
+                  className="w-full accent-[#10B981] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1327,10 +1327,10 @@ export function SportswearDropsCustomizer({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="flex items-center gap-1.5 text-neutral-800">
-                  <Move className="w-3.5 h-3.5 text-[#6B9E3A]" />
+                  <Move className="w-3.5 h-3.5 text-[#0B5D44]" />
                   <span>Move Upper / Lower (Y Offset):</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#3D6318] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-[#074230] font-bold">
                   {activeOffsetY === 0
                     ? "Centered (0px)"
                     : activeOffsetY < 0
@@ -1360,7 +1360,7 @@ export function SportswearDropsCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentCard(isDesktopControl ? "desktopOffsetY" : "mobileOffsetY", val);
                   }}
-                  className="w-full accent-[#85BE33] cursor-pointer"
+                  className="w-full accent-[#10B981] cursor-pointer"
                 />
                 <button
                   type="button"

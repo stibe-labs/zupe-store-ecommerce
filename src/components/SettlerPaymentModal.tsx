@@ -158,7 +158,7 @@ export default function SettlerPaymentModal({
                 : "text-stone-500 hover:text-stone-800"
             }`}
           >
-            <QrCode className="w-4 h-4 text-[#6B9E3A]" />
+            <QrCode className="w-4 h-4 text-[#0B5D44]" />
             <span>Dynamic UPI QR (Fast)</span>
           </button>
 

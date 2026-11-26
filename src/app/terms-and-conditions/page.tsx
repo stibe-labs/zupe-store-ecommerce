@@ -35,7 +35,7 @@ export default function TermsAndConditionsPage() {
         <div className="space-y-3">
           <p>
             By accessing or shopping on <strong className="font-semibold text-neutral-950">Vittal Lifestyle</strong> (accessible at{" "}
-            <a href="https://vittallifestyle.com" className="text-[#6B9E3A] font-semibold underline underline-offset-2">
+            <a href="https://vittallifestyle.com" className="text-[#0B5D44] font-semibold underline underline-offset-2">
               vittallifestyle.com
             </a>
             ), you agree to comply with and be bound by these Terms and Conditions. You represent that you are at least 18 years of age or accessing our platform under the supervision of a parent or legal guardian.
@@ -59,15 +59,15 @@ export default function TermsAndConditionsPage() {
           </p>
           <ul className="space-y-2 list-none text-neutral-700">
             <li className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
               <span><strong className="text-neutral-950">Gym Supplements:</strong> 100% pure Whey Protein Isolate, Micronized Creatine, and active nutrition formulated in GMP-certified facilities with verifiable lab assays and zero unlisted fillers.</span>
             </li>
             <li className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
               <span><strong className="text-neutral-950">Athletic Outfits &amp; Apparels:</strong> Premium 4-way stretch activewear and 240+ GSM heavyweight cotton tees tailored for intense workouts and everyday comfort.</span>
             </li>
             <li className="flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
               <span><strong className="text-neutral-950">Dates, Nuts &amp; Artisan Chocolates:</strong> Authenticated Saudi Medina Ajwa dates, premium nuts, and handcrafted 70% dark chocolates sealed in airtight freshness packaging.</span>
             </li>
           </ul>
@@ -89,15 +89,15 @@ export default function TermsAndConditionsPage() {
           </p>
           <ul className="space-y-1.5 list-none pl-1 text-neutral-700">
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#6B9E3A]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44]" />
               <span>UPI (Google Pay, PhonePe, Paytm, BHIM, CRED)</span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#6B9E3A]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44]" />
               <span>Major Credit &amp; Debit Cards (Visa, Mastercard, RuPay, American Express)</span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#6B9E3A]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44]" />
               <span>Net Banking across 50+ leading Indian banks</span>
             </li>
           </ul>
@@ -133,7 +133,7 @@ export default function TermsAndConditionsPage() {
             We take extreme pride in our quality control. If your parcel arrives with physical transit damage, outer seal tampering, or manufacturing anomalies, you are entitled to a{" "}
             <strong className="font-semibold text-neutral-950">free replacement under our 7-Day Replacement Guarantee</strong>.
           </p>
-          <p className="text-[#3B581C] text-xs bg-[#E5F2D0] p-3 rounded-xl border border-[#D5E9BC]">
+          <p className="text-[#074230] text-xs bg-[#E6F4EF] p-3 rounded-xl border border-[#B8DFD1]">
             <strong>Notice:</strong> To safeguard all customers and verify transit claims, an uninterrupted parcel unboxing video showing the outer shipping label and opening seal is mandatory when raising a claim. Consumable items (supplements, food) must have their inner seal intact if returned for sizing/variant exchange.
           </p>
         </div>
@@ -149,12 +149,12 @@ export default function TermsAndConditionsPage() {
           <p>Our dedicated team is available to assist you with order tracking, dosage recommendations, apparel sizing guidance, and post-delivery assistance:</p>
           <ul className="space-y-1.5 list-none pl-1 text-neutral-700">
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#6B9E3A]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44]" />
               <span>WhatsApp Concierge: Available Monday – Saturday (9:30 AM – 7:30 PM IST)</span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#6B9E3A]" />
-              <span>Official Support Email: <a href={`mailto:${siteConfig.supportEmail}`} className="text-[#6B9E3A] underline">{siteConfig.supportEmail}</a></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44]" />
+              <span>Official Support Email: <a href={`mailto:${siteConfig.supportEmail}`} className="text-[#0B5D44] underline">{siteConfig.supportEmail}</a></span>
             </li>
           </ul>
         </div>
@@ -174,13 +174,13 @@ export default function TermsAndConditionsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-neutral-700 flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E] font-mograph">
+    <div className="min-h-screen bg-white text-neutral-700 flex flex-col justify-between selection:bg-[#E6F4EF] selection:text-[#0C1412] font-mograph">
       <Navbar />
 
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16 w-full">
         {/* Navigation Breadcrumb */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-500 mb-6 font-medium">
-          <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
+          <Link href="/" className="hover:text-[#0B5D44] transition-colors">
             Home
           </Link>
           <BreadcrumbChevron className="w-3.5 h-3.5 text-neutral-400" />
@@ -189,8 +189,8 @@ export default function TermsAndConditionsPage() {
 
         {/* Header Intro */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5F2D0] text-[#3B581C] text-xs font-semibold mb-3 shadow-2xs">
-            <FileText className="w-3.5 h-3.5 text-[#6B9E3A]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F4EF] text-[#074230] text-xs font-semibold mb-3 shadow-2xs">
+            <FileText className="w-3.5 h-3.5 text-[#0B5D44]" />
             <span>Legal Framework &amp; Customer Agreement</span>
           </div>
 
@@ -209,11 +209,11 @@ export default function TermsAndConditionsPage() {
             return (
               <section key={item.id} className="py-6 first:pt-0 last:pb-0 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center font-bold text-xs shrink-0 font-mograph">
+                  <div className="w-8 h-8 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center font-bold text-xs shrink-0 font-mograph">
                     {item.number}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-[#6B9E3A]" />
+                    <Icon className="w-4 h-4 text-[#0B5D44]" />
                     <h2 className="text-base sm:text-lg font-bold text-neutral-950 font-mograph tracking-tight">
                       {item.title}
                     </h2>
@@ -228,7 +228,7 @@ export default function TermsAndConditionsPage() {
         </div>
 
         {/* Contact Help Strip */}
-        <div className="mt-6 bg-gradient-to-r from-[#F2F8EB] to-[#EBF5DF] rounded-3xl p-6 sm:p-8 border border-[#D5E9BC]/70 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="mt-6 bg-gradient-to-r from-[#F3FAF7] to-[#E6F4EF] rounded-3xl p-6 sm:p-8 border border-[#B8DFD1]/70 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neutral-950 font-mograph tracking-tight">
               Have questions about our terms?
@@ -242,7 +242,7 @@ export default function TermsAndConditionsPage() {
               href={`mailto:${siteConfig.supportEmail}`}
               className="inline-flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-800 text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-neutral-200/80 transition-colors shadow-2xs"
             >
-              <Mail className="w-4 h-4 text-[#6B9E3A]" />
+              <Mail className="w-4 h-4 text-[#0B5D44]" />
               {siteConfig.supportEmail}
             </a>
             <a

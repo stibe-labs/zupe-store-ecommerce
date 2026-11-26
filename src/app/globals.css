@@ -1,45 +1,62 @@
 @import "tailwindcss";
 
 @theme {
-  --font-movault: 'Bebas Neue', 'Antonio', 'Barlow Condensed', sans-serif;
-  --font-mograph: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-display: 'Bebas Neue', 'Antonio', 'Barlow Condensed', sans-serif;
-  --font-heading: 'Antonio', 'Bebas Neue', 'Barlow Condensed', sans-serif;
-  --font-sans: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-body: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-movault: 'Manrope', 'Urbanist', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mograph: 'Urbanist', 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Manrope', 'Urbanist', system-ui, sans-serif;
+  --font-heading: 'Manrope', 'Urbanist', system-ui, sans-serif;
+  --font-sans: 'Urbanist', 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Urbanist', 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {
-  /* ─── Vittal Digital Electronics Palette ─── */
-  --zp-orange: #003055;          /* Navy / Primary */
-  --zp-accent: #003055;
-  --zp-accent-light: #0284c7;
-  --zp-accent-dark: #00223d;
-  --zp-amber: #f59e0b;           /* Deal Gold / Accent */
-  --zp-amber-light: #fef3c7;
-  --zp-amber-dark: #d97706;
-  --zp-charcoal: #0F172A;        /* Text / dark section */
-  --zp-charcoal-deep: #020617;
+  /* ─── Vittal Lifestyle — Official Imperial Emerald & Champagne Gold Brand System ─── */
+  --vl-primary: #0B5D44;         /* Imperial Emerald (7.88:1 AAA on white) */
+  --vl-primary-dark: #074230;    /* Deep Imperial Pine */
+  --vl-verified: #10B981;        /* Verified Authentic Mint-Emerald */
+  --vl-gold: #C59B27;            /* Champagne Gold Prestige Accent */
+  --vl-gold-light: #E5C469;      /* Dark-mode Gold Highlight */
+  --vl-gold-text: #8F6B0F;       /* AA-Safe Gold Text on White */
+  --vl-ink: #0C1412;             /* Obsidian Pine Ink (18.68:1 AAA) */
+  --vl-tint: #E6F4EF;            /* Soft Emerald Mist */
+  --vl-surface: #F3FAF7;         /* Crisp Emerald Alabaster */
+  --vl-border: #B8DFD1;          /* Refined Emerald Hairline */
+
+  /* Legacy variable aliases mapped to official Vittal Brand System */
+  --zp-orange: #0B5D44;
+  --zp-accent: #0B5D44;
+  --zp-accent-light: #10B981;
+  --zp-accent-dark: #074230;
+  --zp-amber: #C59B27;
+  --zp-amber-light: #FEF8E6;
+  --zp-amber-dark: #8F6B0F;
+  --zp-charcoal: #0C1412;
+  --zp-charcoal-deep: #09110E;
   --zp-charcoal-muted: #334155;
-  --zp-white: #FFFFFF;           /* Main background */
+  --zp-white: #FFFFFF;
   --zp-snow: #FFFFFF;
-  --zp-soft-gray: #F3F4F6;       /* Secondary background */
-  --zp-cloud: #F3F4F6;
+  --zp-soft-gray: #F5F7F6;
+  --zp-cloud: #F5F7F6;
   --zp-sand: #E5E7EB;
   --zp-slate: #64748B;
   
-  /* ─── Typography (MOVAULT Bold Condensed Display + MOGRAPH Clean Geometric Sans) ─── */
-  --font-movault: 'Bebas Neue', 'Antonio', 'Barlow Condensed', sans-serif;
-  --font-mograph: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-display: 'Bebas Neue', 'Antonio', 'Barlow Condensed', sans-serif;
-  --font-heading: 'Antonio', 'Bebas Neue', 'Barlow Condensed', sans-serif;
-  --font-sans: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-body: 'Urbanist', 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'Space Grotesk', monospace;
+  /* ─── Typography (Manrope Wordmark + Urbanist Geometric Sans + IBM Plex Mono) ─── */
+  --font-movault: 'Manrope', 'Barlow Condensed', sans-serif;
+  --font-mograph: 'Urbanist', 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Manrope', 'Urbanist', sans-serif;
+  --font-heading: 'Manrope', 'Urbanist', sans-serif;
+  --font-sans: 'Urbanist', 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Urbanist', 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Space Grotesk', monospace;
   
-  /* ─── Motion ─── */
-  --zp-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --zp-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  /* ─── Named Motion Curves (GPU-Composited) ─── */
+  --vl-ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+  --vl-ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --vl-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --vl-spring-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --zp-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --zp-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ─── Base Styles ─── */
@@ -68,8 +85,8 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
 }
 
 ::selection {
-  background-color: #E5F2D0;
-  color: #1E300E;
+  background-color: #E6F4EF;
+  color: #0C1412;
 }
 
 /* ─── Custom Scrollbars ─── */

@@ -10,6 +10,7 @@ export function LoadingScreen() {
   const isExcludedRoute =
     pathname === "/signin" ||
     pathname === "/login" ||
+    pathname?.startsWith("/brand") ||
     pathname === "/checkout" ||
     pathname?.startsWith("/checkout") ||
     pathname?.startsWith("/orders") ||
@@ -37,19 +38,32 @@ export function LoadingScreen() {
       // Mark splash as shown for the current browser session
       sessionStorage.setItem("zp_splash_shown", "1");
 
-      // Keep splash smoothly visible for 800ms, then trigger smooth CSS fade-out
+      // Respect prefers-reduced-motion: dismiss immediately without artificial delay
+      const prefersReducedMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+      if (prefersReducedMotion) {
+        splashEl.classList.add("splash-hidden");
+        document.documentElement.classList.add("splash-hidden");
+        return;
+      }
+
+      // Let the full Logo #80 choreography (handle -> bag -> V-check -> gold sparkle -> wordmark) land smoothly
+      let removeTimer: ReturnType<typeof setTimeout> | undefined;
       const fadeTimer = setTimeout(() => {
         splashEl.classList.add("splash-fade-out");
 
-        const removeTimer = setTimeout(() => {
+        removeTimer = setTimeout(() => {
           splashEl.classList.add("splash-hidden");
           document.documentElement.classList.add("splash-hidden");
-        }, 450);
+        }, 420);
+      }, 1050);
 
-        return () => clearTimeout(removeTimer);
-      }, 800);
-
-      return () => clearTimeout(fadeTimer);
+      return () => {
+        clearTimeout(fadeTimer);
+        if (removeTimer) clearTimeout(removeTimer);
+      };
     } catch {
       splashEl.classList.add("splash-hidden");
       document.documentElement.classList.add("splash-hidden");

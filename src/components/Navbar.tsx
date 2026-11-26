@@ -20,17 +20,25 @@ import {
   Cookie,
   MessageCircle,
   ChevronRight,
+  ShieldCheck,
+  Truck,
+  RotateCcw,
+  PackageSearch,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { siteConfig } from "@/config/siteConfig";
+import {
+  BRAND_80_THEMES,
+  Logo80AnimatedMark,
+} from "@/components/Logo80AnimatedMark";
 
 export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { totalItems, subtotal, openCart } = useCart();
+  const { totalItems } = useCart();
   const { isAuthenticated, openAuthModal } = useAuth();
   const { openSearch } = useSearch();
   const { totalWishlistItems } = useWishlist();
@@ -38,8 +46,31 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [shopFlyoutOpen, setShopFlyoutOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
+  const [bagBounceKey, setBagBounceKey] = useState(0);
+  const [wishlistWiggleKey, setWishlistWiggleKey] = useState(0);
 
   const flyoutRef = useRef<HTMLDivElement>(null);
+  const prevCartCountRef = useRef<number | null>(null);
+  const prevWishlistCountRef = useRef<number | null>(null);
+
+  // Trigger Logo #80 Add-to-Bag bounce whenever cart quantity increases
+  useEffect(() => {
+    if (prevCartCountRef.current !== null && totalItems > prevCartCountRef.current) {
+      setBagBounceKey((k) => k + 1);
+    }
+    prevCartCountRef.current = totalItems;
+  }, [totalItems]);
+
+  // Trigger tactile notification wiggle whenever an item is wishlisted
+  useEffect(() => {
+    if (
+      prevWishlistCountRef.current !== null &&
+      totalWishlistItems > prevWishlistCountRef.current
+    ) {
+      setWishlistWiggleKey((k) => k + 1);
+    }
+    prevWishlistCountRef.current = totalWishlistItems;
+  }, [totalWishlistItems]);
 
   // Keyboard shortcut (⌘K or / to open search)
   useEffect(() => {
@@ -124,12 +155,66 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white font-mograph select-none border-none shadow-none">
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md font-mograph select-none border-b border-neutral-200/80 shadow-[0_1px_12px_rgba(7,20,16,0.03)]">
       {/* =================================================================== */}
-      {/* SEAMLESS CLEAN WHITE NAVBAR WITH FLOATING CIRCULAR BUTTONS          */}
+      {/* OBSIDIAN PINE TOP TRUST MICRO-BAR (Authenticity · Shipping · Track) */}
       {/* =================================================================== */}
-      <div className="w-full bg-white pt-3 pb-1.5 sm:pt-4 sm:pb-2">
-        <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-6 relative">
+      <div className="w-full bg-[#071410] text-white/90 border-b border-white/10">
+        <div className="max-w-[1720px] mx-auto px-3.5 sm:px-6 lg:px-8 h-8 flex items-center justify-center md:justify-between text-[11px] font-medium tracking-wide">
+          {/* Mobile concise trust line */}
+          <div className="flex md:hidden items-center gap-2 text-[10.5px] text-white/95 truncate">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#D8B458] shrink-0" />
+            <span className="truncate">
+              100% Original Brands · Free Express Shipping Above ₹1,499
+            </span>
+          </div>
+
+          {/* Desktop 3-pillar trust row */}
+          <div className="hidden md:flex items-center gap-5 text-[11px]">
+            <span className="inline-flex items-center gap-1.5 text-white/95">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#D8B458] shrink-0" />
+              <span>100% Original Authorized Brands</span>
+            </span>
+            <span className="text-white/25" aria-hidden="true">•</span>
+            <span className="inline-flex items-center gap-1.5 text-white/90">
+              <Truck className="w-3.5 h-3.5 text-[#34D399] shrink-0" />
+              <span>Free Express Shipping Above ₹1,499</span>
+            </span>
+            <span className="hidden xl:inline text-white/25" aria-hidden="true">•</span>
+            <span className="hidden xl:inline-flex items-center gap-1.5 text-white/85">
+              <RotateCcw className="w-3.5 h-3.5 text-[#D8B458] shrink-0" />
+              <span>7-Day Easy Returns</span>
+            </span>
+          </div>
+
+          {/* Desktop quick utility links */}
+          <div className="hidden md:flex items-center gap-4 text-[11px]">
+            <Link
+              href="/order-tracking"
+              className="inline-flex items-center gap-1.5 text-white/85 hover:text-[#D8B458] transition-colors"
+            >
+              <PackageSearch className="w-3.5 h-3.5 text-[#D8B458]" />
+              <span>Track Order</span>
+            </Link>
+            <span className="text-white/25" aria-hidden="true">|</span>
+            <a
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20need%20help%20with%20Vittal%20Lifestyle`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-white/85 hover:text-[#34D399] transition-colors"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-[#34D399]" />
+              <span>WhatsApp Help</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* =================================================================== */}
+      {/* SEAMLESS LUXURY GALLERY NAVBAR                                      */}
+      {/* =================================================================== */}
+      <div className="w-full py-2.5 sm:py-3">
+        <div className="max-w-[1720px] mx-auto px-3.5 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-6 relative">
           
           {/* =============================================================== */}
           {/* LEFT: FLOATING CIRCULAR HAMBURGER BUTTON / DESKTOP NAV LINKS    */}
@@ -138,20 +223,20 @@ export function Navbar() {
             {/* Circular White Floating Hamburger Button (mobile/tablet only) */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              className="lg:hidden w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-neutral-200/80 flex items-center justify-center text-[#0C1412] hover:border-[#0B5D44]/40 active:scale-95 transition-all cursor-pointer"
               aria-label="Open navigation menu"
             >
               <Menu className="w-5 h-5 stroke-[2]" />
             </button>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 ml-0">
+            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 ml-0" aria-label="Main navigation">
               {/* Home Link */}
               <Link
                 href="/"
-                className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
+                className={`px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
                   pathname === "/"
-                    ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                    ? "text-[#0B5D44] bg-[#E6F4EF]/60 font-bold"
                     : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
                 }`}
               >
@@ -168,16 +253,16 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={() => setShopFlyoutOpen((prev) => !prev)}
-                  className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all flex items-center gap-1 cursor-pointer ${
-                    shopFlyoutOpen || pathname?.startsWith("/products")
-                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                  className={`px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all flex items-center gap-1 cursor-pointer ${
+                    shopFlyoutOpen
+                      ? "text-[#0B5D44] bg-[#E6F4EF]/60 font-bold"
                       : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
                   }`}
                 >
                   <span>Collections</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      shopFlyoutOpen ? "rotate-180 text-[#6B9E3A]" : "text-neutral-500"
+                      shopFlyoutOpen ? "rotate-180 text-[#0B5D44]" : "text-neutral-500"
                     }`}
                   />
                 </button>
@@ -192,7 +277,7 @@ export function Navbar() {
                       <Link
                         href="/products"
                         onClick={() => setShopFlyoutOpen(false)}
-                        className="text-xs text-[#6B9E3A] hover:underline font-semibold flex items-center gap-1"
+                        className="text-xs text-[#0B5D44] hover:underline font-semibold flex items-center gap-1"
                       >
                         <span>View All</span>
                         <ArrowRight className="w-3 h-3" />
@@ -210,11 +295,11 @@ export function Navbar() {
                             className="flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F4F5F7] transition-all group"
                           >
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-9 h-9 rounded-xl bg-[#F4F5F7] border border-neutral-200/80 flex items-center justify-center text-neutral-700 group-hover:text-[#6B9E3A] group-hover:bg-[#E5F2D0]/40 transition-colors shrink-0">
+                              <div className="w-9 h-9 rounded-xl bg-[#F4F5F7] border border-neutral-200/80 flex items-center justify-center text-neutral-700 group-hover:text-[#0B5D44] group-hover:bg-[#E6F4EF]/50 transition-colors shrink-0">
                                 <Icon className="w-4.5 h-4.5" />
                               </div>
                               <div className="truncate">
-                                <span className="text-xs font-bold text-neutral-900 group-hover:text-[#6B9E3A] transition-colors truncate block">
+                                <span className="text-xs font-bold text-neutral-900 group-hover:text-[#0B5D44] transition-colors truncate block">
                                   {cat.name}
                                 </span>
                                 <p className="text-[11px] text-neutral-500 truncate">
@@ -222,22 +307,22 @@ export function Navbar() {
                                 </p>
                               </div>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#6B9E3A] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                            <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#0B5D44] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                           </Link>
                         );
                       })}
                     </div>
 
                     {/* Mega Menu Footer Callout */}
-                    <div className="mt-3 pt-3 border-t border-neutral-100 bg-[#F4F5F7] p-3 rounded-xl border border-neutral-200/70 flex items-center justify-between">
+                    <div className="mt-3 pt-3 border-t border-neutral-100 bg-[#F3FAF7] p-3 rounded-xl border border-[#B8DFD1]/60 flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-bold text-neutral-900">Pure Protein. Maximum Performance.</p>
-                        <p className="text-[10px] text-neutral-500">Lab-certified 100% ultra-filtered whey isolate</p>
+                        <p className="text-xs font-bold text-neutral-900">100% Original Guaranteed.</p>
+                        <p className="text-[10px] text-neutral-600">Authorized global nutrition &amp; athletic brands</p>
                       </div>
                       <Link
                         href="/products/whey-protein-isolate"
                         onClick={() => setShopFlyoutOpen(false)}
-                        className="px-3 py-1 rounded-lg bg-[#6B9E3A] hover:bg-[#5C8931] text-white font-extrabold text-xs transition-colors shrink-0"
+                        className="px-3.5 py-1.5 rounded-lg bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-xs transition-colors shrink-0"
                       >
                         Shop Isolate
                       </Link>
@@ -249,33 +334,45 @@ export function Navbar() {
               {/* Shop */}
               <Link
                 href="/products"
-                className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
-                  pathname === "/products"
-                    ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                className={`px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
+                  pathname?.startsWith("/products")
+                    ? "text-[#0B5D44] bg-[#E6F4EF]/60 font-bold"
                     : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
                 }`}
               >
                 Shop
               </Link>
 
+              {/* Track Order */}
+              <Link
+                href="/order-tracking"
+                className={`px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all whitespace-nowrap ${
+                  pathname === "/order-tracking"
+                    ? "text-[#0B5D44] bg-[#E6F4EF]/60 font-bold"
+                    : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
+                }`}
+              >
+                Track
+              </Link>
+
               {/* About Page */}
               <Link
                 href="/about"
-                className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
+                className={`px-2.5 xl:px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
                   pathname === "/about"
-                    ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                    ? "text-[#0B5D44] bg-[#E6F4EF]/60 font-bold"
                     : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
                 }`}
               >
                 About
               </Link>
 
-              {/* Contact Page */}
+              {/* Contact Page (shown on xl+ to preserve clean center clearance on 1024px) */}
               <Link
                 href="/contact"
-                className={`px-3 py-1.5 rounded-full text-xs xl:text-sm font-semibold tracking-wide transition-all ${
+                className={`hidden xl:inline-flex px-3 py-1.5 rounded-full text-sm font-semibold tracking-wide transition-all ${
                   pathname === "/contact"
-                    ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
+                    ? "text-[#0B5D44] bg-[#E6F4EF]/60 font-bold"
                     : "text-neutral-700 hover:text-black hover:bg-[#F4F5F7]"
                 }`}
               >
@@ -285,50 +382,92 @@ export function Navbar() {
           </div>
 
           {/* =============================================================== */}
-          {/* CENTER: VL LOGO (EXACTLY CENTERED MATCHING REFERENCE)           */}
+          {/* CENTER: OFFICIAL LOGO #80 v2.0 (INTERACTIVE HOVER-PRESS MARK)   */}
           {/* =============================================================== */}
-          <div className="absolute left-1/2 -translate-x-1/2 z-10 shrink-0">
-            <Link href="/" className="flex items-center justify-center group cursor-pointer">
-              <div className="relative h-10 sm:h-11 w-28 sm:w-32 transition-transform duration-300 group-hover:scale-[1.02]">
-                <Image
-                  src="/vl-logo-black.png"
-                  alt="Vittal Lifestyle"
-                  fill
-                  className="object-contain object-center"
-                  priority
-                />
-              </div>
+          <div className="absolute left-1/2 -translate-x-1/2 z-10 shrink-0 pointer-events-auto">
+            <Link
+              href="/"
+              className="vl80-root vl80-hover-trigger inline-flex items-center gap-1.5 sm:gap-2.5 group cursor-pointer py-1"
+              aria-label="Vittal Lifestyle — Home"
+            >
+              <Logo80AnimatedMark
+                theme={BRAND_80_THEMES[0]}
+                surface="light"
+                size={36}
+                className="scale-[0.82] sm:scale-100 -mr-0.5 sm:mr-0"
+              />
+              <span
+                className="inline-flex items-center leading-none select-none"
+                style={{ fontFamily: "'Manrope', sans-serif" }}
+              >
+                <span className="text-[17px] sm:text-[23px] font-bold tracking-[-0.03em] text-[#0C1412] whitespace-nowrap">
+                  vittal{" "}
+                  <span className="font-normal text-[#0B5D44]">lifestyle</span>
+                </span>
+              </span>
             </Link>
           </div>
 
           {/* =============================================================== */}
-          {/* RIGHT: FLOATING CIRCULAR WHITE BUTTONS (Search & Bag)           */}
+          {/* RIGHT: INLINE SEARCH PILL + WISHLIST + ACCOUNT + DEDICATED /CART*/}
           {/* =============================================================== */}
-          <div className="flex items-center gap-2 sm:gap-2.5 z-20 shrink-0">
-            {/* Circular White Floating Search Button */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 z-20 shrink-0">
+            {/* Desktop Inline Search Pill (xl+) */}
             <button
+              type="button"
               onClick={openSearch}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              aria-label="Open search"
+              className="hidden xl:flex items-center justify-between gap-2.5 h-10 w-[235px] 2xl:w-[265px] px-3.5 rounded-full bg-[#F5F8F6] hover:bg-[#EAF4F0] border border-neutral-200/90 hover:border-[#0B5D44]/35 text-xs text-neutral-500 transition-all cursor-pointer group"
+              aria-label="Search brands and products (Command K)"
             >
-              <Search className="w-5 h-5 stroke-[2]" />
+              <span className="flex items-center gap-2 truncate">
+                <Search className="w-4 h-4 text-[#0B5D44] shrink-0" />
+                <span className="truncate font-medium text-neutral-600 group-hover:text-neutral-900">
+                  Search brands &amp; items...
+                </span>
+              </span>
+              <kbd className="px-1.5 py-0.5 rounded-md bg-white border border-neutral-200 text-[10px] font-bold text-neutral-500 shadow-2xs shrink-0">
+                ⌘K
+              </kbd>
             </button>
 
-            {/* Desktop Wishlist Pill */}
+            {/* Compact Circular Search Button (< xl) */}
+            <button
+              type="button"
+              onClick={openSearch}
+              className="xl:hidden w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-200/80 flex items-center justify-center text-neutral-900 hover:border-[#0B5D44]/40 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              aria-label="Open search"
+            >
+              <Search className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
+            </button>
+
+            {/* Desktop Wishlist Pill (wiggles on save) */}
             <Link
               href="/wishlist"
-              className="hidden lg:flex w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all relative"
+              className={`hidden lg:flex w-10 h-10 xl:w-11 xl:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all relative ${
+                pathname === "/wishlist"
+                  ? "border-[#0B5D44] bg-[#E6F4EF]/40"
+                  : "border-neutral-200/80 hover:border-[#0B5D44]/40"
+              }`}
               aria-label="Wishlist"
             >
-              <Heart
-                className={`w-5 h-5 transition-transform ${
-                  totalWishlistItems > 0
-                    ? "fill-[#6B9E3A] text-[#6B9E3A]"
-                    : "text-neutral-900 stroke-[2]"
-                }`}
-              />
+              <span
+                key={wishlistWiggleKey}
+                className={
+                  wishlistWiggleKey > 0
+                    ? "vl80-root vl80-notification inline-flex items-center justify-center"
+                    : "inline-flex items-center justify-center"
+                }
+              >
+                <Heart
+                  className={`vl80-bag-group w-5 h-5 transition-transform ${
+                    totalWishlistItems > 0 || pathname === "/wishlist"
+                      ? "fill-[#0B5D44] text-[#0B5D44]"
+                      : "text-neutral-900 stroke-[2]"
+                  }`}
+                />
+              </span>
               {totalWishlistItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#6B9E3A] text-white text-[9px] font-black rounded-full min-w-[16px] h-[16px] px-0.5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#0B5D44] text-white text-[9px] font-black tabular-nums rounded-full min-w-[17px] h-[17px] px-0.5 flex items-center justify-center ring-2 ring-white">
                   {totalWishlistItems}
                 </span>
               )}
@@ -336,24 +475,47 @@ export function Navbar() {
 
             {/* Desktop Account Icon */}
             <button
+              type="button"
               onClick={handleAccountClick}
-              className="hidden lg:flex w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              aria-label="Account"
+              className={`hidden lg:flex w-10 h-10 xl:w-11 xl:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer ${
+                pathname === "/account"
+                  ? "border-[#0B5D44] bg-[#E6F4EF]/40 text-[#0B5D44]"
+                  : "border-neutral-200/80 hover:border-[#0B5D44]/40"
+              }`}
+              aria-label={isAuthenticated ? "My Account" : "Sign In"}
             >
               <User className="w-5 h-5 stroke-[2]" />
             </button>
 
-            {/* Circular White Floating Shopping Bag Button with Green Badge */}
-            <button
-              onClick={openCart}
-              className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              aria-label="View Shopping Cart"
+            {/* Dedicated /cart Shopping Bag Link (Compact circle on mobile, pill on md+) */}
+            <Link
+              href="/cart"
+              className={`relative w-9 h-9 sm:w-11 sm:h-11 md:w-auto md:px-3.5 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border flex items-center justify-center md:gap-2 text-neutral-900 hover:scale-[1.03] active:scale-95 transition-all ${
+                pathname === "/cart"
+                  ? "border-[#0B5D44] bg-[#E6F4EF]/50 ring-2 ring-[#0B5D44]/15"
+                  : "border-neutral-200/80 hover:border-[#0B5D44]/40"
+              }`}
+              aria-label={totalItems > 0 ? `Open Shopping Bag (${totalItems} items)` : "Open Shopping Bag"}
             >
-              <ShoppingBag className="w-5 h-5 stroke-[2]" />
-              <span className="absolute -top-1 -right-1 bg-[#72A63D] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center shadow-xs">
-                {totalItems > 0 ? totalItems : 1}
+              <Logo80AnimatedMark
+                theme={BRAND_80_THEMES[0]}
+                surface="light"
+                mode={bagBounceKey > 0 ? "add-to-bag" : "hover-press"}
+                replayKey={bagBounceKey}
+                size={23}
+              />
+              <span className="hidden md:inline text-xs font-bold text-[#0C1412] tracking-tight">
+                Bag
               </span>
-            </button>
+              {totalItems > 0 && (
+                <span
+                  key={totalItems}
+                  className="absolute -top-1 -right-1 md:static bg-[#0B5D44] text-white text-[10px] font-extrabold tabular-nums rounded-full min-w-[18px] h-[18px] md:min-w-[20px] md:h-[20px] px-1 md:px-1.5 flex items-center justify-center shadow-xs ring-2 ring-white md:ring-0 animate-[vl80-badge-pop_260ms_cubic-bezier(0.34,1.56,0.64,1)]"
+                >
+                  {totalItems}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </div>
@@ -373,17 +535,22 @@ export function Navbar() {
           <div className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-white border-r border-neutral-200 text-neutral-900 shadow-2xl flex flex-col z-50 overflow-y-auto">
             {/* Drawer Header */}
             <div className="p-4 border-b border-neutral-200 flex items-center justify-between bg-white">
-              <div className="relative h-9 w-36">
-                <Image
-                  src="/vl-logo-black.png"
-                  alt="Vittal Lifestyle"
-                  fill
-                  className="object-contain object-left"
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex items-center gap-2"
+                aria-label="Vittal Lifestyle — Home"
+              >
+                <Logo80AnimatedMark
+                  theme={BRAND_80_THEMES[0]}
+                  surface="light"
+                  size={34}
+                  withWordmark
                 />
-              </div>
+              </Link>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-1.5 text-neutral-500 hover:text-neutral-900 rounded-lg hover:bg-neutral-100"
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-neutral-500 hover:text-neutral-900 rounded-lg hover:bg-neutral-100"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" />
@@ -397,10 +564,10 @@ export function Navbar() {
                   setMobileMenuOpen(false);
                   openSearch();
                 }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-[#F4F5F7] border border-neutral-200 text-neutral-600 text-xs text-left"
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-[#F3FAF7] border border-[#B8DFD1] text-neutral-600 text-xs text-left"
               >
-                <Search className="w-4 h-4 text-[#6B9E3A]" />
-                <span>Search for supplements...</span>
+                <Search className="w-4 h-4 text-[#0B5D44]" />
+                <span>Search 100% original brands, outfits...</span>
               </button>
             </div>
 
@@ -412,7 +579,7 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-xl text-sm font-bold transition-colors ${
                     pathname === "/"
-                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      ? "text-[#0B5D44] bg-[#E6F4EF]/40"
                       : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                   }`}
                 >
@@ -430,7 +597,7 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
                     pathname === "/about"
-                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      ? "text-[#0B5D44] bg-[#E6F4EF]/40"
                       : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                   }`}
                 >
@@ -441,7 +608,7 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
                     pathname === "/contact"
-                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      ? "text-[#0B5D44] bg-[#E6F4EF]/40"
                       : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
                   }`}
                 >
@@ -461,7 +628,7 @@ export function Navbar() {
                 >
                   <span>Wishlist</span>
                   {totalWishlistItems > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E5F2D0] text-[#3B581C]">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E6F4EF] text-[#074230]">
                       {totalWishlistItems}
                     </span>
                   )}
@@ -493,7 +660,7 @@ export function Navbar() {
                         className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F5F7] transition-colors group"
                       >
                         <div className="flex items-center gap-2.5">
-                          <Icon className="w-4 h-4 text-[#6B9E3A]" />
+                          <Icon className="w-4 h-4 text-[#0B5D44]" />
                           <span className="text-xs font-semibold text-neutral-800 group-hover:text-black">
                             {cat.name}
                           </span>
@@ -511,13 +678,13 @@ export function Navbar() {
                   href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20need%20assistance%20from%20Vittal%20Lifestyle`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#E5F2D0]/30 border border-[#D5E9BC] hover:bg-[#E5F2D0]/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#E6F4EF]/30 border border-[#B8DFD1] hover:bg-[#E6F4EF]/50 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-[#6B9E3A] text-white flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#0B5D44] text-white flex items-center justify-center shrink-0">
                     <MessageCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block text-[10px] text-[#3B581C] font-bold uppercase tracking-wider">
+                    <span className="block text-[10px] text-[#074230] font-bold uppercase tracking-wider">
                       Live Concierge
                     </span>
                     <span className="block text-xs font-bold text-neutral-900">

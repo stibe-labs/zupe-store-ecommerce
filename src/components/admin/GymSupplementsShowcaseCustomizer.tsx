@@ -401,7 +401,7 @@ export function GymSupplementsShowcaseCustomizer({
       {/* =================================================================== */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#E2F5B4] text-[#3D6318] flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center font-bold">
             <Dumbbell className="w-5 h-5 stroke-[2.2]" />
           </div>
           <div>
@@ -444,7 +444,7 @@ export function GymSupplementsShowcaseCustomizer({
             disabled={saving || !isDirty}
             className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
               isDirty
-                ? "bg-[#95CF42] hover:bg-[#85BE33] text-black shadow-md hover:scale-102"
+                ? "bg-[#10B981] hover:bg-[#10B981] text-black shadow-md hover:scale-102"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed"
             }`}
           >
@@ -469,7 +469,7 @@ export function GymSupplementsShowcaseCustomizer({
       <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-[#6B9E3A]" />
+            <Eye className="w-4 h-4 text-[#0B5D44]" />
             <span className="text-xs sm:text-sm font-bold text-slate-800">
               Interactive Live Preview
             </span>
@@ -544,7 +544,7 @@ export function GymSupplementsShowcaseCustomizer({
 
               {/* Headings */}
               <div className="relative mb-2.5">
-                <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#D5EBBF] block mb-0.5">
+                <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#B8DFD1] block mb-0.5">
                   {draftConfig.overlineText}
                 </span>
                 <h3
@@ -580,7 +580,7 @@ export function GymSupplementsShowcaseCustomizer({
                             : "w-12 h-12 sm:w-13 sm:h-13 p-1.5 sm:p-2"
                         } ${
                           isActive
-                            ? "bg-[#D8ECC0] ring-2 ring-white/95 shadow-md scale-105"
+                            ? "bg-[#E6F4EF] ring-2 ring-white/95 shadow-md scale-105"
                             : "bg-white/20 hover:bg-white/30 opacity-80 group-hover:opacity-100"
                         }`}
                       >
@@ -598,7 +598,7 @@ export function GymSupplementsShowcaseCustomizer({
                         className={`font-mograph text-[11px] sm:text-xs mt-1 transition-colors text-center whitespace-nowrap ${
                           isActive
                             ? "text-white font-bold tracking-tight"
-                            : "text-[#E3F2CE]/80 font-medium"
+                            : "text-[#B8DFD1]/80 font-medium"
                         }`}
                       >
                         {tab.label}
@@ -688,7 +688,7 @@ export function GymSupplementsShowcaseCustomizer({
       {/* =================================================================== */}
       <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5">
         <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-          <Palette className="w-5 h-5 text-[#6B9E3A]" />
+          <Palette className="w-5 h-5 text-[#0B5D44]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-neutral-950">
               Card Background Color Grading & Luxury Templates
@@ -716,7 +716,7 @@ export function GymSupplementsShowcaseCustomizer({
                   onClick={() => handleApplyTemplate(tmpl)}
                   className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden group ${
                     isSelected
-                      ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/40 shadow-sm"
+                      ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/40 shadow-sm"
                       : "border-slate-200 hover:border-slate-300 hover:shadow-xs"
                   }`}
                 >
@@ -784,7 +784,7 @@ export function GymSupplementsShowcaseCustomizer({
                       templateKey: "custom",
                     }))
                   }
-                  className="w-full text-xs font-mono font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-[#6B9E3A]"
+                  className="w-full text-xs font-mono font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-[#0B5D44]"
                 />
               </div>
             </div>
@@ -817,7 +817,7 @@ export function GymSupplementsShowcaseCustomizer({
                       templateKey: "custom",
                     }))
                   }
-                  className="w-full text-xs font-mono font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-[#6B9E3A]"
+                  className="w-full text-xs font-mono font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-[#0B5D44]"
                 />
               </div>
             </div>
@@ -850,7 +850,7 @@ export function GymSupplementsShowcaseCustomizer({
                       templateKey: "custom",
                     }))
                   }
-                  className="w-full text-xs font-mono font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-[#6B9E3A]"
+                  className="w-full text-xs font-mono font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-[#0B5D44]"
                 />
               </div>
             </div>
@@ -883,7 +883,7 @@ export function GymSupplementsShowcaseCustomizer({
                       templateKey: "custom",
                     }))
                   }
-                  className="w-full text-xs font-mono font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-[#6B9E3A]"
+                  className="w-full text-xs font-mono font-bold text-slate-800 bg-white border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-[#0B5D44]"
                 />
               </div>
             </div>
@@ -896,7 +896,7 @@ export function GymSupplementsShowcaseCustomizer({
       {/* =================================================================== */}
       <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-          <Edit2 className="w-5 h-5 text-[#6B9E3A]" />
+          <Edit2 className="w-5 h-5 text-[#0B5D44]" />
           <div>
             <h3 className="text-sm sm:text-base font-bold text-neutral-950">
               Section Headings & Action Button
@@ -920,7 +920,7 @@ export function GymSupplementsShowcaseCustomizer({
                 setDraftConfig((prev) => ({ ...prev, overlineText: e.target.value }))
               }
               placeholder="e.g. PRO GYM NUTRITION"
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#6B9E3A] bg-white text-slate-900"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#0B5D44] bg-white text-slate-900"
             />
           </div>
 
@@ -936,7 +936,7 @@ export function GymSupplementsShowcaseCustomizer({
                 setDraftConfig((prev) => ({ ...prev, headingText: e.target.value }))
               }
               placeholder="e.g. Fuel Every Workout"
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#6B9E3A] bg-white text-slate-900"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#0B5D44] bg-white text-slate-900"
             />
           </div>
 
@@ -952,7 +952,7 @@ export function GymSupplementsShowcaseCustomizer({
                 setDraftConfig((prev) => ({ ...prev, buttonText: e.target.value }))
               }
               placeholder="e.g. Explore All Gym Supplements"
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#6B9E3A] bg-white text-slate-900"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#0B5D44] bg-white text-slate-900"
             />
           </div>
 
@@ -968,7 +968,7 @@ export function GymSupplementsShowcaseCustomizer({
                 setDraftConfig((prev) => ({ ...prev, buttonLink: e.target.value }))
               }
               placeholder="e.g. /products?category=Gym+Supplementaries"
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#6B9E3A] bg-white text-slate-900"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#0B5D44] bg-white text-slate-900"
             />
           </div>
         </div>
@@ -980,7 +980,7 @@ export function GymSupplementsShowcaseCustomizer({
       <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <Layers className="w-5 h-5 text-[#6B9E3A]" />
+            <Layers className="w-5 h-5 text-[#0B5D44]" />
             <div>
               <h3 className="text-sm sm:text-base font-bold text-neutral-950">
                 Category Tabs & Icon Images
@@ -995,7 +995,7 @@ export function GymSupplementsShowcaseCustomizer({
           <button
             type="button"
             onClick={() => setIsAddCategoryOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F4FBE8] text-[#3D6318] hover:bg-[#E5F2D0] border border-[#95CF42]/40 text-xs font-bold transition-colors cursor-pointer self-start sm:self-center"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F3FAF7] text-[#074230] hover:bg-[#E6F4EF] border border-[#10B981]/40 text-xs font-bold transition-colors cursor-pointer self-start sm:self-center"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Add New Category Tab</span>
@@ -1029,7 +1029,7 @@ export function GymSupplementsShowcaseCustomizer({
                 <span>{tab.label}</span>
                 <span
                   className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
-                    isSelected ? "bg-white/20 text-[#95CF42]" : "bg-slate-200 text-slate-600"
+                    isSelected ? "bg-white/20 text-[#10B981]" : "bg-slate-200 text-slate-600"
                   }`}
                 >
                   {tab.items?.length || 0}
@@ -1054,7 +1054,7 @@ export function GymSupplementsShowcaseCustomizer({
               </div>
               <div>
                 <h4 className="text-sm font-bold text-slate-900">
-                  Editing Tab: <span className="text-[#3D6318]">{activeCategory.label}</span>
+                  Editing Tab: <span className="text-[#074230]">{activeCategory.label}</span>
                 </h4>
                 <p className="text-[11px] text-slate-400 font-mono">ID: {activeCategory.id}</p>
               </div>
@@ -1081,7 +1081,7 @@ export function GymSupplementsShowcaseCustomizer({
                 type="text"
                 value={activeCategory.label}
                 onChange={(e) => handleUpdateCurrentCategory("label", e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#6B9E3A] bg-white text-slate-900"
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#0B5D44] bg-white text-slate-900"
               />
             </div>
 
@@ -1095,7 +1095,7 @@ export function GymSupplementsShowcaseCustomizer({
                   type="text"
                   value={activeCategory.iconImage}
                   onChange={(e) => handleUpdateCurrentCategory("iconImage", e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono font-semibold rounded-xl border border-slate-200 focus:outline-[#6B9E3A] bg-white text-slate-900 truncate"
+                  className="w-full px-3 py-2 text-xs font-mono font-semibold rounded-xl border border-slate-200 focus:outline-[#0B5D44] bg-white text-slate-900 truncate"
                 />
                 <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-colors cursor-pointer shrink-0">
                   <Upload className="w-3.5 h-3.5" />
@@ -1125,7 +1125,7 @@ export function GymSupplementsShowcaseCustomizer({
                   onClick={() => handleUpdateCurrentCategory("iconImage", preset.url)}
                   className={`p-1.5 rounded-xl border shrink-0 transition-all cursor-pointer bg-white flex items-center gap-1.5 ${
                     activeCategory.iconImage === preset.url
-                      ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/40"
+                      ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/40"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                   title={preset.label}
@@ -1155,7 +1155,7 @@ export function GymSupplementsShowcaseCustomizer({
       <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <ShoppingBag className="w-5 h-5 text-[#6B9E3A]" />
+            <ShoppingBag className="w-5 h-5 text-[#0B5D44]" />
             <div>
               <h3 className="text-sm sm:text-base font-bold text-neutral-950">
                 Products in "{activeCategory.label}" ({activeCategory.items?.length || 0})
@@ -1173,7 +1173,7 @@ export function GymSupplementsShowcaseCustomizer({
               setModalCategory("Gym Supplementaries");
               setIsProductModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold transition-all shadow-xs cursor-pointer self-start sm:self-center font-mograph"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#10B981] text-black text-xs font-bold transition-all shadow-xs cursor-pointer self-start sm:self-center font-mograph"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Add Products from Catalog</span>
@@ -1236,7 +1236,7 @@ export function GymSupplementsShowcaseCustomizer({
                         onChange={(e) =>
                           handleUpdateProductItem(prod.id, "name", e.target.value)
                         }
-                        className="text-xs sm:text-sm font-bold text-slate-900 bg-white border border-slate-200 rounded-lg px-2.5 py-1 w-full max-w-md focus:outline-[#6B9E3A]"
+                        className="text-xs sm:text-sm font-bold text-slate-900 bg-white border border-slate-200 rounded-lg px-2.5 py-1 w-full max-w-md focus:outline-[#0B5D44]"
                         placeholder="Product Name"
                       />
                     </div>
@@ -1248,7 +1248,7 @@ export function GymSupplementsShowcaseCustomizer({
                         onChange={(e) =>
                           handleUpdateProductItem(prod.id, "discountTag", e.target.value)
                         }
-                        className="text-xs font-extrabold text-[#3D6318] bg-[#F4FBE8] border border-[#95CF42]/40 rounded-lg px-2 py-0.5 w-36 focus:outline-[#6B9E3A]"
+                        className="text-xs font-extrabold text-[#074230] bg-[#F3FAF7] border border-[#10B981]/40 rounded-lg px-2 py-0.5 w-36 focus:outline-[#0B5D44]"
                         placeholder="e.g. Min. 25% Off"
                       />
                       <span className="text-[11px] text-slate-400 font-mono">
@@ -1337,13 +1337,13 @@ export function GymSupplementsShowcaseCustomizer({
                   placeholder="Search products by title or category..."
                   value={modalSearch}
                   onChange={(e) => setModalSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-200 focus:outline-[#6B9E3A] text-slate-900"
+                  className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-200 focus:outline-[#0B5D44] text-slate-900"
                 />
               </div>
               <select
                 value={modalCategory}
                 onChange={(e) => setModalCategory(e.target.value)}
-                className="px-3 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 focus:outline-[#6B9E3A]"
+                className="px-3 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-200 text-slate-700 focus:outline-[#0B5D44]"
               >
                 <option value="All">All Categories</option>
                 <option value="Gym Supplementaries">Gym Supplementaries</option>
@@ -1378,7 +1378,7 @@ export function GymSupplementsShowcaseCustomizer({
                       className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
                         alreadyAdded
                           ? "bg-slate-50 border-slate-200 opacity-60"
-                          : "bg-white hover:bg-[#F4FBE8]/50 border-slate-200 hover:border-[#95CF42]/60 shadow-2xs"
+                          : "bg-white hover:bg-[#F3FAF7]/50 border-slate-200 hover:border-[#10B981]/60 shadow-2xs"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -1405,7 +1405,7 @@ export function GymSupplementsShowcaseCustomizer({
                               </span>
                             )}
                             {discount > 0 && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#E2F5B4] text-[#3D6318]">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#E6F4EF] text-[#074230]">
                                 Auto Offer: Min. {discount}% Off
                               </span>
                             )}
@@ -1423,7 +1423,7 @@ export function GymSupplementsShowcaseCustomizer({
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                           alreadyAdded
                             ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                            : "bg-[#95CF42] hover:bg-[#85BE33] text-black shadow-2xs"
+                            : "bg-[#10B981] hover:bg-[#10B981] text-black shadow-2xs"
                         }`}
                       >
                         {alreadyAdded ? "Added" : "+ Add"}
@@ -1477,7 +1477,7 @@ export function GymSupplementsShowcaseCustomizer({
                 value={newCategoryLabel}
                 onChange={(e) => setNewCategoryLabel(e.target.value)}
                 placeholder="e.g. BCAAs & Amino"
-                className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#6B9E3A] bg-white text-slate-900"
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 focus:outline-[#0B5D44] bg-white text-slate-900"
               />
             </div>
 
@@ -1493,7 +1493,7 @@ export function GymSupplementsShowcaseCustomizer({
                     onClick={() => setNewCategoryIcon(preset.url)}
                     className={`p-2 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
                       newCategoryIcon === preset.url
-                        ? "border-[#6B9E3A] ring-2 ring-[#6B9E3A]/40 bg-[#F4FBE8]"
+                        ? "border-[#0B5D44] ring-2 ring-[#0B5D44]/40 bg-[#F3FAF7]"
                         : "border-slate-200 hover:border-slate-300 bg-white"
                     }`}
                   >
@@ -1526,7 +1526,7 @@ export function GymSupplementsShowcaseCustomizer({
                 type="button"
                 onClick={handleAddNewCategory}
                 disabled={!newCategoryLabel.trim()}
-                className="px-5 py-2 rounded-xl bg-[#95CF42] hover:bg-[#85BE33] text-black text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-[#10B981] hover:bg-[#10B981] text-black text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50"
               >
                 Create Category
               </button>

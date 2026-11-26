@@ -25,13 +25,13 @@ export const metadata = {
 
 export default function ShippingAndDeliveryPage() {
   return (
-    <div className="min-h-screen bg-white text-neutral-700 flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E] font-mograph">
+    <div className="min-h-screen bg-white text-neutral-700 flex flex-col justify-between selection:bg-[#E6F4EF] selection:text-[#0C1412] font-mograph">
       <Navbar />
 
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16 w-full">
         {/* Navigation Breadcrumb */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-neutral-500 mb-6 font-medium">
-          <Link href="/" className="hover:text-[#6B9E3A] transition-colors">
+          <Link href="/" className="hover:text-[#0B5D44] transition-colors">
             Home
           </Link>
           <BreadcrumbChevron className="w-3.5 h-3.5 text-neutral-400" />
@@ -40,8 +40,8 @@ export default function ShippingAndDeliveryPage() {
 
         {/* Header Intro */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5F2D0] text-[#3B581C] text-xs font-semibold mb-3 shadow-2xs">
-            <Truck className="w-3.5 h-3.5 text-[#6B9E3A]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F4EF] text-[#074230] text-xs font-semibold mb-3 shadow-2xs">
+            <Truck className="w-3.5 h-3.5 text-[#0B5D44]" />
             <span>Priority Logistics • Pan-India Doorstep Delivery</span>
           </div>
 
@@ -53,16 +53,16 @@ export default function ShippingAndDeliveryPage() {
           </p>
 
           {/* Intro summary card */}
-          <div className="mt-5 bg-[#F8FAF4] border border-[#E5F2D0] rounded-2xl p-5 shadow-2xs text-xs sm:text-sm text-neutral-700 leading-relaxed">
+          <div className="mt-5 bg-[#F3FAF7] border border-[#E6F4EF] rounded-2xl p-5 shadow-2xs text-xs sm:text-sm text-neutral-700 leading-relaxed">
             At <strong className="font-semibold text-neutral-950">Vittal Lifestyle</strong>, every parcel is personally inspected, barcode-verified, and packed inside moisture-sealed protective packaging before courier handover. Every parcel is{" "}
             <strong className="font-semibold text-neutral-950">100% insured against loss, transit damage, or handling defects</strong> until it is safely delivered into your hands.
           </div>
         </div>
 
         {/* Live Order Tracking Action Banner */}
-        <div className="bg-gradient-to-r from-[#F2F8EB] to-[#EBF5DF] border border-[#D5E9BC]/70 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="bg-gradient-to-r from-[#F3FAF7] to-[#E6F4EF] border border-[#B8DFD1]/70 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-white border border-[#D5E9BC] flex items-center justify-center shrink-0 text-[#6B9E3A] shadow-2xs">
+            <div className="w-11 h-11 rounded-2xl bg-white border border-[#B8DFD1] flex items-center justify-center shrink-0 text-[#0B5D44] shadow-2xs">
               <PackageSearch className="w-6 h-6" />
             </div>
             <div>
@@ -86,7 +86,7 @@ export default function ShippingAndDeliveryPage() {
         {/* 3 Key Highlights Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="w-9 h-9 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mb-3">
               <Clock className="w-4 h-4" />
             </div>
             <h4 className="font-bold text-neutral-950 text-xs sm:text-sm font-mograph tracking-tight">24–48 Hr Dispatch</h4>
@@ -96,7 +96,7 @@ export default function ShippingAndDeliveryPage() {
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="w-9 h-9 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mb-3">
               <Plane className="w-4 h-4" />
             </div>
             <h4 className="font-bold text-neutral-950 text-xs sm:text-sm font-mograph tracking-tight">5–7 Days Delivery</h4>
@@ -106,7 +106,7 @@ export default function ShippingAndDeliveryPage() {
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-            <div className="w-9 h-9 rounded-xl bg-[#E5F2D0] text-[#3B581C] flex items-center justify-center mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F4EF] text-[#074230] flex items-center justify-center mb-3">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <h4 className="font-bold text-neutral-950 text-xs sm:text-sm font-mograph tracking-tight">100% Transit Insured</h4>
@@ -121,17 +121,17 @@ export default function ShippingAndDeliveryPage() {
           {/* Section 1 */}
           <section className="space-y-3">
             <div className="flex items-center gap-2.5 text-neutral-950 font-bold text-base sm:text-lg border-b border-neutral-200/70 pb-2.5 font-mograph tracking-tight">
-              <Box className="w-5 h-5 text-[#6B9E3A]" />
+              <Box className="w-5 h-5 text-[#0B5D44]" />
               <h2>1. Order Processing &amp; Quality Packing</h2>
             </div>
             <p>Every order placed on Vittal Lifestyle undergoes strict quality verification prior to shipping:</p>
             <ul className="space-y-2 list-none pl-1">
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
                 <span><strong className="text-neutral-950">Batch &amp; Expiry Check:</strong> All supplements and gourmet dates/chocolates are inspected for airtight seal integrity and freshness expiry.</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
                 <span><strong className="text-neutral-950">Moisture-Proof Barrier:</strong> Heavy-duty shockproof bubble lining and tamper-evident outer security tape prevent exterior weather exposure or tampering.</span>
               </li>
             </ul>
@@ -140,17 +140,17 @@ export default function ShippingAndDeliveryPage() {
           {/* Section 2 */}
           <section className="space-y-3">
             <div className="flex items-center gap-2.5 text-neutral-950 font-bold text-base sm:text-lg border-b border-neutral-200/70 pb-2.5 font-mograph tracking-tight">
-              <Clock className="w-5 h-5 text-[#6B9E3A]" />
+              <Clock className="w-5 h-5 text-[#0B5D44]" />
               <h2>2. Transit Timelines &amp; Delivery Expectations</h2>
             </div>
             <p>We partner with India&apos;s leading logistics providers (BlueDart, Delhivery, DTDC, Xpressbees):</p>
             <ul className="space-y-2 list-none pl-1">
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
                 <span><strong className="text-neutral-950">Metro &amp; Tier-1 Cities:</strong> 3 to 5 business days after dispatch.</span>
               </li>
               <li className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
                 <span><strong className="text-neutral-950">Tier-2, Tier-3 &amp; Rest of India:</strong> 5 to 7 business days after dispatch.</span>
               </li>
             </ul>
@@ -159,12 +159,12 @@ export default function ShippingAndDeliveryPage() {
           {/* Section 3 */}
           <section className="space-y-3">
             <div className="flex items-center gap-2.5 text-neutral-950 font-bold text-base sm:text-lg border-b border-neutral-200/70 pb-2.5 font-mograph tracking-tight">
-              <MessageCircle className="w-5 h-5 text-[#6B9E3A]" />
+              <MessageCircle className="w-5 h-5 text-[#0B5D44]" />
               <h2>3. WhatsApp &amp; SMS Milestone Tracking</h2>
             </div>
             <p>
               Once your parcel leaves our fulfillment warehouse, you will automatically receive an SMS and WhatsApp alert with your Airway Bill (AWB) number and live tracking link. You can also view step-by-step progress directly on our{" "}
-              <Link href="/order-tracking" className="text-[#6B9E3A] underline font-semibold">
+              <Link href="/order-tracking" className="text-[#0B5D44] underline font-semibold">
                 Order Tracking Page
               </Link>.
             </p>
@@ -172,7 +172,7 @@ export default function ShippingAndDeliveryPage() {
         </div>
 
         {/* Contact Strip */}
-        <div className="mt-6 bg-gradient-to-r from-[#F2F8EB] to-[#EBF5DF] rounded-3xl p-6 sm:p-8 border border-[#D5E9BC]/70 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="mt-6 bg-gradient-to-r from-[#F3FAF7] to-[#E6F4EF] rounded-3xl p-6 sm:p-8 border border-[#B8DFD1]/70 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-neutral-950 font-mograph tracking-tight">
               Need Delivery Assistance?
@@ -186,7 +186,7 @@ export default function ShippingAndDeliveryPage() {
               href={`mailto:${siteConfig.supportEmail}`}
               className="inline-flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-800 text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl border border-neutral-200/80 transition-colors shadow-2xs"
             >
-              <Mail className="w-4 h-4 text-[#6B9E3A]" />
+              <Mail className="w-4 h-4 text-[#0B5D44]" />
               {siteConfig.supportEmail}
             </a>
             <a

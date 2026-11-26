@@ -159,10 +159,9 @@ export async function sendOrderConfirmationEmail(
   let logoImgSrc = `${STORE_BASE_URL}${siteConfig.logoUrl}`;
   try {
     const candidateLogoPaths = [
-      path.join(process.cwd(), "public", "vittal-digital-logo.svg"),
-      path.join(process.cwd(), "public", "vittal-digital-logo.png"),
-      path.join(process.cwd(), "public", "turkiye-jam-logo.svg"),
-      path.join(process.cwd(), "public", "zupe-email-label.png"),
+      path.join(process.cwd(), "public", "vl-logo-black.png"),
+      path.join(process.cwd(), "public", "vittal-lifestyle-logo.svg"),
+      path.join(process.cwd(), "public", "vl-logo-light.svg"),
     ];
     for (const p of candidateLogoPaths) {
       if (fs.existsSync(p)) {
@@ -273,7 +272,7 @@ export async function sendOrderConfirmationEmail(
               Qty: <strong style="color: #111827;">${item.quantity}</strong> × ₹${Number(item.price || 0).toLocaleString("en-IN")}
             </div>
             <div style="margin-top: 6px;">
-              <a href="${itemProductUrl}" target="_blank" style="font-size: 12px; color: #FF7A00; text-decoration: none; font-weight: 700;">
+              <a href="${itemProductUrl}" target="_blank" style="font-size: 12px; color: #0B5D44; text-decoration: none; font-weight: 700;">
                 View Product Details →
               </a>
             </div>
@@ -301,7 +300,7 @@ export async function sendOrderConfirmationEmail(
       <style>
         body { margin: 0; padding: 0; background-color: #f4f6f8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         table { border-collapse: collapse; }
-        a { color: #FF7A00; }
+        a { color: #0B5D44; }
       </style>
     </head>
     <body style="margin: 0; padding: 24px 12px; background-color: #f4f6f8;">
@@ -359,7 +358,7 @@ export async function sendOrderConfirmationEmail(
               <tr>
                 <td style="padding: 10px 0 0 0; width: 50%; vertical-align: top;">
                   <div style="font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 700; letter-spacing: 0.5px;">Estimated Delivery</div>
-                  <div style="font-size: 13px; font-weight: 700; color: #FF7A00; margin-top: 2px;">
+                  <div style="font-size: 13px; font-weight: 700; color: #0B5D44; margin-top: 2px;">
                     ${estDelivery.label}
                   </div>
                 </td>
@@ -449,7 +448,7 @@ export async function sendOrderConfirmationEmail(
                       <td style="padding: 10px 0 0 0; border-top: 1px solid #e5e7eb; font-weight: 800; font-size: 15px; color: #111827;">
                         Total:
                       </td>
-                      <td style="padding: 10px 0 0 0; border-top: 1px solid #e5e7eb; text-align: right; font-weight: 900; font-size: 17px; color: #FF7A00;">
+                      <td style="padding: 10px 0 0 0; border-top: 1px solid #e5e7eb; text-align: right; font-weight: 900; font-size: 17px; color: #0B5D44;">
                         ₹${totalAmount.toLocaleString("en-IN")}
                       </td>
                     </tr>
@@ -488,7 +487,7 @@ export async function sendOrderConfirmationEmail(
           <td style="padding: 0 32px 32px 32px; text-align: center;">
             <table align="center" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
               <tr>
-                <td align="center" style="border-radius: 12px; background: #FF7A00;">
+                <td align="center" style="border-radius: 12px; background: #0B5D44;">
                   <a href="${trackingUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 14px; font-weight: 800; color: #ffffff; text-decoration: none; border-radius: 12px; letter-spacing: 0.5px;">
                     TRACK YOUR ORDER LIVE →
                   </a>
@@ -508,7 +507,7 @@ export async function sendOrderConfirmationEmail(
               Need help with this order?
             </div>
             <div style="font-size: 12px; color: #6b7280; line-height: 1.5;">
-              Simply reply directly to this email at <a href="mailto:${siteConfig.supportEmail}" style="color: #FF7A00; text-decoration: none; font-weight: 600;">${siteConfig.supportEmail}</a>. Our support team is ready to assist you.
+              Simply reply directly to this email at <a href="mailto:${siteConfig.supportEmail}" style="color: #0B5D44; text-decoration: none; font-weight: 600;">${siteConfig.supportEmail}</a>. Our support team is ready to assist you.
             </div>
           </td>
         </tr>
@@ -712,7 +711,7 @@ export async function sendOrderCancellationEmail(
             </div>
 
             <div style="text-align: center; margin: 28px 0 10px 0;">
-              <a href="${STORE_BASE_URL}" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #FF7A00; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 10px;">
+              <a href="${STORE_BASE_URL}" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #0B5D44; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 10px;">
                 Continue Shopping on ${siteConfig.name} →
               </a>
             </div>
@@ -722,7 +721,7 @@ export async function sendOrderCancellationEmail(
         <!-- Support Info -->
         <tr>
           <td style="padding: 20px 32px; background-color: #f9fafb; border-top: 1px solid #f3f4f6; text-align: center; font-size: 12px; color: #6b7280;">
-            Need help or have questions? Contact us anytime at <a href="mailto:${siteConfig.supportEmail}" style="color: #FF7A00; text-decoration: none; font-weight: 600;">${siteConfig.supportEmail}</a>.
+            Need help or have questions? Contact us anytime at <a href="mailto:${siteConfig.supportEmail}" style="color: #0B5D44; text-decoration: none; font-weight: 600;">${siteConfig.supportEmail}</a>.
           </td>
         </tr>
 

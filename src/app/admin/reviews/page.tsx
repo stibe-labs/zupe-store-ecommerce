@@ -611,7 +611,7 @@ export default function AdminReviewsPage() {
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold shadow-xs transition-all cursor-pointer disabled:opacity-60"
                 title="Recalculate and 100% synchronize all product ratings and review counts from database"
               >
-                <RefreshCw className={`w-3.5 h-3.5 text-[#002D62] ${syncingAll ? "animate-spin" : ""}`} />
+                <RefreshCw className={`w-3.5 h-3.5 text-[#0B5D44] ${syncingAll ? "animate-spin" : ""}`} />
                 <span>{syncingAll ? "Syncing..." : "Sync All Ratings"}</span>
               </button>
 
@@ -794,7 +794,7 @@ export default function AdminReviewsPage() {
 
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-8 h-8 animate-spin text-[#002D62]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#0B5D44]" />
                 <span className="text-xs font-semibold text-slate-500">Loading reviews database...</span>
               </div>
             ) : filteredReviews.length === 0 ? (

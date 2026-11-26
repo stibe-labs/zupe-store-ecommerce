@@ -52,7 +52,7 @@ export default async function Home() {
   ]);
 
   return (
-    <main className="min-h-screen bg-white text-neutral-900 selection:bg-[#E5F2D0] selection:text-[#1E300E] pb-16 md:pb-0">
+    <main className="min-h-screen bg-white text-neutral-900 selection:bg-[#E6F4EF] selection:text-[#0C1412] pb-16 md:pb-0">
       {/* 1. Brand Navigation Bar */}
       <Navbar />
 

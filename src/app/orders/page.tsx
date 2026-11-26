@@ -459,8 +459,8 @@ function OrdersPageContent() {
     switch (status) {
       case "delivered":
         return (
-          <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1 min-h-[34px] rounded-full text-[11px] sm:text-xs font-semibold bg-[#F0F8E6] text-[#1E300E] border border-[#78B928]/40 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#6B9E3A] shrink-0" />
+          <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1 min-h-[34px] rounded-full text-[11px] sm:text-xs font-semibold bg-[#F0F8E6] text-[#0C1412] border border-[#78B928]/40 whitespace-nowrap w-full sm:w-auto tracking-tight select-none">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#0B5D44] shrink-0" />
             <span>Delivered</span>
           </span>
         );
@@ -483,7 +483,7 @@ function OrdersPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-neutral-900 font-mograph flex flex-col justify-between selection:bg-[#E5F2D0] selection:text-[#1E300E]">
+    <div className="min-h-screen bg-[#F8F9FA] text-neutral-900 font-mograph flex flex-col justify-between selection:bg-[#E6F4EF] selection:text-[#0C1412]">
       <Navbar />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-3 sm:pt-5 pb-12 flex-1 w-full">
@@ -506,7 +506,7 @@ function OrdersPageContent() {
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${
-                  loading || isSilentSyncing ? "animate-spin text-[#6B9E3A]" : "text-neutral-600"
+                  loading || isSilentSyncing ? "animate-spin text-[#0B5D44]" : "text-neutral-600"
                 }`}
               />
               <span>{isSilentSyncing ? "Syncing..." : "Refresh"}</span>
@@ -515,7 +515,7 @@ function OrdersPageContent() {
             {!isAuthenticated && (
               <Link
                 href="/signin?redirect=/orders&notice=Please sign in to view and track your orders"
-                className="text-xs font-bold text-[#6B9E3A] hover:text-[#527C2B] hover:underline ml-1"
+                className="text-xs font-bold text-[#0B5D44] hover:text-[#0B5D44] hover:underline ml-1"
               >
                 Sign In
               </Link>
@@ -527,20 +527,20 @@ function OrdersPageContent() {
         {activeConfirmBannerId && (
           <div
             onClick={() => setIsConfirmBannerExpanded((prev) => !prev)}
-            className="mb-3.5 py-2 px-3.5 sm:px-4 rounded-xl sm:rounded-2xl bg-[#F0F8E6] border border-[#78B928]/30 text-[#1E300E] flex items-start justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-1 duration-200 cursor-pointer hover:bg-[#E8F4DA] transition-colors"
+            className="mb-3.5 py-2 px-3.5 sm:px-4 rounded-xl sm:rounded-2xl bg-[#F0F8E6] border border-[#78B928]/30 text-[#0C1412] flex items-start justify-between gap-3 shadow-xs animate-in fade-in slide-in-from-top-1 duration-200 cursor-pointer hover:bg-[#E8F4DA] transition-colors"
             role="button"
             tabIndex={0}
             title="Click to expand/collapse message"
           >
             <div className="flex items-start gap-3 min-w-0 flex-1">
-              <CheckCircle2 className="w-4 h-4 text-[#6B9E3A] shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-[#0B5D44] shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-xs text-[#1E300E]">🎉 Order Confirmed via WhatsApp!</span>
-                  <span className="text-[10px] font-mono font-bold text-[#1E300E] bg-[#E5F2D0] px-2 py-0.5 rounded-full break-all border border-[#78B928]/20">
+                  <span className="font-bold text-xs text-[#0C1412]">🎉 Order Confirmed via WhatsApp!</span>
+                  <span className="text-[10px] font-mono font-bold text-[#0C1412] bg-[#E6F4EF] px-2 py-0.5 rounded-full break-all border border-[#78B928]/20">
                     #{activeConfirmBannerId}
                   </span>
-                  <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#1E300E] bg-white/70 hover:bg-white px-2 py-0.5 rounded-full ml-auto sm:ml-0 transition-colors border border-[#78B928]/20">
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-[#0C1412] bg-white/70 hover:bg-white px-2 py-0.5 rounded-full ml-auto sm:ml-0 transition-colors border border-[#78B928]/20">
                     {isConfirmBannerExpanded ? (
                       <>Less <ChevronUp className="w-3 h-3" /></>
                     ) : (
@@ -561,7 +561,7 @@ function OrdersPageContent() {
                 e.stopPropagation();
                 handleDismissConfirmBanner(activeConfirmBannerId);
               }}
-              className="text-[#6B9E3A] hover:text-[#1E300E] p-1 rounded-lg hover:bg-[#E5F2D0] transition shrink-0 cursor-pointer ml-1"
+              className="text-[#0B5D44] hover:text-[#0C1412] p-1 rounded-lg hover:bg-[#E6F4EF] transition shrink-0 cursor-pointer ml-1"
               aria-label="Dismiss banner"
               title="Close notification"
             >
@@ -622,7 +622,7 @@ function OrdersPageContent() {
         ) : orders.length === 0 ? (
           <div className="max-w-md mx-auto py-16 text-center">
             <div className="bg-white rounded-3xl p-8 sm:p-10 border border-neutral-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#E5F2D0] text-[#1E300E] flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#E6F4EF] text-[#0C1412] flex items-center justify-center">
                 <Package className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-neutral-900 mb-2">
@@ -666,11 +666,11 @@ function OrdersPageContent() {
               if (!rawItems || rawItems.length === 0) {
                 rawItems = [
                   {
-                    product_id: "vittal-digital",
-                    name: "Vittal Digital - Authentic Herbal Formulations",
+                    product_id: "vittal-lifestyle",
+                    name: "Vittal Lifestyle Order Item",
                     price: ord.total_amount || 1499,
                     quantity: 1,
-                    image: "/tj/turkiye-jam-jar-2-strips.png",
+                    image: "/vittal/product-whey-protein-jar.png",
                   },
                 ];
               }
@@ -744,7 +744,7 @@ function OrdersPageContent() {
                           (₹{productSubtotal.toLocaleString()} + ₹49 COD)
                         </span>
                       ) : isPaid ? (
-                        <span className="text-[10px] text-[#6B9E3A] font-semibold block">
+                        <span className="text-[10px] text-[#0B5D44] font-semibold block">
                           Prepaid Online
                         </span>
                       ) : null}
@@ -776,7 +776,7 @@ function OrdersPageContent() {
                         <button
                           type="button"
                           onClick={() => handleOpenReviewModal(ord, rawItems[0])}
-                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1 min-h-[34px] rounded-full text-[11px] sm:text-xs font-bold tracking-tight bg-[#6B9E3A] hover:bg-[#527C2B] text-white shadow-xs transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1 min-h-[34px] rounded-full text-[11px] sm:text-xs font-bold tracking-tight bg-[#0B5D44] hover:bg-[#0B5D44] text-white shadow-xs transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
                         >
                           <Star className="w-3.5 h-3.5 fill-current shrink-0" />
                           <span>Rate & Review</span>
@@ -1010,7 +1010,7 @@ function OrdersPageContent() {
                             <div className="flex-1 min-w-0">
                               <Link
                                 href={productTargetLink}
-                                className="text-xs sm:text-sm font-bold text-neutral-900 hover:text-[#6B9E3A] transition-colors truncate block"
+                                className="text-xs sm:text-sm font-bold text-neutral-900 hover:text-[#0B5D44] transition-colors truncate block"
                                 title={it.name}
                               >
                                 {it.name}
@@ -1019,7 +1019,7 @@ function OrdersPageContent() {
                                 Qty: {itemQty} × ₹{itemUnitPrice.toLocaleString()}
                               </p>
                               {((it as any).bundle_tier > 1 || (it as any).offer_label) && (
-                                <span className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-[#E5F2D0] text-[#1E300E] border border-[#78B928]/30">
+                                <span className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-[#E6F4EF] text-[#0C1412] border border-[#78B928]/30">
                                   <span>✨</span>
                                   <span>{(it as any).offer_label || `Buy ${itemQty} Save More`}</span>
                                 </span>
@@ -1033,11 +1033,11 @@ function OrdersPageContent() {
                                     onClick={() => handleOpenReviewModal(ord, it)}
                                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition-all shadow-xs cursor-pointer ${
                                       hasReviewed
-                                        ? "bg-[#F0F8E6] text-[#1E300E] border border-[#78B928]/40 hover:bg-[#E8F4DA]"
-                                        : "bg-[#6B9E3A] text-white hover:bg-[#527C2B] hover:scale-105"
+                                        ? "bg-[#F0F8E6] text-[#0C1412] border border-[#78B928]/40 hover:bg-[#E8F4DA]"
+                                        : "bg-[#0B5D44] text-white hover:bg-[#0B5D44] hover:scale-105"
                                     }`}
                                   >
-                                    <Star className={`w-3 h-3 fill-current ${hasReviewed ? "text-[#6B9E3A]" : "text-white"}`} />
+                                    <Star className={`w-3 h-3 fill-current ${hasReviewed ? "text-[#0B5D44]" : "text-white"}`} />
                                     <span>
                                       {hasReviewed
                                         ? `✓ Reviewed (${hasReviewed.rating}★)`
@@ -1047,7 +1047,7 @@ function OrdersPageContent() {
 
                                   <Link
                                     href={`${productTargetLink}#reviews`}
-                                    className="inline-flex items-center gap-0.5 text-[10px] font-bold text-neutral-500 hover:text-[#6B9E3A] transition-colors"
+                                    className="inline-flex items-center gap-0.5 text-[10px] font-bold text-neutral-500 hover:text-[#0B5D44] transition-colors"
                                   >
                                     <span>View</span>
                                     <ExternalLink className="w-2.5 h-2.5" />
@@ -1081,14 +1081,14 @@ function OrdersPageContent() {
                           COD Delivery Fee: <strong>+₹49</strong>
                         </span>
                       ) : (
-                        <span className="text-[#6B9E3A] font-semibold">
+                        <span className="text-[#0B5D44] font-semibold">
                           Delivery: <strong>FREE (Saved ₹49)</strong>
                         </span>
                       )}
                       {ord.discount_amount && ord.discount_amount > 0 ? (
                         <>
                           <span>•</span>
-                          <span className="text-[#6B9E3A] font-semibold">
+                          <span className="text-[#0B5D44] font-semibold">
                             Prepaid Discount: <strong>-₹{ord.discount_amount}</strong>
                           </span>
                         </>
@@ -1096,7 +1096,7 @@ function OrdersPageContent() {
                     </div>
                     <div className="text-left sm:text-right font-bold text-neutral-900 text-xs sm:text-sm">
                       {isCod ? "Payable on Delivery:" : "Total Paid:"}{" "}
-                      <span className={`text-sm sm:text-base font-extrabold ${isPaid ? "text-[#6B9E3A]" : "text-neutral-900"}`}>
+                      <span className={`text-sm sm:text-base font-extrabold ${isPaid ? "text-[#0B5D44]" : "text-neutral-900"}`}>
                         ₹{displayedTotal.toLocaleString()}
                       </span>
                     </div>
@@ -1159,7 +1159,7 @@ function OrdersPageContent() {
                   <h4 className="text-sm font-bold text-gray-900 tracking-tight">
                     What makes a good review
                   </h4>
-                  <div className="w-8 h-0.5 bg-[#6B9E3A] rounded-full mt-2" />
+                  <div className="w-8 h-0.5 bg-[#0B5D44] rounded-full mt-2" />
                 </div>
 
                 <div className="space-y-6 text-xs">
@@ -1233,7 +1233,7 @@ function OrdersPageContent() {
                       <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-2">
                         <Link
                           href={`/products/${encodeURIComponent(reviewModalItem.product_id)}#reviews`}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#6B9E3A] transition-colors"
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#111111] text-white text-xs font-bold hover:bg-[#0B5D44] transition-colors"
                         >
                           <span>View on Product Page</span>
                           <ExternalLink className="w-3.5 h-3.5" />
@@ -1320,7 +1320,7 @@ function OrdersPageContent() {
                           value={reviewTitle}
                           onChange={(e) => setReviewTitle(e.target.value)}
                           placeholder="e.g. Excellent build quality, exactly as described!"
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#6B9E3A]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#0B5D44]"
                         />
                       </div>
 
@@ -1335,7 +1335,7 @@ function OrdersPageContent() {
                           value={reviewComment}
                           onChange={(e) => setReviewComment(e.target.value)}
                           placeholder="Tell future buyers what you liked about this item (quality, packaging, delivery speed, usefulness)..."
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#6B9E3A]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-[#0B5D44]"
                         />
                       </div>
 
@@ -1348,7 +1348,7 @@ function OrdersPageContent() {
                           <span className="text-[10px] text-gray-400">Multiple files allowed</span>
                         </div>
 
-                        <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#6B9E3A] bg-gray-50 hover:bg-[#F0F8E6]/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
+                        <label className="cursor-pointer border-2 border-dashed border-gray-200 hover:border-[#0B5D44] bg-gray-50 hover:bg-[#F0F8E6]/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-all">
                           <Camera className="w-6 h-6 text-gray-400 mb-1" />
                           <span className="text-xs font-bold text-gray-700">Click to upload product pictures</span>
                           <span className="text-[10px] text-gray-400">PNG, JPG, WebP formats</span>
@@ -1393,7 +1393,7 @@ function OrdersPageContent() {
                           value={reviewerName}
                           onChange={(e) => setReviewerName(e.target.value)}
                           placeholder="e.g. Rahul M."
-                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#6B9E3A]"
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-[#0B5D44]"
                         />
                       </div>
 

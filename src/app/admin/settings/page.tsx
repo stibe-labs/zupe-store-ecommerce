@@ -320,7 +320,7 @@ export default function AdminSettingsPage() {
 
           {loading ? (
             <div className="bg-white rounded-2xl p-12 border border-slate-200/90 flex flex-col items-center justify-center gap-3">
-              <RefreshCw className="w-8 h-8 text-[#002D62] animate-spin" />
+              <RefreshCw className="w-8 h-8 text-[#0B5D44] animate-spin" />
               <p className="text-sm font-semibold text-slate-600">Loading stored integration credentials...</p>
             </div>
           ) : (
