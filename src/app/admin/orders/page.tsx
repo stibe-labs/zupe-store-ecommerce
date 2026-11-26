@@ -154,6 +154,13 @@ function AdminOrdersContent() {
   const [cancelNotes, setCancelNotes] = useState<string>("");
   const [openMenuOrderId, setOpenMenuOrderId] = useState<string | null>(null);
 
+  const showToast = (type: "success" | "error", text: string) => {
+    setToastMessage({ type, text });
+    setTimeout(() => {
+      setToastMessage((prev) => (prev?.text === text ? null : prev));
+    }, 5000);
+  };
+
   // Manual Order Creation Modal State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
@@ -171,6 +178,7 @@ function AdminOrdersContent() {
   const [newDiscount, setNewDiscount] = useState<number>(0);
   const [newAdvancePaid, setNewAdvancePaid] = useState<number>(0);
   const [newWhatsappMode, setNewWhatsappMode] = useState<"pre_confirmation" | "confirmed" | "none">("pre_confirmation");
+  const [selectedCatalogId, setSelectedCatalogId] = useState<string>(DEFAULT_PRODUCTS[0]?.id || "");
 
   type ManualOrderItem = {
     product_id: string;
@@ -193,20 +201,8 @@ function AdminOrdersContent() {
   ]);
 
   const handleAddManualItem = (prodId?: string) => {
-    const prod = DEFAULT_PRODUCTS.find((p) => p.id === prodId) || DEFAULT_PRODUCTS[0];
-    if (prod) {
-      setManualItems((prev) => [
-        ...prev,
-        {
-          product_id: prod.id,
-          name: prod.name,
-          price: prod.price,
-          quantity: 1,
-          image: prod.poster_image || prod.images?.[0] || "/vl-logo-nobg.png",
-          cost_price: prod.cost_price || Math.round(prod.price * 0.42),
-        },
-      ]);
-    } else {
+    const targetId = prodId || selectedCatalogId;
+    if (targetId === "custom") {
       setManualItems((prev) => [
         ...prev,
         {
@@ -218,6 +214,24 @@ function AdminOrdersContent() {
           cost_price: 450,
         },
       ]);
+      showToast("success", "Added custom product item to order");
+      return;
+    }
+
+    const prod = DEFAULT_PRODUCTS.find((p) => p.id === targetId || p.slug === targetId) || DEFAULT_PRODUCTS[0];
+    if (prod) {
+      setManualItems((prev) => [
+        ...prev,
+        {
+          product_id: prod.id,
+          name: prod.name,
+          price: prod.price,
+          quantity: 1,
+          image: prod.poster_image || (Array.isArray(prod.images) ? prod.images[0] : "") || "/vl-logo-nobg.png",
+          cost_price: prod.cost_price || Math.round(prod.price * 0.42),
+        },
+      ]);
+      showToast("success", `Added "${prod.name}" (₹${prod.price}) to order`);
     }
   };
 
@@ -258,6 +272,7 @@ function AdminOrdersContent() {
     setNewDiscount(0);
     setNewAdvancePaid(0);
     setNewWhatsappMode("pre_confirmation");
+    setSelectedCatalogId(DEFAULT_PRODUCTS[0]?.id || "");
     setManualItems([
       {
         product_id: DEFAULT_PRODUCTS[0]?.id || "red-vl-athletic-tee",
@@ -331,13 +346,6 @@ function AdminOrdersContent() {
     } finally {
       setIsSubmittingOrder(false);
     }
-  };
-
-  const showToast = (type: "success" | "error", text: string) => {
-    setToastMessage({ type, text });
-    setTimeout(() => {
-      setToastMessage((prev) => (prev?.text === text ? null : prev));
-    }, 5000);
   };
 
   // Close 3-dots action menu on outside click or scroll
@@ -2161,7 +2169,7 @@ function AdminOrdersContent() {
           }}
         >
           <div
-            className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh]"
+            className="bg-white rounded-3xl max-w-5xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh] mx-3 sm:mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -2196,11 +2204,11 @@ function AdminOrdersContent() {
             </div>
 
             {/* Modal Body Form */}
-            <form onSubmit={handleCreateManualOrder} className="flex flex-col flex-1 overflow-hidden">
-              <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <form onSubmit={handleCreateManualOrder} className="flex flex-col flex-1 overflow-hidden min-w-0">
+              <div className="p-4 sm:p-6 overflow-y-auto overflow-x-hidden space-y-6 flex-1 w-full min-w-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full min-w-0">
                   {/* Left Column: Customer & Delivery Information */}
-                  <div className="space-y-4">
+                  <div className="space-y-4 w-full min-w-0">
                     <div className="border-b border-slate-200 pb-2">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5 text-[#0B5D44]" />
@@ -2224,8 +2232,8 @@ function AdminOrdersContent() {
                     </div>
 
                     {/* Customer Phone & Email */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0 w-full">
+                      <div className="min-w-0">
                         <label className="block text-xs font-bold text-slate-700 mb-1">
                           Phone Number <span className="text-rose-500">*</span>
                         </label>
@@ -2242,7 +2250,7 @@ function AdminOrdersContent() {
                         </div>
                       </div>
 
-                      <div>
+                      <div className="min-w-0">
                         <label className="block text-xs font-bold text-slate-700 mb-1">
                           Email (Optional)
                         </label>
@@ -2272,8 +2280,8 @@ function AdminOrdersContent() {
                     </div>
 
                     {/* City & PIN Code */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
+                    <div className="grid grid-cols-2 gap-3 min-w-0 w-full">
+                      <div className="min-w-0">
                         <label className="block text-xs font-bold text-slate-700 mb-1">
                           City / District
                         </label>
@@ -2285,7 +2293,7 @@ function AdminOrdersContent() {
                           className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 focus:border-[#0B5D44] focus:bg-white transition-all font-medium"
                         />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <label className="block text-xs font-bold text-slate-700 mb-1">
                           PIN Code
                         </label>
@@ -2301,15 +2309,15 @@ function AdminOrdersContent() {
                     </div>
 
                     {/* Payment & Order Settings */}
-                    <div className="border-t border-slate-200 pt-3 space-y-3">
+                    <div className="border-t border-slate-200 pt-3 space-y-3 min-w-0 w-full">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                         <CreditCard className="w-3.5 h-3.5 text-[#0B5D44]" />
                         <span>Payment & Status</span>
                       </h4>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-3 min-w-0 w-full">
                         {/* Payment Method */}
-                        <div>
+                        <div className="min-w-0">
                           <label className="block text-xs font-bold text-slate-700 mb-1">
                             Payment Method
                           </label>
@@ -2332,7 +2340,7 @@ function AdminOrdersContent() {
                         </div>
 
                         {/* Payment Status */}
-                        <div>
+                        <div className="min-w-0">
                           <label className="block text-xs font-bold text-slate-700 mb-1">
                             Payment Status
                           </label>
@@ -2347,9 +2355,9 @@ function AdminOrdersContent() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-3 min-w-0 w-full">
                         {/* Custom Order ID */}
-                        <div>
+                        <div className="min-w-0">
                           <label className="block text-xs font-bold text-slate-700 mb-1">
                             Assigned Order ID
                           </label>
@@ -2363,7 +2371,7 @@ function AdminOrdersContent() {
                         </div>
 
                         {/* Order Delivery Status */}
-                        <div>
+                        <div className="min-w-0">
                           <label className="block text-xs font-bold text-slate-700 mb-1">
                             Fulfillment Status
                           </label>
@@ -2381,7 +2389,7 @@ function AdminOrdersContent() {
                       </div>
 
                       {newPaymentMethod === "Cash on Delivery" && (
-                        <div>
+                        <div className="min-w-0">
                           <label className="block text-xs font-bold text-slate-700 mb-1">
                             Advance Partial Payment (₹)
                           </label>
@@ -2394,7 +2402,7 @@ function AdminOrdersContent() {
                             className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800"
                           />
                           <p className="text-[10px] text-slate-400 mt-0.5">
-                            Balance due at door: ₹{Math.max(0, calculatedTotal - Number(newAdvancePaid || 0))}
+                            Balance due at door: ₹{Math.max(0, calculatedTotal - Number(newAdvancePaid || 0)).toLocaleString()}
                           </p>
                         </div>
                       )}
@@ -2402,7 +2410,7 @@ function AdminOrdersContent() {
                   </div>
 
                   {/* Right Column: Purchased Products, Pricing & WhatsApp */}
-                  <div className="space-y-4">
+                  <div className="space-y-4 w-full min-w-0">
                     <div className="border-b border-slate-200 pb-2 flex items-center justify-between">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                         <ShoppingBag className="w-3.5 h-3.5 text-[#0B5D44]" />
@@ -2411,15 +2419,25 @@ function AdminOrdersContent() {
                     </div>
 
                     {/* Quick Catalog Item Add Dropdown */}
-                    <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl space-y-2">
-                      <label className="block text-[11px] font-bold text-[#0B5D44]">
-                        + Quick Add Product From Catalog
-                      </label>
-                      <div className="flex items-center gap-2">
+                    <div className="p-3.5 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl space-y-2.5 w-full min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="block text-[11px] font-bold text-[#0B5D44]">
+                          + Quick Add Product From Catalog
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => handleAddManualItem("custom")}
+                          className="text-[11px] font-bold text-[#0B5D44] hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Custom Item</span>
+                        </button>
+                      </div>
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full min-w-0">
                         <select
-                          id="catalogSelectDropdown"
-                          className="flex-1 px-3 py-1.5 bg-white border border-emerald-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20"
-                          defaultValue={DEFAULT_PRODUCTS[0]?.id}
+                          value={selectedCatalogId}
+                          onChange={(e) => setSelectedCatalogId(e.target.value)}
+                          className="min-w-0 flex-1 w-full px-3 py-2 bg-white border border-emerald-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]/20 truncate"
                         >
                           {DEFAULT_PRODUCTS.map((p) => (
                             <option key={p.id} value={p.id}>
@@ -2429,27 +2447,23 @@ function AdminOrdersContent() {
                         </select>
                         <button
                           type="button"
-                          onClick={() => {
-                            const el = document.getElementById("catalogSelectDropdown") as HTMLSelectElement;
-                            if (el?.value) {
-                              handleAddManualItem(el.value);
-                            }
-                          }}
-                          className="px-3 py-1.5 bg-[#0B5D44] hover:bg-[#084533] text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                          onClick={() => handleAddManualItem(selectedCatalogId)}
+                          className="px-4 py-2 bg-[#0B5D44] hover:bg-[#084533] text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
                         >
-                          Add Item
+                          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>Add Item</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Items List */}
-                    <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                    <div className="space-y-2.5 max-h-[250px] overflow-y-auto overflow-x-hidden pr-1 w-full min-w-0">
                       {manualItems.map((item, idx) => (
                         <div
                           key={idx}
-                          className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2 text-xs"
+                          className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-2 text-xs w-full min-w-0"
                         >
-                          <div className="flex items-start gap-2.5">
+                          <div className="flex items-start gap-2.5 w-full min-w-0">
                             <img
                               src={item.image || "/vl-logo-nobg.png"}
                               alt={item.name}
@@ -2514,7 +2528,7 @@ function AdminOrdersContent() {
                           <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200/60 font-semibold text-slate-600">
                             <span>Item Total:</span>
                             <span className="font-bold text-slate-900">
-                              ₹{(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString("en-IN")}
+                              ₹{Math.round(Number(item.price || 0) * Number(item.quantity || 1)).toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -2522,10 +2536,10 @@ function AdminOrdersContent() {
                     </div>
 
                     {/* Pricing Breakdown Card */}
-                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs w-full min-w-0">
                       <div className="flex justify-between items-center text-slate-600">
                         <span>Items Subtotal:</span>
-                        <span className="font-bold text-slate-800">₹{itemsSubtotal.toLocaleString("en-IN")}</span>
+                        <span className="font-bold text-slate-800">₹{Math.round(itemsSubtotal).toLocaleString()}</span>
                       </div>
 
                       <div className="flex justify-between items-center text-slate-600">
@@ -2559,13 +2573,13 @@ function AdminOrdersContent() {
                       <div className="flex justify-between items-center pt-2 border-t border-slate-200 font-bold text-sm">
                         <span className="text-slate-900">Final Order Total:</span>
                         <span className="text-base font-black text-[#002D62]">
-                          ₹{calculatedTotal.toLocaleString("en-IN")}
+                          ₹{Math.round(calculatedTotal).toLocaleString()}
                         </span>
                       </div>
                     </div>
 
                     {/* WhatsApp Notification Mode */}
-                    <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-200/60 space-y-1.5">
+                    <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-200/60 space-y-1.5 w-full min-w-0">
                       <label className="block text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
                         <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                         <span>WhatsApp Notification Setting</span>
@@ -2597,7 +2611,7 @@ function AdminOrdersContent() {
                     Order Total
                   </span>
                   <span className="text-base font-black text-[#002D62]">
-                    ₹{calculatedTotal.toLocaleString("en-IN")}
+                    ₹{Math.round(calculatedTotal).toLocaleString()}
                   </span>
                 </div>
 
