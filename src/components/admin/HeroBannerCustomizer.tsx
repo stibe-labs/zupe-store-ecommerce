@@ -489,8 +489,9 @@ export function HeroBannerCustomizer({
               {/* Left Content Overlay */}
               <div className="relative z-10 px-6 sm:px-10 py-6 max-w-[50%]">
                 {currentSlide?.badge && (
-                  <div className="inline-block bg-[#111111] text-white text-[10px] font-semibold px-3 py-1 rounded-full mb-2.5 shadow-xs">
-                    {currentSlide.badge}
+                  <div className="inline-flex items-center gap-1.5 bg-white text-[#0B5D44] text-[10px] font-bold px-3 py-1 rounded-full mb-2.5 shadow-sm border border-white">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44] shrink-0" aria-hidden="true" />
+                    <span>{currentSlide.badge}</span>
                   </div>
                 )}
                 <h1 className="font-mograph font-bold text-lg sm:text-2xl md:text-3xl text-[#111111] leading-tight mb-4 whitespace-pre-line">
@@ -580,8 +581,9 @@ export function HeroBannerCustomizer({
               {/* Left Content Overlay */}
               <div className="relative z-10 px-4 py-4 max-w-[50%]">
                 {currentSlide?.badge && (
-                  <div className="inline-block bg-[#111111] text-white text-[9px] font-semibold px-2.5 py-0.5 rounded-full mb-1.5 shadow-xs">
-                    {currentSlide.badge}
+                  <div className="inline-flex items-center gap-1 bg-white text-[#0B5D44] text-[9px] font-bold px-2.5 py-0.5 rounded-full mb-1.5 shadow-sm border border-white">
+                    <span className="w-1 h-1 rounded-full bg-[#0B5D44] shrink-0" aria-hidden="true" />
+                    <span>{currentSlide.badge}</span>
                   </div>
                 )}
                 <h1 className="font-mograph font-bold text-sm text-[#111111] leading-tight mb-2.5 whitespace-pre-line">

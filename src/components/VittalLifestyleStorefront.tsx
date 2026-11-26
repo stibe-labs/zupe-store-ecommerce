@@ -482,7 +482,7 @@ export function VittalLifestyleStorefront({
       {(() => {
         const currentSlide = activeSlides[activeHeroIndex] || activeSlides[0];
         const bgUrl = currentSlide?.bgImage || "/vittal/banner-hero-green-texture.jpg";
-        const badgeText = currentSlide?.badge || "100% Original · Limited Offer";
+        const badgeText = currentSlide?.badge || "Limited Offer";
         const headingText = currentSlide?.heading || "First Purchase Enjoy\na Special Offer";
         const ctaBtnText = currentSlide?.buttonText || currentSlide?.ctaText || "Shop Now";
         const ctaBtnLink = currentSlide?.buttonLink || currentSlide?.ctaLink || "/products";
@@ -573,10 +573,10 @@ export function VittalLifestyleStorefront({
 
               {/* Left Editorial Content Overlay */}
               <div className="relative z-10 px-5 sm:px-8 lg:px-12 py-6 sm:py-8 md:py-9 max-w-[56%] xs:max-w-[54%] sm:max-w-md md:max-w-lg lg:max-w-xl">
-                {/* Brushed Champagne Gold Status Pill */}
+                {/* White Luxury Pill Badge with Vittal Emerald Font & Indicator Dot */}
                 {badgeText && (
-                  <div className="inline-flex items-center gap-1.5 bg-[#09110E]/75 backdrop-blur-sm border border-[#E5C469]/50 text-[#F3D37A] text-[10px] sm:text-xs font-semibold tracking-wide px-3 sm:px-3.5 py-1 rounded-full mb-2.5 sm:mb-3.5 shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#E5C469]" aria-hidden="true" />
+                  <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white text-[#0B5D44] text-[10px] sm:text-xs font-bold tracking-wide px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full mb-2.5 sm:mb-3.5 shadow-[0_2px_10px_rgba(0,0,0,0.12)] border border-white">
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#0B5D44] shrink-0" aria-hidden="true" />
                     <span>{badgeText}</span>
                   </div>
                 )}
