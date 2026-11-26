@@ -368,7 +368,7 @@ export function SportswearDropsCustomizer({
             disabled={saving}
             className={`px-5 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all shadow-xs cursor-pointer ${
               isDirty
-                ? "bg-[#0B5D44] hover:bg-[#58842F] text-white shadow-[#0B5D44]/20"
+                ? "bg-[#0B5D44] hover:bg-[#074230] text-white shadow-[#0B5D44]/20"
                 : "bg-slate-900 hover:bg-slate-800 text-white"
             }`}
           >
@@ -442,17 +442,22 @@ export function SportswearDropsCustomizer({
               previewDevice === "mobile" ? "max-w-[420px]" : "w-full max-w-[1200px]"
             }`}
           >
-            {/* Top Campaign Header Banner Preview */}
-            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#E6F4EF] via-[#E6F4EF] to-[#B8DFD1] border border-[#B8DFD1]/70 p-4 sm:p-6 text-center mb-4 shadow-xs">
-              <h3 className="relative font-movault text-xl sm:text-2xl md:text-3xl font-extrabold text-[#0C1412] tracking-wide mb-1">
-                {draftConfig.bannerHeadingPrefix}{" "}
-                <span className="font-mograph italic font-bold text-[#0B5D44]">
-                  {draftConfig.bannerHeadingHighlight}
+            {/* Top Campaign Header Banner Preview (Editorial Obsidian Pine & Champagne Gold) */}
+            <div className={`relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#061812] via-[#09241B] to-[#0B5D44] border border-[#C59B27]/30 text-center mb-4 shadow-[0_12px_32px_rgba(6,24,18,0.16)] ${
+              previewDevice === "mobile" ? "p-4 sm:p-5" : "p-5 sm:p-7 md:p-8"
+            }`}>
+              <div aria-hidden="true" className="absolute inset-x-12 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#E5C469]/60 to-transparent" />
+              <h3 className={`relative font-movault font-extrabold text-white tracking-[-0.02em] mb-1.5 ${
+                previewDevice === "mobile" ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl md:text-4xl"
+              }`}>
+                {draftConfig.bannerHeadingPrefix ?? "Fresh"}{" "}
+                <span className="font-mograph italic font-bold text-[#E5C469]">
+                  {draftConfig.bannerHeadingHighlight ?? "Sportswear"}
                 </span>{" "}
-                {draftConfig.bannerHeadingSuffix}
+                {draftConfig.bannerHeadingSuffix ?? "Drops"}
               </h3>
-              <p className="relative font-movault text-[11px] sm:text-xs md:text-sm font-bold text-[#074230] tracking-[0.2em] uppercase">
-                {draftConfig.bannerHashtag}
+              <p className="relative font-mono text-[10px] sm:text-xs font-semibold text-[#A7F3D0] tracking-[0.24em] uppercase">
+                {draftConfig.bannerHashtag ?? "#EngineeredForEveryMove"}
               </p>
             </div>
 
@@ -807,10 +812,13 @@ export function SportswearDropsCustomizer({
                         {/* Bottom: Text Info & Arrow */}
                         <div className="flex items-end justify-between gap-1 mt-auto pt-1">
                           <div className="min-w-0 flex-1">
-                            <h4 className="font-movault text-[10px] font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate">
+                            <h4 className="font-movault text-[10px] sm:text-[11px] font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate">
                               {card.title}
                             </h4>
-                            <span className="font-movault text-xs font-black text-[#0B5D44] tracking-tight block">
+                            <span className="font-mograph text-[8px] text-neutral-500 font-bold uppercase tracking-wider block">
+                              {card.priceLabel || "Starting At"}
+                            </span>
+                            <span className="font-movault text-xs sm:text-sm font-black text-[#0B5D44] tracking-tight block">
                               {card.price}
                             </span>
                           </div>
@@ -865,10 +873,13 @@ export function SportswearDropsCustomizer({
                         {/* Bottom: Text Info & Arrow */}
                         <div className="flex items-end justify-between gap-1 mt-auto pt-1">
                           <div className="min-w-0 flex-1">
-                            <h4 className="font-movault text-[10px] font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate">
+                            <h4 className="font-movault text-[10px] sm:text-[11px] font-black uppercase tracking-wide text-neutral-950 leading-tight mb-0.5 truncate">
                               {card.title}
                             </h4>
-                            <span className="font-movault text-xs font-black text-[#0B5D44] tracking-tight block">
+                            <span className="font-mograph text-[8px] text-neutral-500 font-bold uppercase tracking-wider block">
+                              {card.priceLabel || "Starting At"}
+                            </span>
+                            <span className="font-movault text-xs sm:text-sm font-black text-[#0B5D44] tracking-tight block">
                               {card.price}
                             </span>
                           </div>
@@ -1255,7 +1266,7 @@ export function SportswearDropsCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentCard(isDesktopControl ? "desktopScale" : "mobileScale", val);
                   }}
-                  className="w-full accent-[#10B981] cursor-pointer"
+                  className="w-full accent-[#0B5D44] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1307,7 +1318,7 @@ export function SportswearDropsCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentCard(isDesktopControl ? "desktopOffsetX" : "mobileOffsetX", val);
                   }}
-                  className="w-full accent-[#10B981] cursor-pointer"
+                  className="w-full accent-[#0B5D44] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1360,7 +1371,7 @@ export function SportswearDropsCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentCard(isDesktopControl ? "desktopOffsetY" : "mobileOffsetY", val);
                   }}
-                  className="w-full accent-[#10B981] cursor-pointer"
+                  className="w-full accent-[#0B5D44] cursor-pointer"
                 />
                 <button
                   type="button"
