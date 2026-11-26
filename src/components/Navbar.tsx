@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   User,
@@ -40,45 +38,6 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [shopFlyoutOpen, setShopFlyoutOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Lock background scroll when mobile navigation drawer is open
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      const origBodyOverflow = document.body.style.overflow;
-      const origHtmlOverflow = document.documentElement.style.overflow;
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-      document.body.classList.add("modal-open");
-      document.documentElement.classList.add("modal-open");
-      return () => {
-        document.body.style.overflow = origBodyOverflow;
-        document.documentElement.style.overflow = origHtmlOverflow;
-        document.body.classList.remove("modal-open");
-        document.documentElement.classList.remove("modal-open");
-      };
-    }
-  }, [mobileMenuOpen]);
-
-  // Close mobile drawer on route navigation
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [pathname]);
-
-  // Close mobile drawer on Escape key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && mobileMenuOpen) {
-        setMobileMenuOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mobileMenuOpen]);
 
   const flyoutRef = useRef<HTMLDivElement>(null);
 
@@ -178,11 +137,9 @@ export function Navbar() {
           <div className="flex items-center gap-2 shrink-0">
             {/* Circular White Floating Hamburger Button (mobile/tablet only) */}
             <button
-              type="button"
               onClick={() => setMobileMenuOpen(true)}
               className="lg:hidden w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow-[0_2px_10px_rgba(0,0,0,0.07)] border border-neutral-100 flex items-center justify-center text-neutral-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
               aria-label="Open navigation menu"
-              aria-expanded={mobileMenuOpen}
             >
               <Menu className="w-5 h-5 stroke-[2]" />
             </button>
@@ -402,218 +359,177 @@ export function Navbar() {
       </div>
 
       {/* =================================================================== */}
-      {/* MOBILE SLIDE-OUT DRAWER (PORTALED TO BODY FOR 100% RELIABILITY)     */}
+      {/* MOBILE SLIDE-OUT DRAWER                                             */}
       {/* =================================================================== */}
-      {mounted &&
-        createPortal(
-          <AnimatePresence>
-            {mobileMenuOpen && (
-              <div className="fixed inset-0 z-[99999] lg:hidden font-mograph">
-                {/* Backdrop */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-                  onClick={() => setMobileMenuOpen(false)}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Drawer Panel */}
+          <div className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-white border-r border-neutral-200 text-neutral-900 shadow-2xl flex flex-col z-50 overflow-y-auto">
+            {/* Drawer Header */}
+            <div className="p-4 border-b border-neutral-200 flex items-center justify-between bg-white">
+              <div className="relative h-9 w-36">
+                <Image
+                  src="/vl-logo-black.png"
+                  alt="Vittal Lifestyle"
+                  fill
+                  className="object-contain object-left"
                 />
-
-                {/* Drawer Panel */}
-                <motion.div
-                  data-lenis-prevent
-                  initial={{ x: "-100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "-100%" }}
-                  transition={{ type: "spring", damping: 28, stiffness: 280 }}
-                  className="fixed inset-y-0 left-0 w-[85%] max-w-[340px] sm:max-w-sm h-full bg-white border-r border-neutral-200 text-neutral-900 shadow-2xl flex flex-col z-[100000] overflow-hidden"
-                >
-                  {/* Drawer Header */}
-                  <div className="p-4 border-b border-neutral-200 flex items-center justify-between bg-white shrink-0">
-                    <div className="relative h-9 w-36">
-                      <Image
-                        src="/vl-logo-black.png"
-                        alt="Vittal Lifestyle"
-                        fill
-                        className="object-contain object-left"
-                        priority
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="w-9 h-9 rounded-full bg-[#F4F5F7] hover:bg-neutral-200 text-neutral-600 hover:text-black flex items-center justify-center transition-colors cursor-pointer"
-                      aria-label="Close menu"
-                    >
-                      <X className="w-5 h-5 stroke-[2.2]" />
-                    </button>
-                  </div>
-
-                  {/* Scrollable Drawer Body with Touch & Lenis Safety */}
-                  <div
-                    data-lenis-prevent
-                    className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4 min-h-0"
-                    style={{ WebkitOverflowScrolling: "touch" }}
-                  >
-                    {/* Quick Search Button in Drawer */}
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          openSearch();
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-[#F4F5F7] border border-neutral-200 text-neutral-600 text-xs text-left cursor-pointer hover:bg-neutral-100 transition-colors"
-                      >
-                        <Search className="w-4 h-4 text-[#6B9E3A]" />
-                        <span>Search for supplements, outfits, apparels...</span>
-                      </button>
-                    </div>
-
-                    {/* Navigation Links */}
-                    <div className="space-y-1">
-                      <Link
-                        href="/"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`block px-3.5 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                          pathname === "/"
-                            ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
-                            : "text-neutral-800 hover:text-black hover:bg-[#F4F5F7]"
-                        }`}
-                      >
-                        Home
-                      </Link>
-                      <Link
-                        href="/products"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`block px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                          pathname?.startsWith("/products")
-                            ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
-                            : "text-neutral-800 hover:text-black hover:bg-[#F4F5F7]"
-                        }`}
-                      >
-                        Shop All Collections
-                      </Link>
-                      <Link
-                        href="/about"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`block px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                          pathname === "/about"
-                            ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
-                            : "text-neutral-800 hover:text-black hover:bg-[#F4F5F7]"
-                        }`}
-                      >
-                        About Vittal Lifestyle
-                      </Link>
-                      <Link
-                        href="/contact"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`block px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                          pathname === "/contact"
-                            ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
-                            : "text-neutral-800 hover:text-black hover:bg-[#F4F5F7]"
-                        }`}
-                      >
-                        Contact &amp; Support
-                      </Link>
-                      <Link
-                        href="/order-tracking"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`block px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                          pathname === "/order-tracking"
-                            ? "text-[#6B9E3A] bg-[#E5F2D0]/40 font-bold"
-                            : "text-neutral-800 hover:text-black hover:bg-[#F4F5F7]"
-                        }`}
-                      >
-                        Track Order
-                      </Link>
-                      <Link
-                        href="/wishlist"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-neutral-800 hover:text-black hover:bg-[#F4F5F7] transition-colors"
-                      >
-                        <span>Wishlist</span>
-                        {totalWishlistItems > 0 && (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E5F2D0] text-[#3B581C]">
-                            {totalWishlistItems}
-                          </span>
-                        )}
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          setMobileMenuOpen(false);
-                          handleAccountClick(e);
-                        }}
-                        className="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-semibold text-neutral-800 hover:text-black hover:bg-[#F4F5F7] transition-colors cursor-pointer"
-                      >
-                        {isAuthenticated ? "My Profile" : "Sign In / Register"}
-                      </button>
-                    </div>
-
-                    {/* Category Tiles */}
-                    <div className="border-t border-neutral-100 pt-3">
-                      <p className="px-3.5 text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
-                        Featured Categories
-                      </p>
-                      <div className="space-y-1">
-                        {categoryFlyout.map((cat) => {
-                          const Icon = cat.icon;
-                          return (
-                            <Link
-                              key={cat.name}
-                              href={cat.href}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[#F4F5F7] transition-colors group"
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <Icon className="w-4 h-4 text-[#6B9E3A]" />
-                                <span className="text-xs font-semibold text-neutral-800 group-hover:text-black">
-                                  {cat.name}
-                                </span>
-                              </div>
-                              <span className="text-[10px] text-neutral-400 group-hover:translate-x-0.5 transition-transform">→</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* WhatsApp Concierge Banner in Drawer */}
-                    <div className="border-t border-neutral-100 pt-3">
-                      <a
-                        href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20need%20assistance%20from%20Vittal%20Lifestyle`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded-2xl bg-[#E5F2D0]/40 border border-[#D5E9BC] hover:bg-[#E5F2D0]/70 transition-colors"
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-[#6B9E3A] text-white flex items-center justify-center shrink-0 shadow-2xs">
-                          <MessageCircle className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <span className="block text-[10px] text-[#3B581C] font-bold uppercase tracking-wider">
-                            Live Concierge
-                          </span>
-                          <span className="block text-xs font-bold text-neutral-900">
-                            Chat on WhatsApp
-                          </span>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* Drawer Footer Tag */}
-                  <div className="p-4 border-t border-neutral-100 bg-neutral-50/70 shrink-0 text-center">
-                    <p className="text-[11px] font-semibold text-neutral-500">
-                      VITTAL LIFESTYLE • Luxury Everyday
-                    </p>
-                  </div>
-                </motion.div>
               </div>
-            )}
-          </AnimatePresence>,
-          document.body
-        )}
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 text-neutral-500 hover:text-neutral-900 rounded-lg hover:bg-neutral-100"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Search Button in Drawer */}
+            <div className="p-4 pb-2">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openSearch();
+                }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-[#F4F5F7] border border-neutral-200 text-neutral-600 text-xs text-left"
+              >
+                <Search className="w-4 h-4 text-[#6B9E3A]" />
+                <span>Search for supplements...</span>
+              </button>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="p-4 space-y-4 flex-1">
+              <div className="space-y-1">
+                <Link
+                  href="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-xl text-sm font-bold transition-colors ${
+                    pathname === "/"
+                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
+                  }`}
+                >
+                  Home
+                </Link>
+                <Link
+                  href="/products"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
+                >
+                  Shop All Collections
+                </Link>
+                <Link
+                  href="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                    pathname === "/about"
+                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
+                  }`}
+                >
+                  About Vittal Lifestyle
+                </Link>
+                <Link
+                  href="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                    pathname === "/contact"
+                      ? "text-[#6B9E3A] bg-[#E5F2D0]/40"
+                      : "text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
+                  }`}
+                >
+                  Contact &amp; Support
+                </Link>
+                <Link
+                  href="/order-tracking"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
+                >
+                  Track Order
+                </Link>
+                <Link
+                  href="/wishlist"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
+                >
+                  <span>Wishlist</span>
+                  {totalWishlistItems > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E5F2D0] text-[#3B581C]">
+                      {totalWishlistItems}
+                    </span>
+                  )}
+                </Link>
+                <button
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    handleAccountClick(e);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl text-sm font-semibold text-neutral-700 hover:text-neutral-900 hover:bg-[#F4F5F7]"
+                >
+                  {isAuthenticated ? "My Profile" : "Sign In / Register"}
+                </button>
+              </div>
+
+              {/* Category Tiles */}
+              <div className="border-t border-neutral-200 pt-3">
+                <p className="px-3 text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-2">
+                  Featured Categories
+                </p>
+                <div className="space-y-1">
+                  {categoryFlyout.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <Link
+                        key={cat.name}
+                        href={cat.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F5F7] transition-colors group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Icon className="w-4 h-4 text-[#6B9E3A]" />
+                          <span className="text-xs font-semibold text-neutral-800 group-hover:text-black">
+                            {cat.name}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-neutral-400">→</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* WhatsApp Concierge Banner in Drawer */}
+              <div className="border-t border-neutral-200 pt-3">
+                <a
+                  href={`https://wa.me/${siteConfig.whatsappNumber}?text=Hi%2C%20I%20need%20assistance%20from%20Vittal%20Lifestyle`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#E5F2D0]/30 border border-[#D5E9BC] hover:bg-[#E5F2D0]/50 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-[#6B9E3A] text-white flex items-center justify-center shrink-0">
+                    <MessageCircle className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-[#3B581C] font-bold uppercase tracking-wider">
+                      Live Concierge
+                    </span>
+                    <span className="block text-xs font-bold text-neutral-900">
+                      Chat on WhatsApp
+                    </span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
