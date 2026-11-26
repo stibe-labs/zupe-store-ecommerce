@@ -67,9 +67,9 @@
     "WHATSAPP_TEMPLATE_NAME": "vittallifestyle_otp",
     "WHATSAPP_TEMPLATE_LANG": "en",
     "WHATSAPP_WEBHOOK_VERIFY_TOKEN": "vittallifestyle_wa_secret_2026",
-    "SHIPROCKET_PICKUP_LOCATION": "",
-    "SHIPROCKET_EMAIL": "",
-    "SHIPROCKET_PASSWORD": "",
+    "SHIPROCKET_PICKUP_LOCATION": "work",
+    "SHIPROCKET_EMAIL": "api@vittallifestyle.com",
+    "SHIPROCKET_PASSWORD": "wC^3o7byaPo3lOqIvHVbV8!A!sb9*IAR",
     "SHIPROCKET_CHECKOUT_API_KEY": "",
     "SHIPROCKET_CHECKOUT_API_SECRET": ""
   }
