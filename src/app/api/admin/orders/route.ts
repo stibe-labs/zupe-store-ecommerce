@@ -642,6 +642,7 @@ export async function POST(req: NextRequest) {
             refundAmount: isPrepaid ? totalAmount : undefined,
             refundId,
             isPrepaid,
+            reason: reason || "Cancelled by Admin",
           });
         } catch (waErr) {
           console.warn("WhatsApp cancellation notification warning:", waErr);

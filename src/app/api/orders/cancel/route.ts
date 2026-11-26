@@ -200,6 +200,7 @@ export async function POST(req: NextRequest) {
             refundAmount: totalAmount,
             refundId,
             isPrepaid: true,
+            reason: reason || "Cancelled by Customer",
           }).catch((e) => console.warn("WhatsApp refund notification error:", e));
         } catch (waErr) {
           console.warn("Failed to dispatch WhatsApp refund alert:", waErr);
@@ -280,6 +281,7 @@ export async function POST(req: NextRequest) {
             customerPhone: custPhone,
             orderId,
             isPrepaid: false,
+            reason: reason || "Cancelled by Customer",
           }).catch((e) => console.warn("WhatsApp COD cancel alert error:", e));
         } catch (waErr) {
           console.warn("Failed to dispatch WhatsApp cancel alert:", waErr);

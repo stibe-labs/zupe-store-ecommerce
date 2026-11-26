@@ -700,12 +700,13 @@ export interface OrderCancellationRefundParams {
   refundAmount?: number;
   refundId?: string;
   isPrepaid: boolean;
+  reason?: string;
 }
 
 export async function sendOrderCancellationRefundWhatsApp(
   params: OrderCancellationRefundParams
 ): Promise<boolean> {
-  const { customerName, customerPhone, orderId, refundAmount, refundId, isPrepaid } = params;
+  const { customerName, customerPhone, orderId, refundAmount, refundId, isPrepaid, reason } = params;
 
   const { digits, isValid } = normalizePhoneNumber(customerPhone);
   if (!isValid) return false;
@@ -721,6 +722,7 @@ export async function sendOrderCancellationRefundWhatsApp(
 
   const cleanOrderId = (orderId || "").replace(/^#/, "");
   const displayOrderId = orderId.startsWith("#") ? orderId : `#${orderId}`;
+  const cancellationReason = reason?.trim() || (isPrepaid && refundAmount ? `Refund of Rs ${Number(refundAmount).toLocaleString("en-IN")} initiated` : "Cancelled as requested");
 
   // 1. Try official Meta utility template first: 'vittallifestyle_order_canceled' (from active templates)
   const templateCandidates = [
@@ -730,12 +732,24 @@ export async function sendOrderCancellationRefundWhatsApp(
   ];
 
   const bodyParamSets = [
-    // 2 params: clean orderId (matches Meta snippet: "Hi {{1}}! your order #{{2}} has been cancel...")
+    // 3 params: firstName, orderId, cancellationReason (matches approved vittallifestyle_order_canceled template)
+    [
+      { type: "text", text: firstName },
+      { type: "text", text: displayOrderId },
+      { type: "text", text: cancellationReason },
+    ],
+    // 3 params with clean orderId
+    [
+      { type: "text", text: firstName },
+      { type: "text", text: cleanOrderId },
+      { type: "text", text: cancellationReason },
+    ],
+    // 2 params: clean orderId (fallback)
     [
       { type: "text", text: firstName },
       { type: "text", text: cleanOrderId },
     ],
-    // 2 params: display orderId (#1107)
+    // 2 params: display orderId
     [
       { type: "text", text: firstName },
       { type: "text", text: displayOrderId },
