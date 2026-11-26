@@ -100,17 +100,17 @@ export default function WishlistPage() {
               Tap the heart icon on any 100% original supplement, activewear piece, royal date box, or chocolate to keep it handy here — no login required.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="flex flex-row items-center justify-center gap-2 sm:gap-3 max-w-sm sm:max-w-none mx-auto w-full px-2 sm:px-0">
               <Link
                 href="/products"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-sm shadow-md shadow-[#0B5D44]/20 transition-all"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-7 py-3 sm:py-3.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#0B5D44]/20 transition-all text-center whitespace-nowrap"
               >
                 <span>Explore Catalog</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.25]" />
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.25] shrink-0" />
               </Link>
               <Link
                 href="/cart"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-white hover:bg-[#F5F8F6] text-[#0C1412] border border-neutral-300 font-semibold text-sm transition-all"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-3 sm:py-3.5 rounded-full bg-white hover:bg-[#F5F8F6] text-[#0C1412] border border-neutral-300 font-semibold text-xs sm:text-sm transition-all text-center whitespace-nowrap"
               >
                 <span>View Shopping Bag</span>
               </Link>
