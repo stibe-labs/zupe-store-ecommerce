@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Sparkles,
   User,
+  Heart,
 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -77,18 +78,18 @@ export default function WishlistPage() {
         </div>
 
         {wishlist.length === 0 ? (
-          <div className="max-w-lg mx-auto my-8 bg-white rounded-[28px] p-8 sm:p-11 border border-neutral-200/80 shadow-[0_8px_30px_rgba(7,20,16,0.04)] text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-[#F3FAF7] border border-[#B8DFD1] flex items-center justify-center shadow-xs">
+          <div className="max-w-lg mx-auto my-6 sm:my-8 py-4 sm:py-8 text-center">
+            <div className="mx-auto mb-5 flex items-center justify-center">
               <Logo80AnimatedMark
                 theme={BRAND_80_THEMES[0]}
                 surface="light"
                 mode="ambient"
-                size={48}
+                size={56}
               />
             </div>
 
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3FAF7] border border-[#B8DFD1]/80 text-[11px] font-bold text-[#0B5D44] uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-[#C59B27]" />
+              <Heart className="w-3.5 h-3.5 text-[#0B5D44] stroke-[2.2] fill-none" />
               Curate Your Favorites
             </span>
 
