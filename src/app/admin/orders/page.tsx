@@ -220,18 +220,35 @@ function AdminOrdersContent() {
 
     const prod = DEFAULT_PRODUCTS.find((p) => p.id === targetId || p.slug === targetId) || DEFAULT_PRODUCTS[0];
     if (prod) {
-      setManualItems((prev) => [
-        ...prev,
-        {
-          product_id: prod.id,
-          name: prod.name,
-          price: prod.price,
-          quantity: 1,
-          image: prod.poster_image || (Array.isArray(prod.images) ? prod.images[0] : "") || "/vl-logo-nobg.png",
-          cost_price: prod.cost_price || Math.round(prod.price * 0.42),
-        },
-      ]);
-      showToast("success", `Added "${prod.name}" (₹${prod.price}) to order`);
+      let isExisting = false;
+      let newQty = 1;
+      setManualItems((prev) => {
+        const existingIdx = prev.findIndex((it) => it.product_id === prod.id);
+        if (existingIdx >= 0) {
+          isExisting = true;
+          const updated = [...prev];
+          newQty = (updated[existingIdx].quantity || 1) + 1;
+          updated[existingIdx] = { ...updated[existingIdx], quantity: newQty };
+          return updated;
+        }
+        return [
+          ...prev,
+          {
+            product_id: prod.id,
+            name: prod.name,
+            price: prod.price,
+            quantity: 1,
+            image: prod.poster_image || (Array.isArray(prod.images) ? prod.images[0] : "") || "/vl-logo-nobg.png",
+            cost_price: prod.cost_price || Math.round(prod.price * 0.42),
+          },
+        ];
+      });
+
+      if (isExisting) {
+        showToast("success", `Increased "${prod.name}" quantity to ${newQty}`);
+      } else {
+        showToast("success", `Added "${prod.name}" (₹${prod.price}) to order`);
+      }
     }
   };
 
@@ -847,8 +864,9 @@ function AdminOrdersContent() {
               <button
                 type="button"
                 onClick={() => {
+                  resetManualOrderForm();
                   const latestNum = orders.reduce((max, o) => {
-                    const m = (o.shopify_order_id || "").match(/#(\d+)/);
+                    const m = (o.shopify_order_id || o.id || "").match(/#?(\d+)/);
                     return m ? Math.max(max, parseInt(m[1], 10)) : max;
                   }, 1109);
                   setNewCustomOrderId(`#${latestNum + 1}`);
@@ -1997,7 +2015,7 @@ function AdminOrdersContent() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-black text-[#0B5D44] bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-200">
-                        #{orderDisplayId}
+                        {orderDisplayId.startsWith("#") ? orderDisplayId : `#${orderDisplayId}`}
                       </span>
                       <span className="text-xs font-bold text-slate-900 truncate">
                         Ordered Products
@@ -2080,7 +2098,7 @@ function AdminOrdersContent() {
                             </span>
 
                             <span className="text-xs font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                              ₹{price.toLocaleString("en-IN")} each
+                              ₹{Math.round(price).toLocaleString()} each
                             </span>
                           </div>
 
@@ -2092,7 +2110,7 @@ function AdminOrdersContent() {
                                 <span>{item.offer_label || `Bundle Tier: Buy ${item.bundle_tier || qty}`}</span>
                                 {item.bundle_savings ? (
                                   <span className="text-[#0B5D44] font-extrabold ml-1">
-                                    (Saved ₹{Number(item.bundle_savings).toLocaleString("en-IN")})
+                                    (Saved ₹{Math.round(Number(item.bundle_savings)).toLocaleString()})
                                   </span>
                                 ) : null}
                               </span>
@@ -2103,7 +2121,7 @@ function AdminOrdersContent() {
                           <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/60 text-xs">
                             <span className="text-slate-500 font-medium">Item Total:</span>
                             <span className="font-black text-slate-900 text-sm">
-                              ₹{total.toLocaleString("en-IN")}
+                              ₹{Math.round(total).toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -2128,7 +2146,7 @@ function AdminOrdersContent() {
                     Order Total ({productsPreviewOrder.payment_method})
                   </span>
                   <span className="text-base font-black text-[#002D62]">
-                    ₹{productsPreviewOrder.total_amount?.toLocaleString("en-IN")}
+                    ₹{Math.round(Number(productsPreviewOrder.total_amount) || 0).toLocaleString()}
                   </span>
                 </div>
 
@@ -2163,13 +2181,13 @@ function AdminOrdersContent() {
       {/* Create Manual Order Modal */}
       {isCreateModalOpen && (
         <div
-          className="fixed inset-0 z-[68] flex items-center justify-center p-3 sm:p-5 bg-slate-950/65 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
+          className="fixed inset-0 z-[68] flex items-center justify-center p-3 sm:p-5 bg-slate-950/65 backdrop-blur-xs overflow-y-auto overflow-x-hidden animate-in fade-in duration-150"
           onClick={() => {
             if (!isSubmittingOrder) setIsCreateModalOpen(false);
           }}
         >
           <div
-            className="bg-white rounded-3xl max-w-5xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh] mx-3 sm:mx-4"
+            className="bg-white rounded-3xl max-w-5xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[92vh] my-auto mx-auto min-w-0"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -2671,7 +2689,7 @@ function AdminOrdersContent() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-base">
-                    Cancel Order #{orderToCancel.shopify_order_id || orderToCancel.id}
+                    Cancel Order {(orderToCancel.shopify_order_id || orderToCancel.id).startsWith("#") ? "" : "#"}{orderToCancel.shopify_order_id || orderToCancel.id}
                   </h3>
                   <p className="text-xs text-rose-600 font-semibold">
                     Order Cancellation & Customer Notification
