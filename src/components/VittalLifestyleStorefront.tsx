@@ -1337,7 +1337,7 @@ export function VittalLifestyleStorefront({
       {/* ===================================================================== */}
       <section
         aria-labelledby="vittal-authenticity-guarantee"
-        className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10 sm:pb-14"
+        className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-4 sm:pb-6 md:pb-8"
       >
         <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-white border border-neutral-200/80 px-6 py-8 sm:px-10 sm:py-11 text-[#0C1412] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-7 mb-7 border-b border-neutral-200/70">
