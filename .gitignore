@@ -26,10 +26,17 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local env files
+# Local env & Cloudflare Worker secrets
 .env*.local
 .env
+.dev.vars
 docs/rzp-key.csv
+
+# Local brand exploration kits & ad-hoc data exports
+brand-kit/
+public/brand/
+/turkiyejam_*
+/turkiyejam-*
 
 # Vercel & IDE
 .vercel
