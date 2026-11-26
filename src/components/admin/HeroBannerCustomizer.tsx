@@ -331,7 +331,7 @@ export function HeroBannerCustomizer({
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-neutral-900 font-mograph">
               Hero Banner Cards Customizer
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E6F4EF] text-[#074230] border border-[#10B981]/30">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E6F4EF] text-[#074230] border border-[#0B5D44]/30">
               {draftSlides.filter((s) => s.active !== false).length} / {draftSlides.length} Active Slides
             </span>
             {isDirty ? (
@@ -369,12 +369,12 @@ export function HeroBannerCustomizer({
             disabled={saving || !isDirty}
             className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer ${
               isDirty
-                ? "bg-[#10B981] hover:bg-[#10B981] text-black hover:scale-102 hover:shadow-lg"
+                ? "bg-[#0B5D44] hover:bg-[#074230] text-white hover:scale-102 hover:shadow-lg"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
             }`}
           >
             {saving ? (
-              <RefreshCw className="w-4 h-4 animate-spin text-black" />
+              <RefreshCw className="w-4 h-4 animate-spin text-white" />
             ) : (
               <Save className="w-4 h-4" />
             )}
@@ -436,7 +436,7 @@ export function HeroBannerCustomizer({
         <div className="w-full bg-neutral-900/5 rounded-2xl p-3 sm:p-6 flex items-center justify-center overflow-hidden">
           {previewDevice === "desktop" ? (
             /* Desktop Banner Preview (16:9 aspect bounds) */
-            <div className="w-full max-w-[1200px] relative rounded-3xl overflow-hidden bg-[#10B981] border border-[#10B981]/50 shadow-md min-h-[260px] sm:min-h-[300px] md:min-h-[320px] flex items-center">
+            <div className="w-full max-w-[1200px] relative rounded-3xl overflow-hidden bg-[#073B2B] border border-[#0B5D44]/40 shadow-[0_14px_40px_rgba(6,40,29,0.16)] min-h-[260px] sm:min-h-[300px] md:min-h-[320px] flex items-center">
               {/* Background texture */}
               <div className="absolute inset-0 z-0">
                 <Image
@@ -447,14 +447,11 @@ export function HeroBannerCustomizer({
                 />
               </div>
 
-              {/* Fluid wave */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25 z-0">
-                <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
-                  <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#10B981" strokeWidth="40" fill="none" />
-                  <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#10B981" strokeWidth="50" fill="none" />
-                  <path d="M -100,280 Q 200,420 500,320 T 900,400" stroke="#10B981" strokeWidth="60" fill="none" />
-                </svg>
-              </div>
+              {/* Editorial Obsidian-Emerald Left Readability Scrim (guarantees >12:1 AAA headline contrast) */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-r from-[#041D15]/88 via-[#073B2B]/55 to-transparent"
+              />
 
               {/* Cutout Image with Desktop Zoom & Position */}
               <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
@@ -487,20 +484,20 @@ export function HeroBannerCustomizer({
               </div>
 
               {/* Left Content Overlay */}
-              <div className="relative z-10 px-6 sm:px-10 py-6 max-w-[50%]">
-                {currentSlide?.badge && (
-                  <div className="inline-flex items-center gap-1.5 bg-white text-[#0B5D44] text-[10px] font-bold px-3 py-1 rounded-full mb-2.5 shadow-sm border border-white">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44] shrink-0" aria-hidden="true" />
-                    <span>{currentSlide.badge}</span>
+              <div className="relative z-10 px-6 sm:px-10 py-6 max-w-[56%] sm:max-w-md md:max-w-lg lg:max-w-xl">
+                {(currentSlide?.badge || "Limited Offer") && (
+                  <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white text-[#0B5D44] text-[10px] sm:text-xs font-bold tracking-wide px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full mb-2.5 sm:mb-3.5 shadow-[0_2px_10px_rgba(0,0,0,0.12)] border border-white">
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#0B5D44] shrink-0" aria-hidden="true" />
+                    <span>{currentSlide?.badge || "Limited Offer"}</span>
                   </div>
                 )}
-                <h1 className="font-mograph font-bold text-lg sm:text-2xl md:text-3xl text-[#111111] leading-tight mb-4 whitespace-pre-line">
+                <h1 className="font-movault font-extrabold text-[19px] sm:text-2xl md:text-3xl lg:text-[34px] text-white leading-[1.12] tracking-[-0.025em] mb-3.5 sm:mb-4 whitespace-pre-line drop-shadow-[0_2px_12px_rgba(4,29,21,0.35)]">
                   {currentSlide?.heading || "First Purchase Enjoy\na Special Offer"}
                 </h1>
-                <div className="inline-flex items-center gap-2 bg-[#111111] text-white font-bold text-xs pl-4 pr-1 py-1 rounded-full shadow-md">
-                  <span>{currentSlide?.buttonText || "Shop Now"}</span>
-                  <div className="w-7 h-7 rounded-full bg-white text-[#111111] flex items-center justify-center shrink-0 shadow-xs">
-                    <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                <div className="inline-flex items-center gap-2.5 sm:gap-3 bg-white text-[#0C1412] font-bold text-xs sm:text-sm pl-4 pr-1.5 py-1.5 sm:pl-5 sm:pr-2 sm:py-2 rounded-full shadow-[0_8px_24px_rgba(4,29,21,0.28)]">
+                  <span>{currentSlide?.buttonText || currentSlide?.ctaText || "Shop Now"}</span>
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0B5D44] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                   </div>
                 </div>
               </div>
@@ -508,7 +505,7 @@ export function HeroBannerCustomizer({
               {/* Scoop Notch with Pagination Indicators */}
               <div className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center pointer-events-none">
                 <div className="relative">
-                  <svg viewBox="0 0 160 30" className="w-36 h-6 fill-white block" preserveAspectRatio="none">
+                  <svg viewBox="0 0 160 30" className="w-36 sm:w-44 h-6 sm:h-7 fill-white block" preserveAspectRatio="none">
                     <path d="M 0,30 C 22,30 26,0 48,0 L 112,0 C 134,0 138,30 160,30 Z" />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center gap-1.5 pb-0.5 pointer-events-auto">
@@ -519,8 +516,8 @@ export function HeroBannerCustomizer({
                         onClick={() => setSelectedSlideIndex(idx)}
                         className={`transition-all duration-300 cursor-pointer ${
                           selectedSlideIndex === idx
-                            ? "w-6 h-1.5 rounded-full bg-[#10B981] shadow-2xs"
-                            : "w-1.5 h-1.5 rounded-full bg-neutral-300 hover:bg-neutral-400"
+                            ? "w-6 sm:w-7 h-1.5 sm:h-2 rounded-full bg-[#0B5D44]"
+                            : "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-neutral-300 hover:bg-neutral-400"
                         }`}
                       />
                     ))}
@@ -530,7 +527,7 @@ export function HeroBannerCustomizer({
             </div>
           ) : (
             /* Mobile Phone Frame Preview */
-            <div className="w-[340px] relative rounded-[32px] overflow-hidden bg-[#10B981] border border-[#10B981]/50 shadow-xl min-h-[240px] flex items-center">
+            <div className="w-[340px] relative rounded-[32px] overflow-hidden bg-[#073B2B] border border-[#0B5D44]/40 shadow-xl min-h-[240px] flex items-center">
               {/* Background texture */}
               <div className="absolute inset-0 z-0">
                 <Image
@@ -541,13 +538,11 @@ export function HeroBannerCustomizer({
                 />
               </div>
 
-              {/* Fluid wave */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-25 z-0">
-                <svg className="w-full h-full object-cover" viewBox="0 0 800 450" fill="none" preserveAspectRatio="none">
-                  <path d="M -100,50 Q 200,200 400,100 T 900,150" stroke="#10B981" strokeWidth="40" fill="none" />
-                  <path d="M -50,150 Q 250,300 500,200 T 950,250" stroke="#10B981" strokeWidth="50" fill="none" />
-                </svg>
-              </div>
+              {/* Editorial Obsidian-Emerald Left Readability Scrim */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-r from-[#041D15]/88 via-[#073B2B]/55 to-transparent"
+              />
 
               {/* Cutout Image with Mobile Zoom & Position */}
               <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
@@ -579,19 +574,19 @@ export function HeroBannerCustomizer({
               </div>
 
               {/* Left Content Overlay */}
-              <div className="relative z-10 px-4 py-4 max-w-[50%]">
-                {currentSlide?.badge && (
-                  <div className="inline-flex items-center gap-1 bg-white text-[#0B5D44] text-[9px] font-bold px-2.5 py-0.5 rounded-full mb-1.5 shadow-sm border border-white">
-                    <span className="w-1 h-1 rounded-full bg-[#0B5D44] shrink-0" aria-hidden="true" />
-                    <span>{currentSlide.badge}</span>
+              <div className="relative z-10 px-4 py-4 max-w-[56%]">
+                {(currentSlide?.badge || "Limited Offer") && (
+                  <div className="inline-flex items-center gap-1.5 bg-white text-[#0B5D44] text-[9.5px] font-bold tracking-wide px-2.5 py-1 rounded-full mb-2 shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-white">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0B5D44] shrink-0" aria-hidden="true" />
+                    <span>{currentSlide?.badge || "Limited Offer"}</span>
                   </div>
                 )}
-                <h1 className="font-mograph font-bold text-sm text-[#111111] leading-tight mb-2.5 whitespace-pre-line">
+                <h1 className="font-movault font-extrabold text-[16px] text-white leading-[1.12] tracking-[-0.025em] mb-2.5 whitespace-pre-line drop-shadow-[0_2px_12px_rgba(4,29,21,0.35)]">
                   {currentSlide?.heading || "First Purchase Enjoy\na Special Offer"}
                 </h1>
-                <div className="inline-flex items-center gap-1.5 bg-[#111111] text-white font-bold text-[10px] pl-3 pr-1 py-0.5 rounded-full shadow-md">
-                  <span>{currentSlide?.buttonText || "Shop Now"}</span>
-                  <div className="w-5 h-5 rounded-full bg-white text-[#111111] flex items-center justify-center shrink-0 shadow-xs">
+                <div className="inline-flex items-center gap-2 bg-white text-[#0C1412] font-bold text-[11px] pl-3.5 pr-1 py-1 rounded-full shadow-[0_6px_18px_rgba(4,29,21,0.28)]">
+                  <span>{currentSlide?.buttonText || currentSlide?.ctaText || "Shop Now"}</span>
+                  <div className="w-6 h-6 rounded-full bg-[#0B5D44] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
                   </div>
                 </div>
@@ -611,7 +606,7 @@ export function HeroBannerCustomizer({
                         onClick={() => setSelectedSlideIndex(idx)}
                         className={`transition-all duration-300 cursor-pointer ${
                           selectedSlideIndex === idx
-                            ? "w-5 h-1 rounded-full bg-[#10B981]"
+                            ? "w-5 h-1 rounded-full bg-[#0B5D44]"
                             : "w-1 h-1 rounded-full bg-neutral-300"
                         }`}
                       />
@@ -638,7 +633,7 @@ export function HeroBannerCustomizer({
           <button
             type="button"
             onClick={handleAddNewSlide}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#10B981] text-black text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#0B5D44] hover:bg-[#074230] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>+ Add New Banner Slide</span>
@@ -757,7 +752,7 @@ export function HeroBannerCustomizer({
               />
               <div
                 className={`w-9 h-5 rounded-full transition-colors relative ${
-                  currentSlide?.active !== false ? "bg-[#10B981]" : "bg-neutral-300"
+                  currentSlide?.active !== false ? "bg-[#0B5D44]" : "bg-neutral-300"
                 }`}
               >
                 <div
@@ -842,7 +837,7 @@ export function HeroBannerCustomizer({
                     handleUpdateCurrentSlide("image", e.target.value);
                   }}
                   placeholder="https://... or /vittal/cutout-hero-1.png"
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]"
                 />
               </div>
 
@@ -931,7 +926,7 @@ export function HeroBannerCustomizer({
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   controlViewTab === "desktop"
-                    ? "bg-[#10B981] text-black shadow-xs font-extrabold"
+                    ? "bg-[#0B5D44] text-white shadow-xs font-extrabold"
                     : "text-neutral-600 hover:text-neutral-900"
                 }`}
               >
@@ -946,7 +941,7 @@ export function HeroBannerCustomizer({
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   controlViewTab === "mobile"
-                    ? "bg-[#10B981] text-black shadow-xs font-extrabold"
+                    ? "bg-[#0B5D44] text-white shadow-xs font-extrabold"
                     : "text-neutral-600 hover:text-neutral-900"
                 }`}
               >
@@ -1013,7 +1008,7 @@ export function HeroBannerCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentSlide(isDesktopTab ? "desktopScale" : "mobileScale", val);
                   }}
-                  className="w-full accent-[#10B981] cursor-pointer"
+                  className="w-full accent-[#0B5D44] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1065,7 +1060,7 @@ export function HeroBannerCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentSlide(isDesktopTab ? "desktopOffsetX" : "mobileOffsetX", val);
                   }}
-                  className="w-full accent-[#10B981] cursor-pointer"
+                  className="w-full accent-[#0B5D44] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1118,7 +1113,7 @@ export function HeroBannerCustomizer({
                     const val = parseInt(e.target.value, 10);
                     handleUpdateCurrentSlide(isDesktopTab ? "desktopOffsetY" : "mobileOffsetY", val);
                   }}
-                  className="w-full accent-[#10B981] cursor-pointer"
+                  className="w-full accent-[#0B5D44] cursor-pointer"
                 />
                 <button
                   type="button"
@@ -1158,7 +1153,7 @@ export function HeroBannerCustomizer({
                 value={currentSlide?.badge || ""}
                 onChange={(e) => handleUpdateCurrentSlide("badge", e.target.value)}
                 placeholder="e.g. Limited Offer"
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]"
               />
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {BADGE_PRESETS.map((b) => (
@@ -1187,7 +1182,7 @@ export function HeroBannerCustomizer({
                   handleUpdateCurrentSlide("ctaText", e.target.value);
                 }}
                 placeholder="e.g. Shop Now"
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]"
               />
             </div>
 
@@ -1201,7 +1196,7 @@ export function HeroBannerCustomizer({
                 value={currentSlide?.heading || ""}
                 onChange={(e) => handleUpdateCurrentSlide("heading", e.target.value)}
                 placeholder="First Purchase Enjoy&#10;a Special Offer"
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]"
               />
             </div>
 
@@ -1218,7 +1213,7 @@ export function HeroBannerCustomizer({
                   handleUpdateCurrentSlide("ctaLink", e.target.value);
                 }}
                 placeholder="/products or /products?category=Gym+Supplements"
-                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]"
               />
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {REDIRECT_PRESETS.map((dest) => (
@@ -1258,7 +1253,7 @@ export function HeroBannerCustomizer({
             value={currentSlide?.bgImage || ""}
             onChange={(e) => handleUpdateCurrentSlide("bgImage", e.target.value)}
             placeholder="/vittal/banner-hero-green-texture.jpg"
-            className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+            className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B5D44]"
           />
         </div>
 
@@ -1270,12 +1265,12 @@ export function HeroBannerCustomizer({
             disabled={saving || !isDirty}
             className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer ${
               isDirty
-                ? "bg-[#10B981] hover:bg-[#10B981] text-black hover:scale-102 hover:shadow-lg"
+                ? "bg-[#0B5D44] hover:bg-[#074230] text-white hover:scale-102 hover:shadow-lg"
                 : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
             }`}
           >
             {saving ? (
-              <RefreshCw className="w-4 h-4 animate-spin text-black" />
+              <RefreshCw className="w-4 h-4 animate-spin text-white" />
             ) : (
               <Save className="w-4 h-4" />
             )}
