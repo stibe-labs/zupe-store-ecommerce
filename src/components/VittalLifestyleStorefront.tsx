@@ -1310,27 +1310,27 @@ export function VittalLifestyleStorefront({
         aria-labelledby="vittal-authenticity-guarantee"
         className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10 sm:pb-14"
       >
-        <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-gradient-to-br from-[#071410] via-[#0B221A] to-[#071410] border border-[#C59B27]/30 px-6 py-8 sm:px-10 sm:py-11 text-white shadow-[0_18px_48px_rgba(7,20,16,0.14)]">
-          {/* Champagne Gold top hairline */}
+        <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-gradient-to-br from-[#F4FAF7] via-[#EBF7F2] to-[#F4FAF7] border border-[#B8DFD1] px-6 py-8 sm:px-10 sm:py-11 text-[#0C1412] shadow-[0_12px_36px_rgba(11,93,68,0.08)]">
+          {/* Vittal Emerald top hairline */}
           <div
             aria-hidden="true"
-            className="absolute inset-x-12 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#E5C469]/70 to-transparent"
+            className="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#0B5D44]/40 to-transparent"
           />
 
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-7 mb-7 border-b border-white/10">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-7 mb-7 border-b border-[#B8DFD1]/60">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/8 border border-[#E5C469]/40 text-[#F3D37A] text-[10.5px] font-bold uppercase tracking-[0.18em] mb-3">
-                <ShieldCheck className="w-3.5 h-3.5" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#B8DFD1] text-[#0B5D44] text-[10.5px] font-bold uppercase tracking-[0.18em] mb-3 shadow-2xs">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#0B5D44]" />
                 The Vittal Authenticity Standard
               </span>
               <h2
                 id="vittal-authenticity-guarantee"
-                className="font-movault text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight"
+                className="font-movault text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#0C1412] leading-tight"
               >
                 Every Order Backed by Our{" "}
-                <span className="text-[#E5C469]">100% Original Guarantee</span>
+                <span className="text-[#0B5D44]">100% Original Guarantee</span>
               </h2>
-              <p className="mt-2.5 text-xs sm:text-sm text-white/75 leading-relaxed">
+              <p className="mt-2.5 text-xs sm:text-sm text-neutral-600 leading-relaxed">
                 Zero grey-market resellers, zero compromised seals. Every supplement, athletic piece, and gourmet import is inspected and shipped with full invoice &amp; transit protection.
               </p>
             </div>
@@ -1338,14 +1338,14 @@ export function VittalLifestyleStorefront({
             <div className="flex flex-wrap items-center gap-2.5 shrink-0">
               <Link
                 href="/order-tracking"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white hover:bg-[#F3FAF7] text-[#071410] text-xs sm:text-sm font-bold transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white text-xs sm:text-sm font-bold transition-colors shadow-sm"
               >
                 <span>Live Order Tracking</span>
-                <ArrowUpRight className="w-4 h-4 text-[#0B5D44]" />
+                <ArrowUpRight className="w-4 h-4 text-white" />
               </Link>
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/8 hover:bg-white/15 text-white border border-white/15 text-xs sm:text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white hover:bg-neutral-50 text-[#0C1412] border border-[#B8DFD1] text-xs sm:text-sm font-semibold transition-colors shadow-2xs"
               >
                 <span>Our Story &amp; Sourcing</span>
               </Link>
@@ -1374,16 +1374,16 @@ export function VittalLifestyleStorefront({
               return (
                 <div
                   key={pillar.title}
-                  className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 flex items-start gap-3.5"
+                  className="rounded-2xl bg-white border border-[#B8DFD1]/70 p-5 flex items-start gap-3.5 shadow-xs hover:border-[#0B5D44]/50 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#0B5D44]/60 border border-[#34D399]/30 text-[#E5C469] flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-xl bg-[#E6F4EF] border border-[#B8DFD1] text-[#0B5D44] flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 text-[#0B5D44]" />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-white leading-snug">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0C1412] leading-snug">
                       {pillar.title}
                     </h3>
-                    <p className="text-xs text-white/70 leading-relaxed mt-1">
+                    <p className="text-xs text-neutral-600 leading-relaxed mt-1">
                       {pillar.desc}
                     </p>
                   </div>
