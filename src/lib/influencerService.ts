@@ -606,6 +606,7 @@ export function getDateRange(
 ): { start: Date; end: Date } {
   const now = new Date();
   const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
 
   if (timeframe === "today") {
     const start = new Date(now);

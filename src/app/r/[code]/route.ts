@@ -40,17 +40,18 @@ export async function GET(
         targetPath = `/products/${dest}`;
       }
 
-      // If influencer is active, record click
+      // If influencer is active, record click (must be awaited in serverless/worker runtime)
       if (isAffiliateActive) {
         const ip =
           req.headers.get("cf-connecting-ip") ||
           req.headers.get("x-forwarded-for")?.split(",")[0] ||
           "";
         const userAgent = req.headers.get("user-agent") || "";
-        // Record click non-blocking
-        recordInfluencerClick(link.id, influencer.id, ip, userAgent).catch((err) => {
-          console.warn("Click recording error in /r/[code]:", err);
-        });
+        try {
+          await recordInfluencerClick(link.id, influencer.id, ip, userAgent);
+        } catch (clickErr) {
+          console.warn("Click recording error in /r/[code]:", clickErr);
+        }
       }
     }
 
