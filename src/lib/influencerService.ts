@@ -701,9 +701,26 @@ export async function getInfluencersWithStats(
   for (const l of [...links, ...memoryLinks]) allLinksMap.set(l.id, l);
   const combinedLinks = Array.from(allLinksMap.values());
 
-  const allClicks = [...clicks, ...memoryClicks.filter((c) => c.clicked_at >= startIso && c.clicked_at <= endIso)];
-  const allOrders = [...orders, ...memoryOrders];
-  const allPayments = [...payments, ...memoryPayments];
+  // Deduplicate by ID to prevent double counting between D1 and memory
+  const allClicksMap = new Map<string, InfluencerClickRecord>();
+  for (const c of [...clicks, ...memoryClicks]) {
+    if (c.clicked_at >= startIso && c.clicked_at <= endIso) {
+      allClicksMap.set(c.id, c);
+    }
+  }
+  const allClicks = Array.from(allClicksMap.values());
+
+  const allOrdersMap = new Map<string, InfluencerOrderRecord>();
+  for (const o of [...orders, ...memoryOrders]) {
+    allOrdersMap.set(o.id, o);
+  }
+  const allOrders = Array.from(allOrdersMap.values());
+
+  const allPaymentsMap = new Map<string, InfluencerPaymentRecord>();
+  for (const p of [...payments, ...memoryPayments]) {
+    allPaymentsMap.set(p.id, p);
+  }
+  const allPayments = Array.from(allPaymentsMap.values());
 
   // 2. Aggregate per influencer
   const results: InfluencerAggregatedStats[] = combinedInfluencers.map((inf) => {
