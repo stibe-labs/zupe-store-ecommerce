@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { RotateCcw } from "lucide-react";
 import {
   BRAND_80_THEMES,
@@ -203,22 +204,54 @@ export function VittalVerifiedBadge({
   className = "",
 }: VittalVerifiedBadgeProps) {
   const [replayKey, setReplayKey] = useState(0);
+  const [flipKey, setFlipKey] = useState(0);
+  const [isFlipping, setIsFlipping] = useState(false);
+
+  const handleTriggerFlip = () => {
+    setIsFlipping(true);
+    setFlipKey((prev) => prev + 1);
+    setReplayKey((k) => k + 1);
+  };
 
   if (compact) {
     return (
       <button
         type="button"
-        onClick={() => setReplayKey((k) => k + 1)}
+        onMouseEnter={handleTriggerFlip}
+        onClick={handleTriggerFlip}
         aria-label="100% Original Marketplace Guarantee — click to replay verification seal"
-        className={`w-full text-center p-4 rounded-2xl bg-gradient-to-b from-[#F3FAF7] to-[#FAFCF7] border border-[#B8DFD1]/80 shadow-2xs hover:border-[#0B5D44]/40 active:scale-[0.99] transition-all cursor-pointer flex flex-col items-center gap-1.5 min-h-[44px] ${className}`}
+        className={`w-full text-center p-4 rounded-2xl bg-gradient-to-b from-[#F3FAF7] to-[#FAFCF7] border border-[#B8DFD1]/80 shadow-2xs hover:border-[#0B5D44]/40 active:scale-[0.99] transition-all cursor-pointer flex flex-col items-center gap-1.5 min-h-[44px] group ${className}`}
       >
-        <Logo80AnimatedMark
-          theme={EMERALD_THEME}
-          surface="light"
-          mode="verified"
-          size={40}
-          replayKey={replayKey}
-        />
+        <motion.div
+          key={flipKey}
+          animate={
+            flipKey > 0
+              ? {
+                  rotateY: [0, 180, 360],
+                  scale: [1, 1.12, 1],
+                }
+              : { rotateY: 0, scale: 1 }
+          }
+          transition={{
+            duration: 0.75,
+            ease: [0.4, 0.0, 0.2, 1],
+          }}
+          onAnimationComplete={() => setIsFlipping(false)}
+          style={{
+            transformStyle: "preserve-3d",
+            perspective: 600,
+            backfaceVisibility: "visible",
+          }}
+          className="shrink-0 overflow-visible"
+        >
+          <Logo80AnimatedMark
+            theme={EMERALD_THEME}
+            surface="light"
+            mode="verified"
+            size={40}
+            replayKey={replayKey}
+          />
+        </motion.div>
         <p className="text-xs font-extrabold text-[#0C1412] uppercase tracking-wide font-mograph">
           100% Original Verified
         </p>
@@ -232,11 +265,33 @@ export function VittalVerifiedBadge({
   return (
     <button
       type="button"
-      onClick={() => setReplayKey((k) => k + 1)}
+      onMouseEnter={handleTriggerFlip}
+      onClick={handleTriggerFlip}
       aria-label="100% Original Marketplace Guarantee — click to replay authenticity check"
       className={`w-full text-left rounded-2xl bg-gradient-to-r from-[#F3FAF7] via-white to-[#FBF8EE] border border-[#B8DFD1] hover:border-[#0B5D44]/50 active:scale-[0.99] px-3.5 py-3 flex items-center gap-3.5 shadow-2xs transition-all cursor-pointer min-h-[56px] group ${className}`}
     >
-      <div className="shrink-0">
+      <motion.div
+        key={flipKey}
+        animate={
+          flipKey > 0
+            ? {
+                rotateY: [0, 180, 360],
+                scale: [1, 1.12, 1],
+              }
+            : { rotateY: 0, scale: 1 }
+        }
+        transition={{
+          duration: 0.75,
+          ease: [0.4, 0.0, 0.2, 1],
+        }}
+        onAnimationComplete={() => setIsFlipping(false)}
+        style={{
+          transformStyle: "preserve-3d",
+          perspective: 600,
+          backfaceVisibility: "visible",
+        }}
+        className="shrink-0 overflow-visible"
+      >
         <Logo80AnimatedMark
           theme={EMERALD_THEME}
           surface="light"
@@ -244,7 +299,7 @@ export function VittalVerifiedBadge({
           size={44}
           replayKey={replayKey}
         />
-      </div>
+      </motion.div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-xs sm:text-sm font-extrabold text-[#0C1412] tracking-tight">
@@ -258,12 +313,14 @@ export function VittalVerifiedBadge({
           Direct authorized partner stock • Tamper-proof quality check before dispatch
         </p>
       </div>
-      <span
+      <motion.span
+        animate={isFlipping ? { rotate: -360 } : { rotate: 0 }}
+        transition={{ duration: 0.75, ease: "easeInOut" }}
         className="shrink-0 w-8 h-8 rounded-full bg-white border border-[#B8DFD1] flex items-center justify-center text-[#0B5D44] group-hover:bg-[#E6F4EF] transition-colors"
         aria-hidden="true"
       >
         <RotateCcw className="w-3.5 h-3.5" />
-      </span>
+      </motion.span>
     </button>
   );
 }
