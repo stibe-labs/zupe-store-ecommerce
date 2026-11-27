@@ -31,6 +31,9 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  BookOpen,
+  HelpCircle,
+  Info,
 } from "lucide-react";
 import { InfluencerAggregatedStats, InfluencerRecord } from "@/lib/influencerService";
 
@@ -97,6 +100,10 @@ export default function AdminInfluencersPage() {
   const [showNotesModal, setShowNotesModal] = useState<InfluencerAggregatedStats | null>(null);
   const [currentNotes, setCurrentNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+
+  // Guide Modal State
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const [guideTab, setGuideTab] = useState<"overview" | "kpis" | "roi" | "columns" | "form" | "payout">("overview");
 
   // Summary KPIs from API
   const [summary, setSummary] = useState<any>({
@@ -476,6 +483,15 @@ export default function AdminInfluencersPage() {
             </div>
 
             <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => setShowGuideModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-2xs cursor-pointer"
+                title="System guide & calculation rules"
+              >
+                <BookOpen className="w-4 h-4 text-purple-600" />
+                <span>Guide</span>
+              </button>
+
               <button
                 onClick={() => fetchInfluencers(true)}
                 disabled={refreshing || loading}
@@ -1638,6 +1654,341 @@ export default function AdminInfluencersPage() {
               >
                 {savingNotes && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 <span>Save Notes</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: SYSTEM GUIDE & CALCULATION MODAL */}
+      {showGuideModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shadow-xs">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                    <span>Influencer Orders &amp; Affiliate Guide</span>
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-100 text-purple-800">
+                      Documentation
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Plain-English explanations for KPIs, calculations, table columns, and creator onboarding.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGuideModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Tab Navigation */}
+            <div className="px-6 pt-3 pb-2 border-b border-slate-100 flex items-center gap-2 overflow-x-auto bg-white text-xs font-semibold">
+              {[
+                { id: "overview", label: "Overview & Tracking", icon: Share2 },
+                { id: "kpis", label: "Top KPI Cards", icon: TrendingUp },
+                { id: "roi", label: "Spend & Return (ROI)", icon: DollarSign },
+                { id: "columns", label: "Table Columns", icon: Filter },
+                { id: "form", label: "Add Creator Form", icon: Sparkles },
+                { id: "payout", label: "Mark Paid & WhatsApp", icon: MessageCircle },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = guideTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setGuideTab(tab.id as any)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+                      isActive
+                        ? "bg-purple-600 text-white shadow-xs font-bold"
+                        : "bg-slate-100 hover:bg-slate-200/70 text-slate-600"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 text-slate-700 text-sm">
+              {/* TAB 1: OVERVIEW */}
+              {guideTab === "overview" && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-100">
+                    <h4 className="font-bold text-purple-900 text-sm mb-1">How Influencer Affiliate Marketing Works</h4>
+                    <p className="text-xs text-purple-800 leading-relaxed">
+                      Zupe Store gives creators custom tracking links (e.g. <code className="bg-purple-200/60 px-1 py-0.5 rounded text-purple-900">zupestore.in/r/creator</code>) to share in Instagram Stories, Bios, or YouTube descriptions. When their followers click, the system tracks sales and calculates commission with 100% transparency.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
+                      <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                        <span className="w-5 h-5 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[11px]">1</span>
+                        <span>Link Clicked</span>
+                      </div>
+                      <p className="text-xs text-slate-600">
+                        Follower taps link on Instagram. The server logs +1 Click and instantly redirects to the product page.
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
+                      <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                        <span className="w-5 h-5 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[11px]">2</span>
+                        <span>7-Day Memory Tag</span>
+                      </div>
+                      <p className="text-xs text-slate-600">
+                        A tracking cookie &amp; storage tag is saved on the customer's phone valid for 7 days, even if they close the browser and buy later.
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1">
+                      <div className="flex items-center gap-2 font-bold text-slate-900 text-xs">
+                        <span className="w-5 h-5 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-[11px]">3</span>
+                        <span>Order Credited</span>
+                      </div>
+                      <p className="text-xs text-slate-600">
+                        When the customer buys (Prepaid or COD), the system calculates creator commission and updates this dashboard live!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
+                    <strong>💡 Built for Instagram &amp; Facebook Browsers:</strong> Uses dual HTTP Cookies + LocalStorage so that in-app mobile browsers will never lose creator attribution.
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: KPIS */}
+              {guideTab === "kpis" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-500 uppercase">Attributed Revenue</span>
+                        <TrendingUp className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-900 mt-1">Total Sales From Creator Links</p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        The sum of all customer order values that arrived through creator links in the selected dates.
+                        <br /><span className="text-slate-400 font-mono">Example: Order 1 (₹599) + Order 2 (₹1,499) = ₹2,098</span>
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-500 uppercase">Commission (Period)</span>
+                        <DollarSign className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-900 mt-1">Commission Earned in Selected Dates</p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Total creator commissions earned <strong>only inside the chosen date filter</strong> (e.g. Today or 7 Days).
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 sm:col-span-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-amber-800 uppercase">Total Pending (All-Time)</span>
+                        <Clock className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-900 mt-1">Actual Money You Owe Creators Right Now</p>
+                      <p className="text-xs text-slate-700 mt-1 leading-relaxed">
+                        <strong>Why is this All-Time and not filtered by dates?</strong> Because unpaid creator commission is a business debt! If an influencer brought sales 2 weeks ago and has not been paid yet, you still owe them today. It does not disappear when you select "Today".
+                        <br />
+                        <span className="font-mono text-amber-900 font-semibold">
+                          Total Pending = Lifetime Commission Earned - Total Money Already Paid Out
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: ROI MATH */}
+              {guideTab === "roi" && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <h4 className="font-bold text-slate-900 text-sm">How Return on Investment (ROI) is Calculated</h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-3 bg-white rounded-lg border border-slate-200">
+                        <span className="font-bold text-slate-900 block mb-1">1. Spend on Creator:</span>
+                        <p className="text-slate-600 font-mono">Spend = Gifted Product Cost + Commission Earned</p>
+                        <p className="text-slate-500 mt-1">If you sent a free sample costing ₹150 and they earned ₹59.90 commission, your total spend is ₹209.90.</p>
+                      </div>
+
+                      <div className="p-3 bg-white rounded-lg border border-slate-200">
+                        <span className="font-bold text-slate-900 block mb-1">2. Return Multiplier:</span>
+                        <p className="text-slate-600 font-mono">Return Multiplier = Attributed Revenue ÷ Spend</p>
+                        <p className="text-slate-500 mt-1">If you spent ₹149.90 on ijas and they brought ₹1,499 in sales, the return is <strong>10.0x</strong>!</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h5 className="font-bold text-slate-800 text-xs">Visual Return Badges:</h5>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900">
+                        <span className="font-black block">🟢 3.0x or higher</span>
+                        <span className="text-[11px] text-emerald-700">Highly profitable! Keep working with this creator.</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900">
+                        <span className="font-black block">🟡 1.0x to 2.9x</span>
+                        <span className="text-[11px] text-amber-700">Moderate / Breakeven. Profitable if product margins allow.</span>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900">
+                        <span className="font-black block">🔴 Below 1.0x</span>
+                        <span className="text-[11px] text-rose-700">Loss-making. Spent more on sample + fees than sales brought.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: COLUMNS */}
+              {guideTab === "columns" && (
+                <div className="space-y-3">
+                  <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden text-xs">
+                    <div className="p-3 bg-slate-50 font-bold text-slate-900 flex justify-between">
+                      <span>Column</span>
+                      <span>Explanation</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4">
+                      <span className="font-semibold text-slate-900 min-w-28">NAME / INSTA ID</span>
+                      <span className="text-slate-600">Creator's name and Instagram handle. Clicking handle opens their IG profile.</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4 bg-slate-50/50">
+                      <span className="font-semibold text-slate-900 min-w-28">LINKS</span>
+                      <span className="text-slate-600">Number of tracking links. Click arrow <code className="font-mono">v</code> to expand per-link breakdown (Reel vs Story).</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4">
+                      <span className="font-semibold text-slate-900 min-w-28">CLICKS / ORDERS</span>
+                      <span className="text-slate-600">Total visits to link vs completed customer checkouts.</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4 bg-slate-50/50">
+                      <span className="font-semibold text-slate-900 min-w-28">CONV %</span>
+                      <span className="text-slate-600">Conversion Rate: <code className="font-mono">(Orders ÷ Clicks) × 100%</code>.</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4">
+                      <span className="font-semibold text-slate-900 min-w-28">REVENUE ₹</span>
+                      <span className="text-slate-600">Gross sales value generated by this creator.</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4 bg-slate-50/50">
+                      <span className="font-semibold text-slate-900 min-w-28">COMMISSION ₹</span>
+                      <span className="text-slate-600">Commission earned in selected date window (shows rate beneath).</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4">
+                      <span className="font-semibold text-slate-900 min-w-28">PENDING ₹</span>
+                      <span className="text-slate-600">Unpaid balance. Green ₹0 if paid; orange badge if money is owed.</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4 bg-slate-50/50">
+                      <span className="font-semibold text-slate-900 min-w-28">STATUS</span>
+                      <span className="text-slate-600">Shows "Paid" or an orange "Mark Paid" button to settle.</span>
+                    </div>
+                    <div className="p-3 flex justify-between gap-4">
+                      <span className="font-semibold text-slate-900 min-w-28">ACTIVE TOGGLE</span>
+                      <span className="text-slate-600">Turn OFF to stop recording clicks and commissions without breaking customer links.</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: FORM */}
+              {guideTab === "form" && (
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100 text-xs text-purple-900">
+                    <strong>+ Add Influencer Form Fields:</strong>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 border border-slate-200 rounded-xl space-y-1">
+                      <span className="font-bold text-slate-900">1. Creator Name:</span>
+                      <p className="text-slate-600">Real name or brand name (e.g. Anu Sharma, ijas).</p>
+                    </div>
+
+                    <div className="p-3 border border-slate-200 rounded-xl space-y-1">
+                      <span className="font-bold text-slate-900">2. Instagram Handle / ID:</span>
+                      <p className="text-slate-600">Username <strong>without @</strong> (e.g. <code className="font-mono">_i__jas_</code>). Generates their unique shortlink.</p>
+                    </div>
+
+                    <div className="p-3 border border-slate-200 rounded-xl space-y-1">
+                      <span className="font-bold text-slate-900">3. Gifted Product Cost (₹):</span>
+                      <p className="text-slate-600">Your cost for free samples shipped (e.g. ₹150). Enter 0 if none sent.</p>
+                    </div>
+
+                    <div className="p-3 border border-slate-200 rounded-xl space-y-1">
+                      <span className="font-bold text-slate-900">4. Commission Model:</span>
+                      <p className="text-slate-600"><strong>None:</strong> Barter only. <strong>Percentage %:</strong> e.g. 10% per sale. <strong>Fixed ₹:</strong> Flat amount per order.</p>
+                    </div>
+
+                    <div className="p-3 border border-slate-200 rounded-xl space-y-1">
+                      <span className="font-bold text-slate-900">5. First Link Name:</span>
+                      <p className="text-slate-600">Friendly label (e.g. "Instagram Bio", "Reel Link", "Story 1").</p>
+                    </div>
+
+                    <div className="p-3 border border-slate-200 rounded-xl space-y-1">
+                      <span className="font-bold text-slate-900">6. Link Opens (Destination):</span>
+                      <p className="text-slate-600">Choose Homepage or select a specific product from the catalog dropdown.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 6: PAYOUT & WHATSAPP */}
+              {guideTab === "payout" && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
+                    <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-emerald-600" />
+                      <span>How to Settle Payouts ("Mark Paid")</span>
+                    </h4>
+                    <ol className="list-decimal list-inside space-y-1.5 text-xs text-slate-600">
+                      <li>Pay the creator via Google Pay, PhonePe, UPI, or Bank Transfer.</li>
+                      <li>Click the orange <strong>"Mark Paid"</strong> button next to their name.</li>
+                      <li>Review the pending amount and optionally enter your payment note (e.g. "GPay UPI Ref 987654").</li>
+                      <li>Click <strong>"Confirm Payout"</strong>. The creator's pending balance drops to ₹0 and the top "Total Pending (All-Time)" card automatically reduces!</li>
+                    </ol>
+                  </div>
+
+                  <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
+                    <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-emerald-600" />
+                      <span>1-Click WhatsApp Report Generator</span>
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Click the speech bubble icon (💬) under <strong>ACTIONS</strong> to copy an instant update message:
+                    </p>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 font-mono text-xs text-slate-800">
+                      Hi ijas 👋 Your Zupestore link report (last 7 days): 2 clicks, 1 orders, commission ₹150. Thank you! 🙌
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Open WhatsApp Web or mobile, paste and send! Creators love seeing their real-time performance.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <span className="text-slate-500">
+                Full documentation also in <code className="font-mono font-semibold text-slate-700">docs/INFLUENCER_AFFILIATE_ADMIN_GUIDE.md</code>
+              </span>
+              <button
+                onClick={() => setShowGuideModal(false)}
+                className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold cursor-pointer shadow-xs transition-colors"
+              >
+                Close Guide
               </button>
             </div>
           </div>
