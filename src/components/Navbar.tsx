@@ -196,11 +196,12 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md font-mograph select-none border-b border-neutral-200/80 shadow-[0_1px_12px_rgba(7,20,16,0.03)]">
+    <>
       {/* =================================================================== */}
       {/* OBSIDIAN PINE TOP TRUST MICRO-BAR (Authenticity · Shipping · Track) */}
+      {/* Scrolls off naturally when scrolling down so only main navbar sticks */}
       {/* =================================================================== */}
-      <div className="w-full bg-[#071410] text-white/90 border-b border-white/10">
+      <div className="w-full bg-[#071410] text-white/90 border-b border-white/10 relative z-40">
         <div className="max-w-[1720px] mx-auto px-3.5 sm:px-6 lg:px-8 h-8 flex items-center justify-center md:justify-between text-[11px] font-medium tracking-wide">
           {/* Mobile concise trust line */}
           <div className="flex md:hidden items-center gap-2 text-[10.5px] text-white/95 truncate">
@@ -250,6 +251,8 @@ export function Navbar() {
           </div>
         </div>
       </div>
+
+      <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md font-mograph select-none border-b border-neutral-200/80 shadow-[0_1px_12px_rgba(7,20,16,0.03)]">
 
       {/* =================================================================== */}
       {/* SEAMLESS LUXURY GALLERY NAVBAR                                      */}
@@ -780,6 +783,7 @@ export function Navbar() {
           </AnimatePresence>,
           document.body
         )}
-    </header>
+      </header>
+    </>
   );
 }
