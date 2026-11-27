@@ -438,13 +438,20 @@ export default function AdminInfluencersPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8F9FA] text-slate-900 overflow-hidden font-sans">
-      <AdminSidebar mobileOpen={mobileSidebarOpen} onCloseMobile={() => setMobileSidebarOpen(false)} />
+    <div className="min-h-screen bg-[#F4F6FA] text-slate-800 font-sans">
+      <AdminSidebar
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
+      />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <AdminHeader onMenuClick={() => setMobileSidebarOpen(true)} title="Influencer Orders" />
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        <AdminHeader
+          onOpenMobile={() => setMobileSidebarOpen(true)}
+          onRefresh={() => fetchInfluencers(true)}
+          isRefreshing={refreshing}
+        />
 
-        <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
           {/* TOP BAR / TITLE */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
