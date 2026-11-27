@@ -192,10 +192,10 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
 
 @keyframes tj-shimmer {
   0% {
-    transform: translateX(-150%) skewX(-15deg);
+    transform: translateX(-200%) skewX(-20deg);
   }
   100% {
-    transform: translateX(250%) skewX(-15deg);
+    transform: translateX(300%) skewX(-20deg);
   }
 }
 
@@ -209,15 +209,17 @@ p, li, span:not([class*="tracking"]), label, td, th, blockquote {
   position: absolute;
   top: 0;
   left: 0;
-  width: 40%;
+  width: 50%;
   height: 100%;
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.2) 80%,
     rgba(255, 255, 255, 0) 100%
   );
-  animation: tj-shimmer 3s ease-in-out infinite;
+  animation: tj-shimmer 2.2s ease-in-out infinite;
   pointer-events: none;
 }
 

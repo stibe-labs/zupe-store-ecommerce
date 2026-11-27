@@ -1127,9 +1127,8 @@ export default function ProductDetailPage() {
 
               <button
                 onClick={handleBuyNow}
-                className="bg-[#0B5D44] hover:bg-[#074230] active:scale-[0.98] text-white font-bold py-3.5 px-6 min-h-[48px] rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-[#0B5D44]/20 transition-all text-sm sm:text-base cursor-pointer hover:-translate-y-0.5"
+                className="btn-shimmer relative overflow-hidden bg-[#0B5D44] hover:bg-[#074230] active:scale-[0.98] text-white font-bold py-3.5 px-6 min-h-[48px] rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-[#0B5D44]/20 transition-all text-sm sm:text-base cursor-pointer hover:-translate-y-0.5"
               >
-                <Zap className="w-4 h-4 fill-[#E5C469] text-[#E5C469]" />
                 <span>Buy Now</span>
               </button>
             </div>
@@ -1490,9 +1489,8 @@ export default function ProductDetailPage() {
               </button>
               <button
                 onClick={handleBuyNow}
-                className="bg-[#0B5D44] hover:bg-[#074230] text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                className="btn-shimmer relative overflow-hidden bg-[#0B5D44] hover:bg-[#074230] text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
               >
-                <Zap className="w-3.5 h-3.5 fill-white text-white" />
                 <span>Buy Now</span>
               </button>
             </div>
@@ -1753,9 +1751,8 @@ export default function ProductDetailPage() {
             <button
               type="button"
               onClick={handleBuyNow}
-              className="px-4 min-h-[44px] rounded-xl bg-[#0B5D44] active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="btn-shimmer relative overflow-hidden px-4 min-h-[44px] rounded-xl bg-[#0B5D44] active:scale-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
             >
-              <Zap className="w-3.5 h-3.5 fill-[#E5C469] text-[#E5C469]" />
               <span>Buy Now</span>
             </button>
           </div>
