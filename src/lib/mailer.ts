@@ -27,8 +27,8 @@ export async function sendEmail({
   attachments,
 }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
   const defaultSender = process.env.SMTP_FROM || "no-reply@vittallifestyle.com";
-  const authUser = process.env.SMTP_USER || "zupestoreonline@gmail.com";
-  const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "wwgfnukdhczwknba";
+  const authUser = process.env.SMTP_USER || "no-reply@vittallifestyle.com";
+  const rawPass = process.env.SMTP_PASS || "Stibe@2026";
   const smtpPass = rawPass.replace(/\s+/g, "");
   const fromAddress = from || `"Vittal Lifestyle" <${defaultSender}>`;
   const replyToAddress = replyTo || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vittallifestyle.com";
@@ -37,7 +37,7 @@ export async function sendEmail({
   if (smtpPass) {
     try {
       const port = Number(process.env.SMTP_PORT) || 465;
-      const host = process.env.SMTP_HOST || "smtp.gmail.com";
+      const host = process.env.SMTP_HOST || "webmail.stibe.in";
       const transporter = nodemailer.createTransport({
         host,
         port,
