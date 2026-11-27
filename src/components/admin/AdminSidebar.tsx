@@ -26,6 +26,7 @@ import {
   Tag,
   Calculator,
   MessageCircle,
+  Share2,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -99,6 +100,13 @@ export default function AdminSidebar({
       name: "Abandoned Carts",
       href: "/admin/abandoned-carts",
       icon: ShoppingCart,
+    },
+    {
+      name: "Influencer Orders",
+      href: "/admin/influencers",
+      icon: Share2,
+      badge: "Affiliate",
+      badgeColor: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
     },
     {
       name: "Shipments",

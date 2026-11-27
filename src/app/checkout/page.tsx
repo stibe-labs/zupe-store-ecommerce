@@ -1370,6 +1370,7 @@ function CheckoutContent() {
                   advance_amount: isCod ? codFee : grandTotal,
                   balance_amount: isCod ? doorstepBalance : 0,
                   shipping_fee: shippingFee,
+                  affiliate_code: typeof window !== "undefined" ? localStorage.getItem("zupe_aff_code") || undefined : undefined,
                   user_id: user?.id,
                   items: cart.map((c) => ({
                     product_id: c.id,

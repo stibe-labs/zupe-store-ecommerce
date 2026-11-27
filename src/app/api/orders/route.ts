@@ -284,6 +284,27 @@ export async function POST(req: NextRequest) {
 
     await createOrder(newOrder);
 
+    // Influencer Affiliate Attribution (Snapshots commission if customer arrived via /r/<code>)
+    const affiliateCode = (
+      req.cookies.get("zupe_aff_code")?.value ||
+      body.affiliate_code ||
+      ""
+    ).trim();
+
+    if (affiliateCode) {
+      try {
+        const { recordInfluencerOrderAttribution } = await import("@/lib/influencerService");
+        const displayOrderId = (newOrder as any).shopify_order_id || orderId;
+        await recordInfluencerOrderAttribution(
+          displayOrderId,
+          Number(total_amount),
+          affiliateCode
+        );
+      } catch (affErr) {
+        console.warn("Failed to record influencer attribution in /api/orders:", affErr);
+      }
+    }
+
     // Automatically sync delivery address and phone to customer profile
     try {
       const { syncAddressFromOrder } = await import("@/lib/addressStore");

@@ -284,6 +284,27 @@ export async function POST(req: NextRequest) {
 
     await createOrder(newOrder);
 
+    // Influencer Affiliate Attribution (Snapshots commission if customer arrived via /r/<code>)
+    const affiliateCode = (
+      req.cookies.get("zupe_aff_code")?.value ||
+      order_payload?.affiliate_code ||
+      ""
+    ).trim();
+
+    if (affiliateCode) {
+      try {
+        const { recordInfluencerOrderAttribution } = await import("@/lib/influencerService");
+        const displayOrderId = (newOrder as any).shopify_order_id || newOrder.id;
+        await recordInfluencerOrderAttribution(
+          displayOrderId,
+          Number(total_amount),
+          affiliateCode
+        );
+      } catch (affErr) {
+        console.warn("Failed to record influencer attribution in verify-payment:", affErr);
+      }
+    }
+
     // Dispatch Meta Conversions API (Server-Side Purchase Event with SHA-256 hashed user data)
     try {
       const { sendMetaConversionsPurchase } = await import("@/lib/metaConversionsApi");
