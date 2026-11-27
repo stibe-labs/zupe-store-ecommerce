@@ -15,6 +15,7 @@ export interface Coupon {
   is_active: boolean;
   applicable_type: "ALL" | "SPECIFIC";
   applicable_products: string[]; // product IDs or slugs
+  show_in_store: boolean; // whether to show in live store Available Offers list
   created_at: string;
   updated_at: string;
 }
@@ -52,6 +53,7 @@ export const SEED_COUPONS: Coupon[] = [
     is_active: true,
     applicable_type: "ALL",
     applicable_products: [],
+    show_in_store: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -69,6 +71,7 @@ export const SEED_COUPONS: Coupon[] = [
     is_active: true,
     applicable_type: "ALL",
     applicable_products: [],
+    show_in_store: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -86,6 +89,7 @@ export const SEED_COUPONS: Coupon[] = [
     is_active: true,
     applicable_type: "ALL",
     applicable_products: [],
+    show_in_store: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -103,6 +107,7 @@ export const SEED_COUPONS: Coupon[] = [
     is_active: true,
     applicable_type: "ALL",
     applicable_products: [],
+    show_in_store: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -120,6 +125,7 @@ export const SEED_COUPONS: Coupon[] = [
     is_active: true,
     applicable_type: "ALL",
     applicable_products: [],
+    show_in_store: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -146,6 +152,7 @@ export async function ensureCouponsTable(): Promise<void> {
         is_active INTEGER DEFAULT 1,
         applicable_type TEXT DEFAULT 'ALL',
         applicable_products TEXT DEFAULT '[]',
+        show_in_store INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -157,6 +164,9 @@ export async function ensureCouponsTable(): Promise<void> {
     } catch {}
     try {
       await executeD1Query(`ALTER TABLE coupons ADD COLUMN applicable_products TEXT DEFAULT '[]';`);
+    } catch {}
+    try {
+      await executeD1Query(`ALTER TABLE coupons ADD COLUMN show_in_store INTEGER DEFAULT 0;`);
     } catch {}
     try {
       await executeD1Query(`ALTER TABLE coupons ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;`);
@@ -192,6 +202,10 @@ function parseDbCoupon(row: any): Coupon {
     is_active: row.is_active === 1 || row.is_active === true,
     applicable_type: row.applicable_type === "SPECIFIC" ? "SPECIFIC" : "ALL",
     applicable_products: Array.isArray(products) ? products : [],
+    show_in_store:
+      row.show_in_store === 1 ||
+      row.show_in_store === true ||
+      (row.show_in_store === null && String(row.code).trim().toUpperCase() === "VITTAL10"),
     created_at: row.created_at || new Date().toISOString(),
     updated_at: row.updated_at || new Date().toISOString(),
   };
@@ -212,8 +226,8 @@ export async function getAllCoupons(): Promise<Coupon[]> {
       for (const sc of SEED_COUPONS) {
         try {
           await executeD1Query(
-            `INSERT OR IGNORE INTO coupons (id, code, description, discount_type, discount_value, min_order_amount, max_discount_amount, expires_at, usage_limit, usage_count, is_active, applicable_type, applicable_products, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT OR IGNORE INTO coupons (id, code, description, discount_type, discount_value, min_order_amount, max_discount_amount, expires_at, usage_limit, usage_count, is_active, applicable_type, applicable_products, show_in_store, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               sc.id,
               sc.code,
@@ -228,6 +242,7 @@ export async function getAllCoupons(): Promise<Coupon[]> {
               sc.is_active ? 1 : 0,
               sc.applicable_type,
               JSON.stringify(sc.applicable_products),
+              sc.show_in_store ? 1 : 0,
               sc.created_at,
               sc.updated_at,
             ]
@@ -274,6 +289,7 @@ export async function createCoupon(data: {
   is_active?: boolean;
   applicable_type?: "ALL" | "SPECIFIC";
   applicable_products?: string[];
+  show_in_store?: boolean;
 }): Promise<Coupon> {
   const code = data.code.trim().toUpperCase();
   if (!code) {
@@ -299,6 +315,7 @@ export async function createCoupon(data: {
     is_active: data.is_active !== undefined ? Boolean(data.is_active) : true,
     applicable_type: data.applicable_type === "SPECIFIC" ? "SPECIFIC" : "ALL",
     applicable_products: Array.isArray(data.applicable_products) ? data.applicable_products : [],
+    show_in_store: data.show_in_store !== undefined ? Boolean(data.show_in_store) : false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -310,8 +327,8 @@ export async function createCoupon(data: {
   await ensureCouponsTable();
   try {
     await executeD1Query(
-      `INSERT INTO coupons (id, code, description, discount_type, discount_value, min_order_amount, max_discount_amount, expires_at, usage_limit, usage_count, is_active, applicable_type, applicable_products, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO coupons (id, code, description, discount_type, discount_value, min_order_amount, max_discount_amount, expires_at, usage_limit, usage_count, is_active, applicable_type, applicable_products, show_in_store, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         newCoupon.id,
         newCoupon.code,
@@ -326,6 +343,7 @@ export async function createCoupon(data: {
         newCoupon.is_active ? 1 : 0,
         newCoupon.applicable_type,
         JSON.stringify(newCoupon.applicable_products),
+        newCoupon.show_in_store ? 1 : 0,
         newCoupon.created_at,
         newCoupon.updated_at,
       ]
@@ -352,6 +370,8 @@ export async function updateCoupon(
     ...existing,
     ...updates,
     code: updates.code ? updates.code.trim().toUpperCase() : existing.code,
+    show_in_store:
+      updates.show_in_store !== undefined ? Boolean(updates.show_in_store) : existing.show_in_store,
     updated_at: new Date().toISOString(),
   };
 
@@ -373,6 +393,7 @@ export async function updateCoupon(
         is_active = ?,
         applicable_type = ?,
         applicable_products = ?,
+        show_in_store = ?,
         updated_at = ?
       WHERE id = ?`,
       [
@@ -387,6 +408,7 @@ export async function updateCoupon(
         updated.is_active ? 1 : 0,
         updated.applicable_type,
         JSON.stringify(updated.applicable_products),
+        updated.show_in_store ? 1 : 0,
         updated.updated_at,
         id,
       ]
@@ -414,6 +436,10 @@ export async function deleteCoupon(id: string): Promise<boolean> {
 
 export async function toggleCouponActive(id: string, isActive: boolean): Promise<boolean> {
   return (await updateCoupon(id, { is_active: isActive })) !== null;
+}
+
+export async function toggleCouponShowInStore(id: string, showInStore: boolean): Promise<boolean> {
+  return (await updateCoupon(id, { show_in_store: showInStore })) !== null;
 }
 
 export async function incrementCouponUsage(code: string): Promise<void> {
@@ -576,10 +602,12 @@ export interface AvailableOffer {
   estimatedDiscount: number;
   expires_at?: string | null;
   applicable_type: "ALL" | "SPECIFIC";
+  show_in_store?: boolean;
 }
 
 /**
  * Returns available active, non-expired offers with customer eligibility
+ * ONLY includes coupons marked with show_in_store = true
  */
 export async function getAvailableOffers(subtotal: number = 0): Promise<AvailableOffer[]> {
   const coupons = await getAllCoupons();
@@ -589,13 +617,16 @@ export async function getAvailableOffers(subtotal: number = 0): Promise<Availabl
     // 1. Must be active
     if (!c.is_active) return false;
 
-    // 2. Must not be expired
+    // 2. Must be selected to show in live store Available Offers list
+    if (!c.show_in_store) return false;
+
+    // 3. Must not be expired
     if (c.expires_at) {
       const expiry = new Date(c.expires_at).getTime();
       if (!isNaN(expiry) && now > expiry) return false;
     }
 
-    // 3. Must not exceed redemption limit
+    // 4. Must not exceed redemption limit
     if (c.usage_limit !== null && c.usage_limit !== undefined && c.usage_limit > 0) {
       if (c.usage_count >= c.usage_limit) return false;
     }

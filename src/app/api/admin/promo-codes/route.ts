@@ -5,6 +5,7 @@ import {
   updateCoupon,
   deleteCoupon,
   toggleCouponActive,
+  toggleCouponShowInStore,
   Coupon,
 } from "@/lib/couponStore";
 
@@ -85,6 +86,7 @@ export async function POST(req: NextRequest) {
       is_active: body.is_active !== undefined ? Boolean(body.is_active) : true,
       applicable_type: body.applicable_type === "SPECIFIC" ? "SPECIFIC" : "ALL",
       applicable_products: Array.isArray(body.applicable_products) ? body.applicable_products : [],
+      show_in_store: body.show_in_store !== undefined ? Boolean(body.show_in_store) : false,
     });
 
     return NextResponse.json({ success: true, coupon: newCoupon });
@@ -99,7 +101,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, action, is_active, ...updates } = body;
+    const { id, action, is_active, show_in_store, ...updates } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -108,9 +110,15 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Quick toggle action
+    // Quick toggle active
     if (action === "toggle") {
       const success = await toggleCouponActive(id, Boolean(is_active));
+      return NextResponse.json({ success });
+    }
+
+    // Quick toggle store display
+    if (action === "toggle_store_display") {
+      const success = await toggleCouponShowInStore(id, Boolean(show_in_store));
       return NextResponse.json({ success });
     }
 
@@ -125,6 +133,7 @@ export async function PUT(req: NextRequest) {
     const updated = await updateCoupon(id, {
       ...updates,
       is_active: is_active !== undefined ? Boolean(is_active) : undefined,
+      show_in_store: show_in_store !== undefined ? Boolean(show_in_store) : undefined,
     });
 
     if (!updated) {

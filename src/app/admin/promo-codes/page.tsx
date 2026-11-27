@@ -27,6 +27,8 @@ import {
   ExternalLink,
   Sparkles,
   Zap,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Coupon } from "@/lib/couponStore";
 import { DEFAULT_PRODUCTS } from "@/data/zupeProducts";
@@ -43,6 +45,7 @@ export default function AdminPromoCodesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [scopeFilter, setScopeFilter] = useState("all");
+  const [storeFilter, setStoreFilter] = useState("all");
 
   // KPIs
   const [kpis, setKpis] = useState({
@@ -70,6 +73,7 @@ export default function AdminPromoCodesPage() {
   const [formExpiresAt, setFormExpiresAt] = useState("");
   const [formUsageLimit, setFormUsageLimit] = useState("");
   const [formIsActive, setFormIsActive] = useState(true);
+  const [formShowInStore, setFormShowInStore] = useState(false);
   const [formApplicableType, setFormApplicableType] = useState<"ALL" | "SPECIFIC">("ALL");
   const [formApplicableProducts, setFormApplicableProducts] = useState<string[]>([]);
   const [productSearch, setProductSearch] = useState("");
@@ -143,6 +147,7 @@ export default function AdminPromoCodesPage() {
     setFormExpiresAt(d.toISOString().slice(0, 16));
     setFormUsageLimit("500");
     setFormIsActive(true);
+    setFormShowInStore(false);
     setFormApplicableType("ALL");
     setFormApplicableProducts([]);
     setModalError("");
@@ -160,6 +165,7 @@ export default function AdminPromoCodesPage() {
     setFormExpiresAt(coupon.expires_at ? new Date(coupon.expires_at).toISOString().slice(0, 16) : "");
     setFormUsageLimit(coupon.usage_limit ? String(coupon.usage_limit) : "");
     setFormIsActive(coupon.is_active);
+    setFormShowInStore(Boolean(coupon.show_in_store));
     setFormApplicableType(coupon.applicable_type);
     setFormApplicableProducts(coupon.applicable_products || []);
     setModalError("");
@@ -218,6 +224,41 @@ export default function AdminPromoCodesPage() {
     }
   };
 
+  const handleToggleShowInStore = async (coupon: Coupon) => {
+    const newStatus = !coupon.show_in_store;
+    // Optimistic UI update
+    setCoupons((prev) =>
+      prev.map((c) => (c.id === coupon.id ? { ...c, show_in_store: newStatus } : c))
+    );
+
+    try {
+      const res = await fetch("/api/admin/promo-codes", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: coupon.id,
+          action: "toggle_store_display",
+          show_in_store: newStatus,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error);
+      }
+      showToast(
+        newStatus
+          ? `Promo code ${coupon.code} is now shown in the live store`
+          : `Promo code ${coupon.code} is now hidden from the live store`
+      );
+    } catch {
+      // Revert on error
+      setCoupons((prev) =>
+        prev.map((c) => (c.id === coupon.id ? { ...c, show_in_store: coupon.show_in_store } : c))
+      );
+      showToast("Failed to update store display", "error");
+    }
+  };
+
   const handleSubmitCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalError("");
@@ -258,6 +299,7 @@ export default function AdminPromoCodesPage() {
         expires_at: formExpiresAt ? new Date(formExpiresAt).toISOString() : null,
         usage_limit: formUsageLimit ? Number(formUsageLimit) : null,
         is_active: formIsActive,
+        show_in_store: formShowInStore,
         applicable_type: formApplicableType,
         applicable_products: formApplicableProducts,
       };
@@ -349,6 +391,10 @@ export default function AdminPromoCodesPage() {
     if (scopeFilter !== "all") {
       if (c.applicable_type !== scopeFilter) return false;
     }
+
+    // Store Display
+    if (storeFilter === "public" && !c.show_in_store) return false;
+    if (storeFilter === "hidden" && c.show_in_store) return false;
 
     return true;
   });
@@ -550,13 +596,25 @@ export default function AdminPromoCodesPage() {
                 <option value="SPECIFIC">Specific Products Only</option>
               </select>
 
-              {(searchQuery || statusFilter !== "all" || typeFilter !== "all" || scopeFilter !== "all") && (
+              <select
+                value={storeFilter}
+                onChange={(e) => setStoreFilter(e.target.value)}
+                aria-label="Filter promo codes by store display"
+                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#002D62]/20"
+              >
+                <option value="all">All Store Display</option>
+                <option value="public">Shown in Live Store</option>
+                <option value="hidden">Hidden from Live Store</option>
+              </select>
+
+              {(searchQuery || statusFilter !== "all" || typeFilter !== "all" || scopeFilter !== "all" || storeFilter !== "all") && (
                 <button
                   onClick={() => {
                     setSearchQuery("");
                     setStatusFilter("all");
                     setTypeFilter("all");
                     setScopeFilter("all");
+                    setStoreFilter("all");
                   }}
                   className="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition-colors"
                 >
@@ -605,6 +663,7 @@ export default function AdminPromoCodesPage() {
                       <th className="py-3.5 px-4">Applicable Products</th>
                       <th className="py-3.5 px-4">Expiration / Status</th>
                       <th className="py-3.5 px-4">Min Order & Usage</th>
+                      <th className="py-3.5 px-4 text-center">Store Display</th>
                       <th className="py-3.5 px-4 text-center">Status</th>
                       <th className="py-3.5 px-4 text-right">Actions</th>
                     </tr>
@@ -726,6 +785,39 @@ export default function AdminPromoCodesPage() {
                                 </div>
                               )}
                             </div>
+                          </td>
+
+                          {/* Store Visibility Toggle */}
+                          <td className="py-4 px-4 text-center whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleShowInStore(coupon)}
+                              title={
+                                coupon.show_in_store
+                                  ? "Visible in 'Available Offers' list. Click to hide from live store."
+                                  : "Hidden from 'Available Offers'. Click to show in live store."
+                              }
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                coupon.show_in_store
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                  : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                              }`}
+                            >
+                              {coupon.show_in_store ? (
+                                <>
+                                  <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>Shown</span>
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>Hidden</span>
+                                </>
+                              )}
+                            </button>
+                            <span className="block text-[10px] text-slate-400 mt-1">
+                              {coupon.show_in_store ? "Live Offer" : "Manual Code"}
+                            </span>
                           </td>
 
                           {/* Status Toggle */}
@@ -1162,6 +1254,43 @@ export default function AdminPromoCodesPage() {
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                       formIsActive ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Show in Live Store Toggle */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80">
+                <div className="pr-4">
+                  <div className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                    <Eye className="w-3.5 h-3.5 text-[#0B5D44]" />
+                    <span>Show in Live Store (Available Offers)</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        formShowInStore
+                          ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                          : "bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      {formShowInStore ? "Public Offer" : "Hidden (Manual Code Only)"}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1 leading-snug">
+                    {formShowInStore
+                      ? "Shown publicly to every customer under 'Available Offers' at checkout and cart."
+                      : "Hidden from live store offers list. Customers can still use this code by typing or pasting it manually."}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormShowInStore(!formShowInStore)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none cursor-pointer ${
+                    formShowInStore ? "bg-[#0B5D44]" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-xs ${
+                      formShowInStore ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
