@@ -750,9 +750,9 @@ export default function ProductDetailPage() {
           {/* =============================================================== */}
           {/* LEFT COLUMN: PRODUCT GALLERY WITH VERTICAL THUMBNAIL RAIL       */}
           {/* =============================================================== */}
-          <div className="lg:col-span-6 flex flex-row gap-3 sm:gap-4 items-start">
+          <div className="lg:col-span-6 lg:sticky lg:top-24 lg:self-start flex flex-row gap-3 sm:gap-4 items-start">
             {/* Vertical Thumbnail Rail (Matching mockup) */}
-            <div className="flex flex-col gap-2.5 shrink-0">
+            <div className="flex flex-col gap-2.5 shrink-0 max-h-[calc(100vh-8rem)] overflow-y-auto no-scrollbar">
               {galleryImages.map((img, idx) => (
                 <button
                   key={idx}
@@ -774,7 +774,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Main Stage Image (Transparent Cutout floating on soft light backdrop) */}
-            <div className="relative flex-1 aspect-square rounded-3xl bg-gradient-to-b from-[#F3FAF7] via-[#F3FAF7] to-[#FFFFFF] border border-neutral-200/80 flex items-center justify-center p-6 sm:p-10 overflow-hidden group select-none shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
+            <div className="relative flex-1 aspect-square max-h-[calc(100vh-8rem)] rounded-3xl bg-gradient-to-b from-[#F3FAF7] via-[#F3FAF7] to-[#FFFFFF] border border-neutral-200/80 flex items-center justify-center p-6 sm:p-10 overflow-hidden group select-none shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
               {/* Expand Fullscreen Button */}
               <button
                 onClick={() => setIsLightboxOpen(true)}
