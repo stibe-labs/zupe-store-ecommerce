@@ -194,6 +194,47 @@ export async function POST(req: NextRequest) {
                           price: Number(it.unit_price || it.price || 0),
                         })),
                       });
+
+                      // Dispatch Order Confirmation Email now that the order is confirmed
+                      const customerEmail = (targetOrder.guest_email || targetOrder.customer_email || "").trim();
+                      if (
+                        customerEmail &&
+                        !siteConfig.isSyntheticEmail(customerEmail) &&
+                        !targetOrder.confirmation_email_sent
+                      ) {
+                        try {
+                          const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
+                          const { markOrderEmailSent } = await import("@/lib/orderStore");
+                          const isCod = (targetOrder.payment_method || "").toLowerCase().includes("cod");
+                          const displayOrderId = targetOrder.shopify_order_id || targetOrder.id;
+
+                          const emailRes = await sendOrderConfirmationEmail({
+                            orderId: displayOrderId,
+                            customerName: targetOrder.customer_name || "Valued Customer",
+                            customerEmail,
+                            customerPhone: targetOrder.customer_phone || msg.from,
+                            shippingAddress: targetOrder.shipping_address || "",
+                            city: targetOrder.city || "",
+                            postalCode: targetOrder.postal_code || "",
+                            totalAmount: Number(targetOrder.total_amount) || 0,
+                            paymentMethod: targetOrder.payment_method || (isCod ? "Cash on Delivery" : "Prepaid"),
+                            paymentStatus: targetOrder.payment_status || "pending",
+                            items: parsedItems.map((it: any) => ({
+                              name: it.product_name || it.name || "Purchased Product",
+                              quantity: Number(it.quantity || 1),
+                              price: Number(it.unit_price || it.price || 0),
+                              image: it.image || it.poster_image,
+                            })),
+                            createdAt: targetOrder.created_at,
+                          });
+
+                          if (emailRes.success && !emailRes.skipped) {
+                            await markOrderEmailSent(targetOrder.id);
+                          }
+                        } catch (emailErr) {
+                          console.warn("[WA Webhook] Failed to dispatch order confirmation email:", emailErr);
+                        }
+                      }
                     } else if (isCancelAction) {
                       const { cancelWhatsAppOrder } = await import("@/lib/orderStore");
                       await cancelWhatsAppOrder(targetOrder.whatsapp_confirm_token || targetOrder.id, {

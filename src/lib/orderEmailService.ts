@@ -132,6 +132,7 @@ export async function sendOrderConfirmationEmail(
   const firstName = (customerName || "Customer").split(" ")[0] || "Customer";
   const estDelivery = calculateEstimatedDelivery(createdAt);
   const trackingUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(orderId)}`;
+  const myOrdersUrl = `${STORE_BASE_URL}/orders?orderId=${encodeURIComponent(orderId)}`;
 
   // Calculate items subtotal if not provided
   const itemsSubtotal =
@@ -482,20 +483,27 @@ export async function sendOrderConfirmationEmail(
           </td>
         </tr>
 
-        <!-- CTA Button: Track Your Order -->
+        <!-- CTA Buttons: My Orders & Track Order -->
         <tr>
           <td style="padding: 0 32px 32px 32px; text-align: center;">
-            <table align="center" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+            <table align="center" cellpadding="0" cellspacing="0" style="margin: 0 auto; width: 100%; max-width: 440px;">
               <tr>
-                <td align="center" style="border-radius: 12px; background: #0B5D44;">
-                  <a href="${trackingUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 14px; font-weight: 800; color: #ffffff; text-decoration: none; border-radius: 12px; letter-spacing: 0.5px;">
-                    TRACK YOUR ORDER LIVE →
+                <td align="center" style="padding-bottom: 12px;">
+                  <a href="${myOrdersUrl}" target="_blank" style="display: block; width: 100%; max-width: 320px; padding: 15px 28px; font-size: 14px; font-weight: 800; color: #ffffff; background: #0B5D44; text-decoration: none; border-radius: 12px; letter-spacing: 0.5px; box-shadow: 0 4px 14px rgba(11,93,68,0.3); box-sizing: border-box; text-align: center;">
+                    🛍️ VIEW MY ORDERS ON WEBSITE →
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td align="center">
+                  <a href="${trackingUrl}" target="_blank" style="display: inline-block; padding: 10px 22px; font-size: 13px; font-weight: 700; color: #111827; background: #F3F4F6; text-decoration: none; border-radius: 8px; border: 1px solid #E5E7EB;">
+                    🚚 Track Order Status Live (${orderId})
                   </a>
                 </td>
               </tr>
             </table>
-            <div style="font-size: 11px; color: #9ca3af; margin-top: 10px;">
-              Or copy tracking link: <a href="${trackingUrl}" style="color: #6b7280; word-break: break-all;">${trackingUrl}</a>
+            <div style="font-size: 11px; color: #9ca3af; margin-top: 14px;">
+              Direct orders link: <a href="${myOrdersUrl}" style="color: #0B5D44; word-break: break-all;">${myOrdersUrl}</a>
             </div>
           </td>
         </tr>
@@ -554,16 +562,21 @@ ${customerName}
 ${fullAddress}
 ${customerPhone ? `Phone: ${customerPhone}` : ""}
 
+VIEW MY ORDERS:
+${myOrdersUrl}
+
 TRACK YOUR ORDER:
 ${trackingUrl}
 
 Need assistance? Reply to this email at ${siteConfig.supportEmail}.
   `.trim();
 
-  // 6. Send the email using Vittal Digital mailer with inline attachments
+  // 6. Send the email using Vittal Lifestyle mailer from no-reply@vittallifestyle.com
   try {
     const res = await sendEmail({
       to: cleanEmail,
+      from: `"Vittal Lifestyle" <no-reply@vittallifestyle.com>`,
+      replyTo: siteConfig.supportEmail || "support@vittallifestyle.com",
       subject: `Order Confirmed: #${orderId} — ${siteConfig.name}`,
       html,
       text: textBody,

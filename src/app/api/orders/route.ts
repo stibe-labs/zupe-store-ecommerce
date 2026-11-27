@@ -368,9 +368,13 @@ export async function POST(req: NextRequest) {
       console.warn("Failed to dispatch WA order pre-confirmation:", waErr);
     }
 
-    // Automated Order Confirmation Email (Dispatched ONLY if customer provided optional email at checkout)
+    // Automated Order Confirmation Email:
+    // Dispatched ONLY AFTER order confirmation (Prepaid orders or pre-confirmed orders).
+    // Unconfirmed COD orders awaiting customer verification will receive their confirmation email
+    // strictly upon order confirmation (via WhatsApp interactive button, message reply, or Admin).
+    const isOrderConfirmed = !isCod || newOrder.whatsapp_confirm_status === "confirmed";
     const normEmail = (customer_email || "").trim();
-    if (normEmail && !siteConfig.isSyntheticEmail(normEmail)) {
+    if (isOrderConfirmed && normEmail && !siteConfig.isSyntheticEmail(normEmail)) {
       try {
         const { sendOrderConfirmationEmail } = await import("@/lib/orderEmailService");
         const { markOrderEmailSent } = await import("@/lib/orderStore");

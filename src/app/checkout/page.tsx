@@ -2374,8 +2374,8 @@ function CheckoutContent() {
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-neutral-300 text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-[#10B981] focus:ring-1 focus:ring-[#10B981] transition-all bg-white shadow-2xs"
                   />
                 </div>
-                <p className="text-[11px] text-neutral-400 pl-1 font-normal">
-                  Get order updates, offers and deals.
+                <p className="text-[11px] text-neutral-500 pl-1 font-medium">
+                  Order receipt, item details &amp; live delivery updates will be sent here upon confirmation.
                 </p>
               </div>
 

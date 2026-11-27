@@ -26,22 +26,24 @@ export async function sendEmail({
   replyTo,
   attachments,
 }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
-  const companyEmail = process.env.SMTP_USER || "support@vittallifestyle.com";
-  const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
+  const defaultSender = process.env.SMTP_FROM || "no-reply@vittallifestyle.com";
+  const authUser = process.env.SMTP_USER || "zupestoreonline@gmail.com";
+  const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "wwgfnukdhczwknba";
   const smtpPass = rawPass.replace(/\s+/g, "");
-  const fromAddress = from || `"Vittal Lifestyle" <${companyEmail}>`;
-  const replyToAddress = replyTo || companyEmail;
+  const fromAddress = from || `"Vittal Lifestyle" <${defaultSender}>`;
+  const replyToAddress = replyTo || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@vittallifestyle.com";
 
   // 1. Check for SMTP if password is provided
   if (smtpPass) {
     try {
       const port = Number(process.env.SMTP_PORT) || 465;
+      const host = process.env.SMTP_HOST || "smtp.gmail.com";
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || "mail.stibe.in",
+        host,
         port,
         secure: port === 465,
         auth: {
-          user: companyEmail,
+          user: authUser,
           pass: smtpPass,
         },
         connectionTimeout: 10000,
@@ -81,7 +83,7 @@ export async function sendEmail({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          sender: { name: "Turkiye Jam", email: companyEmail },
+          sender: { name: "Vittal Lifestyle", email: defaultSender },
           to: [{ email: to }],
           subject,
           htmlContent: html,
@@ -103,7 +105,7 @@ export async function sendEmail({
   const resendApiKey = process.env.RESEND_API_KEY;
   if (resendApiKey) {
     try {
-      const fromEmail = process.env.EMAIL_FROM || `Turkiye Jam <${companyEmail}>`;
+      const fromEmail = from || process.env.EMAIL_FROM || `"Vittal Lifestyle" <${defaultSender}>`;
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -130,9 +132,9 @@ export async function sendEmail({
   }
 
   // 4. Fallback simulation mode
-  console.log(`\n📧 [EMAIL SIMULATION]\nFrom: ${companyEmail}\nTo: ${to}\nSubject: ${subject}\n`);
+  console.log(`\n📧 [EMAIL SIMULATION]\nFrom: ${fromAddress}\nTo: ${to}\nSubject: ${subject}\n`);
   return {
     success: false,
-    error: `SMTP credentials for ${companyEmail} not configured. Please configure SMTP_PASS in Cloudflare Worker secrets.`,
+    error: `SMTP credentials for ${defaultSender} not configured. Please configure SMTP_PASS in Cloudflare Worker secrets.`,
   };
 }
