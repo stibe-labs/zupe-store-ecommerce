@@ -186,6 +186,16 @@ export default function AdminProductsPage() {
   // Tab state in Edit/Add Modal
   const [activeTab, setActiveTab] = useState<FormTabKey>("basic");
 
+  // Keep active tab visible in top navigation strip
+  useEffect(() => {
+    if (showModal) {
+      const tabEl = document.getElementById(`product-modal-tab-${activeTab}`);
+      if (tabEl) {
+        tabEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+    }
+  }, [activeTab, showModal]);
+
   // Form states:
   // Tab 1: Basic
   const [formName, setFormName] = useState("");
@@ -808,7 +818,6 @@ export default function AdminProductsPage() {
         });
         return;
       }
-      setActiveTab("pricing");
     } else if (activeTab === "pricing") {
       if (!formPrice.trim()) {
         setActionMessage({
@@ -817,15 +826,11 @@ export default function AdminProductsPage() {
         });
         return;
       }
-      setActiveTab("media");
-    } else if (activeTab === "media") {
-      setActiveTab("colors");
-    } else if (activeTab === "colors") {
-      setActiveTab("overview");
-    } else if (activeTab === "overview") {
-      setActiveTab("specs");
-    } else if (activeTab === "specs") {
-      setActiveTab("how_to_use");
+    }
+
+    const currentIndex = FORM_TABS_LIST.indexOf(activeTab);
+    if (currentIndex >= 0 && currentIndex < FORM_TABS_LIST.length - 1) {
+      setActiveTab(FORM_TABS_LIST[currentIndex + 1]);
     }
 
     if (modalScrollRef.current) {
@@ -1720,7 +1725,7 @@ export default function AdminProductsPage() {
             data-lenis-prevent="true"
             onSubmit={(e) => {
               e.preventDefault();
-              if (activeTab === "specs") {
+              if (activeTab === "action_videos") {
                 handleSaveProduct(e);
               }
             }}
@@ -1800,8 +1805,9 @@ export default function AdminProductsPage() {
             </div>
 
             {/* 2. Tab Navigation (shrink-0) */}
-            <div className="flex items-center gap-1 px-4 sm:px-5 border-b border-slate-200 bg-slate-50/40 overflow-x-auto text-xs font-bold shrink-0 scrollbar-none">
+            <div className="flex items-center gap-1 px-4 sm:px-5 border-b border-slate-200 bg-slate-50/40 overflow-x-auto text-xs font-bold shrink-0 scrollbar-none scroll-smooth">
               <button
+                id="product-modal-tab-basic"
                 type="button"
                 onClick={() => setActiveTab("basic")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -1815,6 +1821,7 @@ export default function AdminProductsPage() {
               </button>
 
               <button
+                id="product-modal-tab-pricing"
                 type="button"
                 onClick={() => setActiveTab("pricing")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -1828,6 +1835,7 @@ export default function AdminProductsPage() {
               </button>
 
               <button
+                id="product-modal-tab-media"
                 type="button"
                 onClick={() => setActiveTab("media")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -1841,6 +1849,7 @@ export default function AdminProductsPage() {
               </button>
 
               <button
+                id="product-modal-tab-colors"
                 type="button"
                 onClick={() => setActiveTab("colors")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -1854,6 +1863,7 @@ export default function AdminProductsPage() {
               </button>
 
               <button
+                id="product-modal-tab-overview"
                 type="button"
                 onClick={() => setActiveTab("overview")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -1867,6 +1877,7 @@ export default function AdminProductsPage() {
               </button>
 
               <button
+                id="product-modal-tab-specs"
                 type="button"
                 onClick={() => setActiveTab("specs")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -1880,6 +1891,7 @@ export default function AdminProductsPage() {
               </button>
 
               <button
+                id="product-modal-tab-how_to_use"
                 type="button"
                 onClick={() => setActiveTab("how_to_use")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -1893,6 +1905,7 @@ export default function AdminProductsPage() {
               </button>
 
               <button
+                id="product-modal-tab-action_videos"
                 type="button"
                 onClick={() => setActiveTab("action_videos")}
                 className={`py-3 px-3 border-b-2 whitespace-nowrap transition-all flex items-center gap-1.5 ${

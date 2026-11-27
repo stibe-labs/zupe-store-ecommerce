@@ -106,7 +106,8 @@ export async function sendOrderPreConfirmationWhatsApp(
     );
   } catch (logErr) {}
 
-  // 1. Try official Meta Template with interactive buttons first (zupe_order_verify)
+  // 1. ALWAYS dispatch official Meta Approved Template FIRST!
+  // Official templates are 100% guaranteed to deliver to ALL customers outside the 24-hour window.
   let templateSent = false;
   try {
     templateSent = await sendPreConfirmViaTemplate(
@@ -122,35 +123,54 @@ export async function sendOrderPreConfirmationWhatsApp(
       token
     );
   } catch (err) {
-    console.warn("[WA Pre-Confirm] Template send failed, falling back to direct message:", err);
+    console.warn("[WA Pre-Confirm] Template send failed:", err);
   }
 
   if (templateSent) {
-    console.log(`✅ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' with buttons dispatched for ${digits}`);
-    return true;
+    console.log(`✅ [WA Pre-Confirm] Official template '${TEMPLATE_VERIFY}' dispatched for ${digits}`);
+  } else {
+    // If verify template failed, fallback to confirmed utility template
+    try {
+      templateSent = await sendViaConfirmedUtilityTemplate(
+        apiUrl,
+        apiToken,
+        digits,
+        firstName,
+        displayOrderId,
+        displayAmount,
+        paymentMethodLabel,
+        paymentMethod === "cod"
+      );
+    } catch (err) {
+      console.warn("[WA Pre-Confirm] Fallback utility template attempt failed:", err);
+    }
   }
 
-  // 2. Fallback to direct message only if template was not accepted
-  const paymentBreakdownText =
-    paymentMethod === "cod"
-      ? `💰 *Total Amount:* Rs ${totalAmount.toLocaleString("en-IN")}\n` +
-        `📦 *Payable at Doorstep:* Rs ${totalAmount.toLocaleString("en-IN")} (Cash or UPI)\n\n`
-      : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid)\n\n`;
+  // 2. Also send rich direct message as a companion message if within 24-hour customer window
+  try {
+    const paymentBreakdownText =
+      paymentMethod === "cod"
+        ? `💰 *Total Amount:* Rs ${totalAmount.toLocaleString("en-IN")}\n` +
+          `📦 *Payable at Doorstep:* Rs ${totalAmount.toLocaleString("en-IN")} (Cash or UPI)\n\n`
+        : `💰 *Amount Paid:* Rs ${totalAmount.toLocaleString("en-IN")} (Prepaid)\n\n`;
 
-  const message =
-    `*Order Verification — Turkiye Jam* 🛍️\n\n` +
-    `Hi ${firstName}! Thank you for placing your order with Turkiye Jam.\n\n` +
-    `📦 *Order ID:* ${displayOrderId}\n` +
-    `📋 *Items:*\n${itemLines}${more}\n\n` +
-    paymentBreakdownText +
-    `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
-    `✅ *Confirm Order:*\n${confirmUrl}\n\n` +
-    `❌ *Cancel Order:*\n${cancelUrl}\n\n` +
-    `Turkiye Jam Team`;
+    const message =
+      `*Order Verification — Turkiye Jam* 🛍️\n\n` +
+      `Hi ${firstName}! Thank you for placing your order with Turkiye Jam.\n\n` +
+      `📦 *Order ID:* ${displayOrderId}\n` +
+      `📋 *Items:*\n${itemLines}${more}\n\n` +
+      paymentBreakdownText +
+      `Please confirm your order below so we can pack and dispatch your shipment:\n\n` +
+      `✅ *Confirm Order:*\n${confirmUrl}\n\n` +
+      `❌ *Cancel Order:*\n${cancelUrl}\n\n` +
+      `Turkiye Jam Team`;
 
-  await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
-  console.log(`✅ [WA Pre-Confirm] Fallback verification message delivered to ${digits} for order ${displayOrderId}`);
-  return true;
+    await sendWhatsAppTextMessage(apiUrl, apiToken, digits, message);
+  } catch (err) {
+    console.warn("[WA Pre-Confirm] Companion direct message dispatch warning:", err);
+  }
+
+  return templateSent;
 }
 
 async function sendPreConfirmViaTemplate(
@@ -327,50 +347,35 @@ export async function sendOrderConfirmationWhatsApp(
       "Thank you for shopping with Turkiye Jam!";
   }
 
-  // 1. ALWAYS send the complete itemized direct WhatsApp confirmation message FIRST!
-  // This delivers the well-explained, structured message with order ID, items, pricing, delivery days, and tracking link.
-  let directSent = false;
+  // 1. ALWAYS dispatch official approved Meta Utility template FIRST!
+  // Meta Utility templates are 100% guaranteed to deliver to ALL customers outside the 24-hour service window.
+  const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
+  const displayAmount = paymentMethod === "cod" ? doorstepAmount : totalAmount;
+
   try {
-    directSent = await sendWhatsAppTextMessage(apiUrl, token, digits, message);
-    if (directSent) {
-      console.log(`✅ [WA Order Confirm] Structured confirmation delivered to ${digits} for order ${displayOrderId}`);
-      return;
-    }
+    await sendViaConfirmedUtilityTemplate(
+      apiUrl,
+      token,
+      digits,
+      firstName,
+      displayOrderId,
+      displayAmount,
+      paymentMethodLabel,
+      paymentMethod === "cod"
+    );
   } catch (err) {
-    console.warn("[WA Order Confirm] Direct message dispatch error, attempting template fallback:", err);
+    console.warn("[WA Order Confirm] Utility template dispatch error:", err);
   }
 
-  // 2. ONLY fallback to official Meta utility template if direct message delivery failed
-  const paymentMethodLabel = paymentMethod === "cod" ? "Cash on Delivery" : "Prepaid Online";
-
-  if (paymentMethod === "cod") {
-    try {
-      await sendViaConfirmedUtilityTemplate(
-        apiUrl,
-        token,
-        digits,
-        firstName,
-        displayOrderId,
-        doorstepAmount,
-        paymentMethodLabel
-      );
-    } catch (err) {
-      console.warn("[WA Order Confirm] Utility template fallback attempt error:", err);
+  // 2. Also send the complete itemized direct WhatsApp message as a companion message.
+  // Note: Meta delivers direct text messages if customer is within the 24-hour service window.
+  try {
+    const directSent = await sendWhatsAppTextMessage(apiUrl, token, digits, message);
+    if (directSent) {
+      console.log(`✅ [WA Order Confirm] Companion itemized text sent to ${digits} for order ${displayOrderId}`);
     }
-  } else {
-    try {
-      await sendViaConfirmedUtilityTemplate(
-        apiUrl,
-        token,
-        digits,
-        firstName,
-        displayOrderId,
-        totalAmount,
-        paymentMethodLabel
-      );
-    } catch (err) {
-      console.warn("[WA Order Confirm] Fallback utility template attempt:", err);
-    }
+  } catch (err) {
+    console.warn("[WA Order Confirm] Companion direct message dispatch warning:", err);
   }
 }
 
@@ -447,49 +452,62 @@ async function sendViaConfirmedUtilityTemplate(
   firstName: string,
   orderId: string,
   totalAmount: number,
-  paymentMethodLabel: string
+  paymentMethodLabel: string,
+  isCod?: boolean
 ): Promise<boolean> {
   const cleanUrlOrderId = (orderId || "").replace(/^#/, "");
   const trackInvoiceUrl = `${STORE_BASE_URL}/order-tracking?query=${encodeURIComponent(cleanUrlOrderId)}`;
-  const p3Text = `Rs ${totalAmount.toLocaleString("en-IN")}. Track package & view invoice: ${trackInvoiceUrl}`;
+  const effectiveIsCod = isCod !== undefined ? isCod : (paymentMethodLabel || "").toLowerCase().includes("cod");
+  const p2Text = effectiveIsCod ? `${orderId} (COD Confirmed)` : `${orderId} (Confirmed)`;
+  const p3Text = effectiveIsCod
+    ? `Rs ${totalAmount.toLocaleString("en-IN")} due at delivery. Track parcel: ${trackInvoiceUrl}`
+    : `Rs ${totalAmount.toLocaleString("en-IN")}. Track package & view invoice: ${trackInvoiceUrl}`;
 
-  const payload = {
-    messaging_product: "whatsapp",
-    recipient_type: "individual",
-    to,
-    type: "template",
-    template: {
-      name: "turkiyejam_order_update",
-      language: { code: TEMPLATE_LANG },
-      components: [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: firstName },
-            { type: "text", text: `${orderId} (Confirmed)` },
-            { type: "text", text: p3Text },
-          ],
-        },
-      ],
-    },
-  };
+  const langCandidates = [TEMPLATE_LANG, TEMPLATE_LANG === "en" ? "en_US" : "en"];
 
-  try {
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+  for (const lang of Array.from(new Set(langCandidates))) {
+    const payload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to,
+      type: "template",
+      template: {
+        name: "turkiyejam_order_update",
+        language: { code: lang },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: firstName },
+              { type: "text", text: p2Text },
+              { type: "text", text: p3Text },
+            ],
+          },
+        ],
       },
-      body: JSON.stringify(payload),
-    });
-    const data = (await res.json()) as any;
-    if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Order Confirm] Utility template 'turkiyejam_order_update' sent to ${to}`);
-      return true;
+    };
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.messages?.length > 0) {
+        console.log(`✅ [WA Order Confirm] Utility template 'turkiyejam_order_update' (${lang}) delivered for ${orderId} to ${to}, messageId: ${data.messages[0].id}`);
+        return true;
+      }
+      console.warn(`[WA Order Confirm] Utility template '${lang}' rejected:`, data?.error?.message || data?.error || data);
+      if (data?.error?.code !== 132001) {
+        break; // not a language error, don't retry with other language
+      }
+    } catch (err) {
+      console.warn("[WA Order Confirm] Utility template error:", err);
     }
-  } catch (err) {
-    console.warn("[WA Order Confirm] Utility template error:", err);
   }
   return false;
 }
@@ -670,19 +688,7 @@ export async function sendOrderCancellationRefundWhatsApp(
     console.warn("[WA Cancel] Desk logging error:", logErr);
   }
 
-  // 3. Send structured rich cancellation message FIRST
-  let directSent = false;
-  try {
-    directSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
-    if (directSent) {
-      console.log(`✅ [WA Cancel] Structured cancellation message delivered to ${digits} for order ${orderId}`);
-      return true;
-    }
-  } catch (err) {
-    console.warn("[WA Cancel] Direct text send error, attempting template fallback:", err);
-  }
-
-  // 4. Fallback to Meta utility template ONLY IF direct rich text failed
+  // 3. ALWAYS dispatch official Meta Utility template FIRST!
   let templateSent = false;
   try {
     const cleanUrlOrderId = orderId.replace(/^#/, "");
@@ -726,7 +732,7 @@ export async function sendOrderCancellationRefundWhatsApp(
 
     const data = (await res.json()) as any;
     if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Cancel] Fallback template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} to ${digits}`);
+      console.log(`✅ [WA Cancel] Official template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} to ${digits}`);
       templateSent = true;
     } else {
       console.warn(`[WA Cancel] Template rejected by Meta for ${digits}:`, data?.error || data);
@@ -735,7 +741,14 @@ export async function sendOrderCancellationRefundWhatsApp(
     console.warn(`[WA Cancel] Template send error:`, tErr);
   }
 
-  return directSent || templateSent;
+  // 4. Also send rich direct cancellation message as companion text if within 24h window
+  try {
+    await sendWhatsAppTextMessage(apiUrl, apiToken, digits, body);
+  } catch (err) {
+    console.warn("[WA Cancel] Direct text send error:", err);
+  }
+
+  return templateSent;
 }
 
 export interface OrderTransitWhatsAppParams {
@@ -946,19 +959,7 @@ export async function sendOrderTransitWhatsApp(
     console.warn("[WA Transit] Desk log warning:", logErr);
   }
 
-  // 2. ALWAYS send the structured rich transit card message FIRST!
-  let directSent = false;
-  try {
-    directSent = await sendWhatsAppTextMessage(apiUrl, apiToken, digits, richBody);
-    if (directSent) {
-      console.log(`✅ [WA Transit] Structured transit message delivered to ${digits} for order ${orderId} (${status})`);
-      return true;
-    }
-  } catch (textErr) {
-    console.warn("[WA Transit] Direct text error, attempting utility template fallback:", textErr);
-  }
-
-  // 3. ONLY fallback to official Meta utility template if direct message delivery failed
+  // 2. ALWAYS dispatch official Meta Utility template FIRST!
   let templateSent = false;
   try {
     const payload = {
@@ -994,7 +995,7 @@ export async function sendOrderTransitWhatsApp(
 
     const data = (await res.json()) as any;
     if (res.ok && data.messages?.length > 0) {
-      console.log(`✅ [WA Transit] Fallback template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} (${status}) to ${digits}`);
+      console.log(`✅ [WA Transit] Official template '${TEMPLATE_UPDATE}' dispatched for order ${orderId} (${status}) to ${digits}`);
       templateSent = true;
     } else {
       console.warn(`[WA Transit] Template rejected by Meta for ${digits}:`, data?.error || data);
@@ -1003,7 +1004,14 @@ export async function sendOrderTransitWhatsApp(
     console.warn(`[WA Transit] Template send error:`, tErr);
   }
 
-  return directSent || templateSent;
+  // 3. Also send structured rich transit card message as companion text if within 24h window
+  try {
+    await sendWhatsAppTextMessage(apiUrl, apiToken, digits, richBody);
+  } catch (textErr) {
+    console.warn("[WA Transit] Direct text companion warning:", textErr);
+  }
+
+  return templateSent;
 }
 
 export interface AbandonedCartWhatsAppParams {
