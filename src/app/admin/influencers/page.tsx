@@ -156,7 +156,7 @@ export default function AdminInfluencersPage() {
 
   const fetchCatalogProducts = async () => {
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch(`/api/products?t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
       if (data.success && Array.isArray(data.products)) {
         setProducts(
@@ -458,7 +458,10 @@ export default function AdminInfluencersPage() {
       <div className="lg:pl-64 flex flex-col min-h-screen">
         <AdminHeader
           onOpenMobile={() => setMobileSidebarOpen(true)}
-          onRefresh={() => fetchInfluencers(true)}
+          onRefresh={() => {
+            fetchInfluencers(true);
+            fetchCatalogProducts();
+          }}
           isRefreshing={refreshing}
         />
 
@@ -493,7 +496,10 @@ export default function AdminInfluencersPage() {
               </button>
 
               <button
-                onClick={() => fetchInfluencers(true)}
+                onClick={() => {
+                  fetchInfluencers(true);
+                  fetchCatalogProducts();
+                }}
                 disabled={refreshing || loading}
                 className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-2xs disabled:opacity-60 cursor-pointer"
               >
@@ -502,7 +508,10 @@ export default function AdminInfluencersPage() {
               </button>
 
               <button
-                onClick={() => setShowCreateForm(!showCreateForm)}
+                onClick={() => {
+                  if (!showCreateForm) fetchCatalogProducts();
+                  setShowCreateForm(!showCreateForm);
+                }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF7A00] hover:bg-[#E66E00] text-white text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-sm shadow-orange-500/25 cursor-pointer"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -1203,6 +1212,7 @@ export default function AdminInfluencersPage() {
                                 {/* Add Link */}
                                 <button
                                   onClick={() => {
+                                    fetchCatalogProducts();
                                     setShowAddLinkModal(inf);
                                     setNewLinkName("");
                                     setNewLinkDestination("home");
@@ -1259,6 +1269,7 @@ export default function AdminInfluencersPage() {
                                     </span>
                                     <button
                                       onClick={() => {
+                                        fetchCatalogProducts();
                                         setShowAddLinkModal(inf);
                                         setNewLinkName("");
                                         setNewLinkDestination("home");
@@ -1310,7 +1321,15 @@ export default function AdminInfluencersPage() {
                                               <td className="py-2 px-3 text-slate-600">
                                                 {link.destination === "home" || !link.destination
                                                   ? "Homepage"
-                                                  : `Product: ${link.destination}`}
+                                                  : `Product: ${
+                                                      products.find(
+                                                        (p) =>
+                                                          p.slug.toLowerCase() === link.destination.toLowerCase() ||
+                                                          p.id.toLowerCase() === link.destination.toLowerCase() ||
+                                                          p.slug.toLowerCase() ===
+                                                            link.destination.replace(/^products\//, "").toLowerCase()
+                                                      )?.name || link.destination
+                                                    }`}
                                               </td>
                                               <td className="py-2 px-3 font-semibold text-slate-700">
                                                 {link.clicks}
