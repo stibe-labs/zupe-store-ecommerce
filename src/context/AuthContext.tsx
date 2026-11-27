@@ -43,11 +43,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalRedirectUrl, setAuthModalRedirectUrl] = useState<string | null>(null);
   const [authModalOnSuccess, setAuthModalOnSuccess] = useState<((user?: any) => void) | null>(null);
 
+  const formatDefaultUserName = (name?: string, phone?: string): string => {
+    if (!name || name.trim() === "" || name === "Customer" || /^Customer\s*\d*$/i.test(name.trim())) {
+      const last4 = (phone || "").replace(/\D/g, "").slice(-4);
+      return last4 ? `User${last4}` : "User";
+    }
+    return name;
+  };
+
   const syncUserSession = () => {
     try {
       const stored = localStorage.getItem("zp_user_session");
       if (stored) {
-        setUser(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (parsed) {
+          const formattedName = formatDefaultUserName(parsed.name, parsed.phone);
+          if (formattedName !== parsed.name) {
+            parsed.name = formattedName;
+            localStorage.setItem("zp_user_session", JSON.stringify(parsed));
+          }
+          setUser(parsed);
+        } else {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }

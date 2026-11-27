@@ -29,10 +29,23 @@ export function findUserByPhone(phone: string): UserRecord | null {
   return inMemoryPhoneUsers.get(digits) || null;
 }
 
+export function normalizeUserRecord(user: UserRecord): UserRecord {
+  if (
+    !user.name ||
+    user.name.trim() === "" ||
+    user.name.trim().toLowerCase() === "customer" ||
+    /^Customer\s*\d*$/i.test(user.name.trim())
+  ) {
+    const last4 = (user.phone || "").replace(/\D/g, "").slice(-4);
+    user.name = last4 ? `User${last4}` : "User";
+  }
+  return user;
+}
+
 export async function findUserByEmailAsync(email: string): Promise<UserRecord | null> {
   const normalized = email.toLowerCase().trim();
   const cached = inMemoryUsers.get(normalized);
-  if (cached) return cached;
+  if (cached) return normalizeUserRecord(cached);
 
   try {
     const rows = await executeD1Query<UserRecord>(
@@ -40,7 +53,7 @@ export async function findUserByEmailAsync(email: string): Promise<UserRecord | 
       [normalized]
     );
     if (rows && rows.length > 0) {
-      const user = rows[0];
+      const user = normalizeUserRecord(rows[0]);
       inMemoryUsers.set(normalized, user);
       if (user.phone) {
         const { digits } = normalizePhoneNumber(user.phone);
@@ -62,7 +75,7 @@ export async function findUserByPhoneAsync(phone: string): Promise<UserRecord | 
   const raw10 = digits.slice(-10);
 
   const cached = inMemoryPhoneUsers.get(digits) || inMemoryPhoneUsers.get(raw10);
-  if (cached) return cached;
+  if (cached) return normalizeUserRecord(cached);
 
   try {
     // Try matching phone column by formatted display (+91 9747 19 5000), E.164, raw digits, or sanitized digits
@@ -75,7 +88,7 @@ export async function findUserByPhoneAsync(phone: string): Promise<UserRecord | 
     );
 
     if (rows && rows.length > 0) {
-      const user = rows[0];
+      const user = normalizeUserRecord(rows[0]);
       inMemoryPhoneUsers.set(digits, user);
       inMemoryPhoneUsers.set(raw10, user);
       if (user.email) inMemoryUsers.set(user.email.toLowerCase().trim(), user);
@@ -126,12 +139,29 @@ export async function findOrCreateWhatsAppUserAsync({
   name?: string;
 }): Promise<{ user: UserRecord; isNew: boolean }> {
   const { digits, e164, display } = normalizePhoneNumber(phone);
+  const last4 = display.replace(/\D/g, "").slice(-4) || digits.slice(-4);
+  const defaultUserName = last4 ? `User${last4}` : "User";
 
   const existing = await findUserByPhoneAsync(phone);
   if (existing) {
     // If name was provided and user has default or placeholder name, update it
-    if (name && name.trim() && (!existing.name || existing.name === "Customer")) {
-      existing.name = name.trim();
+    if (name && name.trim()) {
+      if (
+        !existing.name ||
+        existing.name === "Customer" ||
+        /^Customer\s*\d*$/i.test(existing.name.trim()) ||
+        /^User\s*\d*$/i.test(existing.name.trim())
+      ) {
+        existing.name = name.trim();
+        await saveUser(existing);
+      }
+    } else if (
+      !existing.name ||
+      existing.name === "Customer" ||
+      /^Customer\s*\d*$/i.test(existing.name.trim())
+    ) {
+      // Reconcile legacy "Customer 2385" or "Customer" to "User2385"
+      existing.name = defaultUserName;
       await saveUser(existing);
     }
     return { user: existing, isNew: false };
@@ -141,7 +171,7 @@ export async function findOrCreateWhatsAppUserAsync({
   const newUserId = `usr_wa_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const newUser: UserRecord = {
     id: newUserId,
-    name: name && name.trim() ? name.trim() : `Customer ${display.slice(-4)}`,
+    name: name && name.trim() ? name.trim() : defaultUserName,
     email: siteConfig.generateSyntheticEmail(digits),
     password_hash: "",
     phone: display,
@@ -160,9 +190,10 @@ export async function updateUserAsync(
   const normalized = email.toLowerCase().trim();
   let user = await findUserByEmailAsync(normalized);
   if (!user) {
+    const last4 = (updates.phone || "").replace(/\D/g, "").slice(-4);
     user = {
       id: `usr_${Date.now()}`,
-      name: updates.name || "Customer",
+      name: updates.name || (last4 ? `User${last4}` : "User"),
       email: normalized,
       password_hash: "",
       phone: updates.phone,

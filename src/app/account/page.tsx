@@ -220,8 +220,15 @@ export default function AccountPage() {
 
   const handleOpenEditAddress = (addr: UserAddress) => {
     setEditingAddressId(addr.id);
-    setRecipientName(addr.recipient_name);
-    setAddressPhone(addr.phone || "");
+    const recName =
+      !addr.recipient_name ||
+      addr.recipient_name.trim().toLowerCase() === "customer" ||
+      addr.recipient_name.trim().toLowerCase() === "valued customer" ||
+      /^Customer\s*\d*$/i.test(addr.recipient_name.trim())
+        ? (user?.name && !user.name.startsWith("Customer") ? user.name : "")
+        : addr.recipient_name;
+    setRecipientName(recName);
+    setAddressPhone(addr.phone || user?.phone || "");
     setStreet(addr.street);
     setCity(addr.city);
     setState(addr.state || "");
@@ -359,7 +366,12 @@ export default function AccountPage() {
   };
 
   const handleOpenProfileModal = () => {
-    setProfileName(user?.name || "");
+    const isPlaceholder =
+      !user?.name ||
+      user.name.trim().toLowerCase() === "customer" ||
+      /^Customer\s*\d*$/i.test(user.name.trim()) ||
+      /^User\s*\d*$/i.test(user.name.trim());
+    setProfileName(isPlaceholder ? "" : (user?.name || ""));
     setProfilePhone(user?.phone || "");
     setProfileError("");
     setProfileSuccess(false);
@@ -452,7 +464,20 @@ export default function AccountPage() {
     );
   }
 
-  const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
+  const displayName = (() => {
+    if (
+      !user.name ||
+      user.name.trim() === "" ||
+      user.name.trim().toLowerCase() === "customer" ||
+      /^Customer\s*\d*$/i.test(user.name.trim())
+    ) {
+      const last4 = (user.phone || "").replace(/\D/g, "").slice(-4);
+      return last4 ? `User${last4}` : "User";
+    }
+    return user.name;
+  })();
+
+  const initial = displayName ? displayName.charAt(0).toUpperCase() : "U";
 
   return (
     <div className="min-h-screen bg-[#F3FAF7] text-neutral-900 flex flex-col justify-between pb-24 sm:pb-0 font-mograph">
@@ -472,7 +497,7 @@ export default function AccountPage() {
               <div className="min-w-0 font-mograph">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight truncate font-mograph">
-                    {user.name}
+                    {displayName}
                   </h1>
                   {isSuperAdmin && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#10B981]/20 text-[#10B981] text-[10px] font-bold tracking-wide uppercase border border-[#10B981]/40">
@@ -723,7 +748,22 @@ export default function AccountPage() {
                       {/* Address Badges */}
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-neutral-900">{addr.recipient_name}</span>
+                          <span className="font-bold text-sm text-neutral-900">
+                            {(() => {
+                              const rec = addr.recipient_name;
+                              if (
+                                !rec ||
+                                rec.trim() === "" ||
+                                rec.trim().toLowerCase() === "customer" ||
+                                rec.trim().toLowerCase() === "valued customer" ||
+                                /^Customer\s*\d*$/i.test(rec.trim())
+                              ) {
+                                const last4 = (addr.phone || user.phone || "").replace(/\D/g, "").slice(-4);
+                                return last4 ? `User${last4}` : (displayName || "User");
+                              }
+                              return rec;
+                            })()}
+                          </span>
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 text-neutral-700 border border-neutral-200">
                             {addr.tag === "Work" ? (
                               <Building className="w-2.5 h-2.5" />

@@ -571,7 +571,13 @@ function CheckoutContent() {
           const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
           if (defaultAddr && !address) {
             setSelectedAddressId(defaultAddr.id);
-            if (defaultAddr.recipient_name && !defaultAddr.recipient_name.startsWith("Customer ")) {
+            if (
+              defaultAddr.recipient_name &&
+              !defaultAddr.recipient_name.startsWith("Customer ") &&
+              !defaultAddr.recipient_name.startsWith("User") &&
+              defaultAddr.recipient_name !== "Customer" &&
+              defaultAddr.recipient_name !== "Valued Customer"
+            ) {
               setName(defaultAddr.recipient_name);
             }
             if (defaultAddr.phone) setPhone(cleanPhoneDigits(defaultAddr.phone));
@@ -597,7 +603,13 @@ function CheckoutContent() {
           const defaultAddr = deduplicated.find((a: any) => a.is_default) || deduplicated[0];
           if (defaultAddr && (!address || !selectedAddressId)) {
             setSelectedAddressId(defaultAddr.id);
-            if (defaultAddr.recipient_name && !defaultAddr.recipient_name.startsWith("Customer ")) {
+            if (
+              defaultAddr.recipient_name &&
+              !defaultAddr.recipient_name.startsWith("Customer ") &&
+              !defaultAddr.recipient_name.startsWith("User") &&
+              defaultAddr.recipient_name !== "Customer" &&
+              defaultAddr.recipient_name !== "Valued Customer"
+            ) {
               setName(defaultAddr.recipient_name);
             }
             if (defaultAddr.phone) setPhone(cleanPhoneDigits(defaultAddr.phone));
@@ -645,7 +657,13 @@ function CheckoutContent() {
   const handleSelectSavedAddress = (addr: any) => {
     setSelectedAddressId(addr.id);
     setIsUsingNewAddress(false);
-    if (addr.recipient_name && !addr.recipient_name.startsWith("Customer ")) {
+    if (
+      addr.recipient_name &&
+      !addr.recipient_name.startsWith("Customer ") &&
+      !addr.recipient_name.startsWith("User") &&
+      addr.recipient_name !== "Customer" &&
+      addr.recipient_name !== "Valued Customer"
+    ) {
       setName(addr.recipient_name);
     }
     if (addr.phone) setPhone(cleanPhoneDigits(addr.phone));
@@ -2314,7 +2332,22 @@ function CheckoutContent() {
                           }`}
                         >
                           <div className="flex items-start justify-between gap-1 mb-1">
-                            <span className="font-bold text-xs text-neutral-900">{addr.recipient_name}</span>
+                            <span className="font-bold text-xs text-neutral-900">
+                              {(() => {
+                                const rec = addr.recipient_name;
+                                if (
+                                  !rec ||
+                                  rec.trim() === "" ||
+                                  rec.trim().toLowerCase() === "customer" ||
+                                  rec.trim().toLowerCase() === "valued customer" ||
+                                  /^Customer\s*\d*$/i.test(rec.trim())
+                                ) {
+                                  const last4 = (addr.phone || user?.phone || "").replace(/\D/g, "").slice(-4);
+                                  return last4 ? `User${last4}` : "User";
+                                }
+                                return rec;
+                              })()}
+                            </span>
                             <button
                               type="button"
                               onClick={(e) => handleDeleteSavedAddress(e, addr.id)}

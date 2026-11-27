@@ -57,6 +57,20 @@ export async function ensureAddressTable(): Promise<void> {
 export { normalizeAddressKey, deduplicateAddresses } from "@/lib/addressUtils";
 import { normalizeAddressKey } from "@/lib/addressUtils";
 
+export function formatDefaultRecipientName(name?: string, phone?: string): string {
+  if (
+    !name ||
+    name.trim() === "" ||
+    name.trim().toLowerCase() === "customer" ||
+    name.trim().toLowerCase() === "valued customer" ||
+    /^Customer\s*\d*$/i.test(name.trim())
+  ) {
+    const last4 = (phone || "").replace(/\D/g, "").slice(-4);
+    return last4 ? `User${last4}` : "User";
+  }
+  return name.trim();
+}
+
 export async function getUserAddresses(
   email?: string,
   userId?: string,
@@ -119,7 +133,7 @@ export async function getUserAddresses(
             id: r.id,
             user_id: r.user_id,
             user_email: r.user_email || normEmail,
-            recipient_name: r.recipient_name,
+            recipient_name: formatDefaultRecipientName(r.recipient_name, r.phone || phone),
             phone: r.phone || "",
             street: r.street,
             city: r.city,
@@ -221,7 +235,10 @@ export async function getUserAddresses(
               id: `addr_auto_${Date.now()}`,
               user_id: resolvedUserId || ord.user_id,
               user_email: normEmail || ord.guest_email || `${last10Digits}@vittallifestyle.customer`,
-              recipient_name: recipientName !== "Valued Customer" ? recipientName : (addrParts[0] || "Valued Customer"),
+              recipient_name: formatDefaultRecipientName(
+                recipientName !== "Valued Customer" ? recipientName : (addrParts[0] || ""),
+                userPhone
+              ),
               phone: userPhone,
               street: rawAddr,
               city,
@@ -246,7 +263,10 @@ export async function getUserAddresses(
             id: `addr_auto_${Date.now()}`,
             user_id: userId || latestOrder.user_id,
             user_email: normEmail || `${last10Digits}@vittallifestyle.customer`,
-            recipient_name: latestOrder.customer_name || "Valued Customer",
+            recipient_name: formatDefaultRecipientName(
+              latestOrder.customer_name,
+              latestOrder.customer_phone
+            ),
             phone: latestOrder.customer_phone || "",
             street: latestOrder.shipping_address,
             city: latestOrder.city || "",
@@ -271,6 +291,7 @@ export async function getUserAddresses(
 
 export async function saveUserAddress(address: UserAddress): Promise<UserAddress> {
   const normEmail = address.user_email.toLowerCase().trim();
+  address.recipient_name = formatDefaultRecipientName(address.recipient_name, address.phone);
   await ensureAddressTable();
 
   // Query D1 directly to get the current persisted state
@@ -450,7 +471,7 @@ export async function syncAddressFromOrder(orderData: {
     id: `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     user_id: orderData.user_id,
     user_email: email,
-    recipient_name: orderData.customer_name || "Valued Customer",
+    recipient_name: formatDefaultRecipientName(orderData.customer_name, orderData.customer_phone),
     phone: orderData.customer_phone || "",
     street: orderData.shipping_address,
     city: cleanCity,

@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
         if (
           existingUser.name &&
           !existingUser.name.startsWith("Customer ") &&
+          !existingUser.name.startsWith("User") &&
           existingUser.name !== "Customer"
         ) {
           existingName = existingUser.name;
@@ -52,7 +53,12 @@ export async function POST(req: NextRequest) {
         );
         if (orderRows && orderRows[0]?.customer_name) {
           const ordName = orderRows[0].customer_name.trim();
-          if (ordName && ordName.toLowerCase() !== "customer") {
+          if (
+            ordName &&
+            ordName.toLowerCase() !== "customer" &&
+            !/^user\d*$/i.test(ordName) &&
+            !/^customer\s*\d*$/i.test(ordName)
+          ) {
             isExistingUser = true;
             existingName = ordName;
           }
