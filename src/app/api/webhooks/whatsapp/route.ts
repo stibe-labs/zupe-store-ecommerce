@@ -196,7 +196,10 @@ export async function POST(req: NextRequest) {
                       });
                     } else if (isCancelAction) {
                       const { cancelWhatsAppOrder } = await import("@/lib/orderStore");
-                      await cancelWhatsAppOrder(targetOrder.whatsapp_confirm_token, targetOrder.id, "Customer requested cancellation via WhatsApp reply");
+                      await cancelWhatsAppOrder(targetOrder.whatsapp_confirm_token || targetOrder.id, {
+                        isDirectCustomerCancel: true,
+                        reason: "Customer requested cancellation via WhatsApp reply",
+                      });
                       console.log(`🛑 [WA Webhook] Cancelled order ${targetOrder.id} via customer reply "${bodyText}"`);
                     }
                   }
