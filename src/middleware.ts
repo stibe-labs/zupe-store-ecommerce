@@ -52,6 +52,14 @@ export async function middleware(req: NextRequest) {
   // 1. ADMIN SUBDOMAIN STRICT PROTECTION & ROUTING (e.g. admin.zupestore.in)
   // =========================================================================
   if (isAdminSubdomain) {
+    // 1-Affiliate. Redirect customer affiliate shortlinks to the main storefront domain
+    // (Ensures accidental hits to admin.zupestore.in/r/* redirect to zupestore.in/r/*)
+    if (pathname.startsWith("/r/")) {
+      const storeHost = host.replace(/^admin\./, "");
+      const storeUrl = new URL(`https://${storeHost}${pathname}${url.search}`);
+      return applySecurityHeaders(NextResponse.redirect(storeUrl, 302));
+    }
+
     // 1A. API Routes on Admin Subdomain
     if (pathname.startsWith("/api")) {
       const isAuthExempt = pathname.startsWith("/api/admin/auth");

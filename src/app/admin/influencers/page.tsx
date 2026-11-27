@@ -112,6 +112,10 @@ export default function AdminInfluencersPage() {
 
   const getStoreBaseUrl = () => {
     if (typeof window !== "undefined") {
+      const host = window.location.host;
+      if (host.startsWith("admin.")) {
+        return `${window.location.protocol}//${host.replace(/^admin\./, "")}`;
+      }
       return window.location.origin;
     }
     return "https://zupestore.in";

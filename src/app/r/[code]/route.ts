@@ -11,8 +11,14 @@ export async function GET(
     const { code } = await params;
     const cleanCode = (code || "").trim().toLowerCase();
 
+    // Determine public storefront base url (strip admin. if present)
+    const rawHost = req.headers.get("host") || "";
+    const cleanHost = rawHost.replace(/^admin\./, "") || "zupestore.in";
+    const proto = req.headers.get("x-forwarded-proto") || "https";
+    const storeOrigin = `${proto}://${cleanHost}`;
+
     // Default destination
-    let targetUrl = "/";
+    let targetPath = "/";
     let isAffiliateActive = false;
 
     // Resolve code in D1/memory
@@ -25,11 +31,13 @@ export async function GET(
       // Determine redirect destination
       const dest = (link.destination || "home").trim();
       if (!dest || dest.toLowerCase() === "home") {
-        targetUrl = "/";
+        targetPath = "/";
       } else if (dest.startsWith("/")) {
-        targetUrl = dest;
+        targetPath = dest;
+      } else if (dest.startsWith("products/")) {
+        targetPath = `/${dest}`;
       } else {
-        targetUrl = `/products/${dest}`;
+        targetPath = `/products/${dest}`;
       }
 
       // If influencer is active, record click
@@ -46,6 +54,8 @@ export async function GET(
       }
     }
 
+    const fullTargetUrl = new URL(targetPath, storeOrigin).toString();
+
     // Prepare HTML response with instant JS redirect + meta refresh fallback
     // This sets localStorage in addition to the HTTP Set-Cookie header for 100% Instagram in-app browser reliability
     const html = `<!DOCTYPE html>
@@ -54,7 +64,7 @@ export async function GET(
   <meta charset="utf-8">
   <title>Redirecting to Zupe Store...</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta http-equiv="refresh" content="0;url=${targetUrl}">
+  <meta http-equiv="refresh" content="0;url=${fullTargetUrl}">
   <script>
     try {
       ${
@@ -68,7 +78,7 @@ export async function GET(
       `
       }
     } catch(e) {}
-    window.location.replace('${targetUrl}');
+    window.location.replace('${fullTargetUrl}');
   </script>
 </head>
 <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #0b1120; color: #94a3b8;">
