@@ -38,6 +38,7 @@ import { useSearch } from "@/context/SearchContext";
 import { launchFastrrCheckout } from "@/lib/fastrrClient";
 import { addRecentlyViewed } from "@/lib/recentlyViewed";
 import { SupplementCategoryShowcase } from "@/components/SupplementCategoryShowcase";
+import { BrandLogo } from "@/components/BrandLogos";
 import { CardAddToCartControl } from "@/components/CardAddToCartControl";
 
 interface VittalLifestyleStorefrontProps {
@@ -733,9 +734,14 @@ export function VittalLifestyleStorefront({
               <Link
                 key={brand.name}
                 href={`/products?search=${encodeURIComponent(brand.query)}`}
-                className="shrink-0 px-3.5 py-2 rounded-full bg-[#F5F8F6] hover:bg-[#0B5D44] text-[#0C1412] hover:text-white border border-[#E2EDE8] hover:border-[#0B5D44] text-xs font-bold tracking-tight transition-all"
+                title={brand.name}
+                aria-label={brand.name}
+                className="shrink-0 h-9 sm:h-10 px-3.5 sm:px-4 py-1.5 rounded-full bg-[#F5F8F6] hover:bg-white border border-[#E2EDE8] hover:border-[#0B5D44] shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-xs transition-all flex items-center justify-center group"
               >
-                {brand.name}
+                <BrandLogo
+                  brand={brand.name}
+                  className="h-4 sm:h-4.5 w-auto max-w-[95px] sm:max-w-[110px] object-contain transition-transform duration-200 group-hover:scale-105"
+                />
               </Link>
             ))}
           </div>
