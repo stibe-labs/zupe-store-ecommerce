@@ -600,7 +600,7 @@ export default function AboutPage() {
            ======================================================== */}
         <section className="py-12 sm:py-16 bg-[#F3FAF7] border-y border-neutral-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+            <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-950 tracking-tight font-mograph">
                 From Origin to Your Hands
               </h2>
@@ -609,7 +609,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative font-mograph">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6 relative font-mograph">
               {[
                 {
                   step: "01",
@@ -634,12 +634,12 @@ export default function AboutPage() {
               ].map((item) => (
                 <div
                   key={item.step}
-                  className="relative p-6 rounded-2xl bg-white border border-neutral-200/90 hover:border-[#10B981] shadow-xs transition-all"
+                  className="relative p-4 sm:p-5 md:p-6 rounded-2xl bg-white border border-neutral-200/90 hover:border-[#10B981] shadow-xs transition-all"
                 >
-                  <span className="text-3xl font-extrabold text-[#10B981]/60 font-mograph block mb-2">
+                  <span className="text-2xl sm:text-3xl font-extrabold text-[#10B981]/60 font-mograph block mb-1 sm:mb-2">
                     {item.step}
                   </span>
-                  <h4 className="text-sm sm:text-base font-bold text-neutral-950 mb-2">
+                  <h4 className="text-sm sm:text-base font-bold text-neutral-950 mb-1 sm:mb-2">
                     {item.title}
                   </h4>
                   <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-normal">
