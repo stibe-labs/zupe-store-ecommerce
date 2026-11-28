@@ -1422,9 +1422,9 @@ function ProductsContent() {
           {/* ================================================================= */}
           {/* DESKTOP SIDEBAR: Dynamic Multi-Facet Filters (Independent Scroll) */}
           {/* ================================================================= */}
-          <aside className="hidden lg:flex lg:flex-col lg:col-span-1 bg-white border border-neutral-200/80 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] sticky top-24 xl:top-28 max-h-[calc(100vh-7.5rem)] text-neutral-900 overflow-hidden">
+          <aside className="hidden lg:block lg:col-span-1 bg-white border border-neutral-200/80 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] sticky top-24 xl:top-28 max-h-[calc(100vh-7.5rem)] text-neutral-900 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#94a3b8_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-neutral-400">
             {/* Pinned Sticky Header */}
-            <div className="flex items-center justify-between p-5 pb-3.5 border-b border-neutral-200/70 bg-white z-10 shrink-0">
+            <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-20 flex items-center justify-between p-5 pb-3.5 border-b border-neutral-200/70 rounded-t-3xl shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
               <span className="text-sm font-bold text-neutral-950 flex items-center gap-2 font-mograph">
                 <SlidersHorizontal className="w-4 h-4 text-[#0B5D44]" />
                 Filters
@@ -1440,8 +1440,8 @@ function ProductsContent() {
               )}
             </div>
 
-            {/* Individual Scrollable Filters Section */}
-            <div className="p-5 pt-3.5 space-y-5 overflow-y-auto overscroll-contain flex-1 [scrollbar-width:thin] [scrollbar-color:#CBD5E1_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-neutral-300">
+            {/* Scrollable Filters Body */}
+            <div className="p-5 pt-3.5 space-y-5">
 
             {/* 1. Max Budget Range Slider */}
             <div>
@@ -1588,7 +1588,7 @@ function ProductsContent() {
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="pt-2 space-y-1.5 max-h-56 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#CBD5E1_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+                        <div className="pt-2 space-y-1.5">
                           {group.options.map((opt) => {
                             const isChecked = selectedValuesInGroup.includes(opt.value);
                             // Real matching count preview
