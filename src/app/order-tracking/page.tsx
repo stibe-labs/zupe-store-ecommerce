@@ -494,7 +494,7 @@ function OrderTrackingContent() {
     <div className="min-h-screen bg-[#F3FAF7] text-neutral-900 flex flex-col justify-between selection:bg-[#E6F4EF] selection:text-[#0C1412] font-mograph">
       <Navbar />
 
-      <main className="flex-1 pb-20">
+      <main className="flex-1 pb-6 sm:pb-10">
         {/* ================================================================= */}
         {/* HERO SECTION: CLEAN LUXURY WHITE WITH SOFT GREEN AMBIENT GLOW   */}
         {/* ================================================================= */}
@@ -1302,7 +1302,7 @@ function OrderTrackingContent() {
           {/* DEFAULT VIEW WHEN NO ORDER IS SEARCHED YET                      */}
           {/* =============================================================== */}
           {!selectedOrder && !loading && (
-            <div className="space-y-12 my-10 font-mograph">
+            <div className="space-y-8 sm:space-y-10 mt-8 sm:mt-10 mb-4 sm:mb-6 font-mograph">
               {/* Section Header */}
               <div className="text-center max-w-xl mx-auto">
                 <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-3.5 py-1.5 rounded-full border border-[#10B981]/30 font-mograph">
@@ -1433,7 +1433,7 @@ function OrderTrackingContent() {
               </div>
 
               {/* FAQs Accordion */}
-              <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-sm p-6 sm:p-10 font-mograph">
+              <div className="max-w-3xl mx-auto font-mograph py-2 sm:py-4">
                 <div className="text-center max-w-xl mx-auto mb-8">
                   <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-3.5 py-1.5 rounded-full border border-[#10B981]/30 font-mograph">
                     Got Questions?
@@ -1446,7 +1446,7 @@ function OrderTrackingContent() {
                   </p>
                 </div>
 
-                <div className="divide-y divide-neutral-100 max-w-3xl mx-auto">
+                <div className="divide-y divide-neutral-200/80">
                   {faqs.map((faq, idx) => {
                     const isOpen = faqOpen === idx;
                     return (
@@ -1485,31 +1485,31 @@ function OrderTrackingContent() {
                   <p className="text-xs sm:text-sm text-neutral-300 mt-1.5 leading-relaxed">
                     Our customer care team is available 24/7 to assist with live tracking, address corrections, or courier coordination.
                   </p>
-                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 max-w-lg mx-auto">
                     <a
                       href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
                         `Hi ${siteConfig.name}, I need help tracking my order.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-xs transition-colors shadow-sm cursor-pointer font-mograph"
+                      className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-xs transition-colors shadow-sm cursor-pointer font-mograph"
                     >
-                      <MessageSquare className="w-4 h-4" />
+                      <MessageSquare className="w-4 h-4 shrink-0" />
                       <span>WhatsApp Support</span>
                     </a>
                     <a
-                      href={`mailto:${siteConfig.supportEmail}`}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
+                      href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
                     >
-                      <Mail className="w-4 h-4 text-[#10B981]" />
-                      <span>Email: {siteConfig.supportEmail}</span>
+                      <Phone className="w-4 h-4 text-[#10B981] shrink-0" />
+                      <span>Call</span>
                     </a>
                     <a
-                      href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
+                      href={`mailto:${siteConfig.supportEmail}`}
+                      className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
                     >
-                      <Phone className="w-4 h-4 text-[#10B981]" />
-                      <span>Call Concierge: {siteConfig.supportPhone}</span>
+                      <Mail className="w-4 h-4 text-[#10B981] shrink-0" />
+                      <span>Email: {siteConfig.supportEmail}</span>
                     </a>
                   </div>
                 </div>
