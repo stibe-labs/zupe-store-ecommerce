@@ -1404,9 +1404,9 @@ function OrderTrackingContent() {
               </div>
 
               {/* Verified Courier Partners Banner */}
-              <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs font-mograph">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-7 border border-neutral-200/80 shadow-xs font-mograph">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div>
+                  <div className="w-full md:w-auto text-left">
                     <h3 className="text-sm font-bold text-neutral-900 font-mograph tracking-tight">
                       Trusted Express Logistics Partners
                     </h3>
@@ -1414,17 +1414,17 @@ function OrderTrackingContent() {
                       We partner with India&apos;s leading logistics networks to guarantee timely and insured delivery.
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                  <div className="grid grid-cols-3 md:flex md:flex-wrap items-center justify-center gap-2 sm:gap-2.5 w-full md:w-auto">
                     {["Delhivery Air", "Blue Dart Express", "DTDC Courier", "Shadowfax", "Xpressbees", "India Post Speed"].map((courier) => (
                       <span
                         key={courier}
                         title={courier}
                         aria-label={courier}
-                        className="h-9 sm:h-10 px-3 sm:px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#F3FAF7] border border-neutral-200/90 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:border-[#10B981]/50 hover:shadow-xs transition-all flex items-center justify-center group"
+                        className="h-9 sm:h-10 px-2 sm:px-3 py-1.5 rounded-xl bg-white hover:bg-[#F3FAF7] border border-neutral-200/90 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:border-[#10B981]/50 hover:shadow-xs transition-all flex items-center justify-center group w-full md:w-auto"
                       >
                         <LogisticsLogo
                           name={courier}
-                          className="h-4.5 sm:h-5 w-auto max-w-[95px] sm:max-w-[110px] object-contain transition-transform group-hover:scale-105 duration-200"
+                          className="h-3.5 sm:h-4 md:h-4.5 w-auto max-w-[75px] sm:max-w-[88px] md:max-w-[105px] object-contain transition-transform group-hover:scale-105 duration-200"
                         />
                       </span>
                     ))}
