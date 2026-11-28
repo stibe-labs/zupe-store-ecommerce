@@ -329,19 +329,7 @@ const CATEGORY_FACETS: Record<string, FacetGroup[]> = {
       ],
     },
   ],
-  All: [
-    {
-      id: "quickFeature",
-      name: "Popular Filters",
-      options: [
-        { value: "Zero Added Sugar", label: "Zero Added Sugar" },
-        { value: "High Protein", label: "High Protein" },
-        { value: "100% Pure & Natural", label: "100% Pure & Natural" },
-        { value: "Oversized Fit", label: "Oversized Fit" },
-        { value: "Single-Origin Cocoa", label: "Single-Origin Dark Cocoa" },
-      ],
-    },
-  ],
+  All: [],
 };
 
 function getCategoryFacets(category: string): FacetGroup[] {
