@@ -84,7 +84,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="relative bg-[#071410] text-white/80 rounded-t-[32px] sm:rounded-t-[40px] md:rounded-t-[48px] overflow-hidden pt-8 sm:pt-12 pb-24 md:pb-14 font-mograph border-t border-[#C59B27]/30 shadow-2xl">
+    <footer className="relative bg-[#071410] text-white/80 rounded-t-[32px] sm:rounded-t-[40px] md:rounded-t-[48px] overflow-hidden pt-5 sm:pt-12 pb-24 md:pb-14 font-mograph border-t border-[#C59B27]/30 shadow-2xl">
       {/* Subtle Champagne Gold top shimmer line */}
       <div
         aria-hidden="true"

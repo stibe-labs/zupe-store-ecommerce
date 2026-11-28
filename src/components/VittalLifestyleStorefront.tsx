@@ -431,7 +431,7 @@ export function VittalLifestyleStorefront({
   };
 
   return (
-    <div className="bg-white text-neutral-900 font-mograph min-h-screen selection:bg-[#E6F4EF] selection:text-[#0C1412] pb-24 md:pb-12">
+    <div className="bg-white text-neutral-900 font-mograph min-h-screen selection:bg-[#E6F4EF] selection:text-[#0C1412] pb-2 sm:pb-6 md:pb-12">
       {/* ===================================================================== */}
       {/* 1. LARGE ROUNDED SEARCH BAR WITH FILTER ICON (Mobile only, hidden on desktop) */}
       {/* ===================================================================== */}
@@ -1318,10 +1318,10 @@ export function VittalLifestyleStorefront({
       {/* ===================================================================== */}
       <section
         aria-labelledby="vittal-authenticity-guarantee"
-        className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-4 sm:pb-6 md:pb-8"
+        className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-1.5 sm:pb-6 md:pb-8"
       >
-        <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-white border border-neutral-200/80 px-6 py-8 sm:px-10 sm:py-11 text-[#0C1412] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-7 mb-7 border-b border-neutral-200/70">
+        <div className="relative rounded-[28px] sm:rounded-[34px] overflow-hidden bg-white border border-neutral-200/80 px-4.5 py-6 sm:px-10 sm:py-11 text-[#0C1412] shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-5 mb-5 sm:pb-7 sm:mb-7 border-b border-neutral-200/70">
             <div className="max-w-2xl">
               <span className="block text-[#0B5D44] text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-2.5">
                 The Vittal Authenticity Standard
@@ -1338,19 +1338,19 @@ export function VittalLifestyleStorefront({
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-2.5 shrink-0 w-full sm:w-auto">
               <Link
                 href="/order-tracking"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white text-xs sm:text-sm font-bold transition-colors shadow-sm"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-5 sm:py-3 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white text-[11.5px] sm:text-sm font-bold transition-colors shadow-sm text-center whitespace-nowrap min-w-0"
               >
-                <span>Live Order Tracking</span>
-                <ArrowUpRight className="w-4 h-4 text-white" />
+                <span className="truncate">Live Order Tracking</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-white shrink-0" />
               </Link>
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-neutral-100 hover:bg-neutral-200 text-[#0C1412] border border-neutral-200 text-xs sm:text-sm font-semibold transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 sm:px-5 sm:py-3 rounded-full bg-neutral-100 hover:bg-neutral-200 text-[#0C1412] border border-neutral-200 text-[11.5px] sm:text-sm font-semibold transition-colors text-center whitespace-nowrap min-w-0"
               >
-                <span>Our Story &amp; Sourcing</span>
+                <span className="truncate">Our Story &amp; Sourcing</span>
               </Link>
             </div>
           </div>
