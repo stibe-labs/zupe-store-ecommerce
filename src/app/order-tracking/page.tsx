@@ -7,6 +7,11 @@ import { siteConfig } from "@/config/siteConfig";
 import { useSearchParams, useRouter } from "next/navigation";
 import { LogisticsLogo } from "@/components/LogisticsLogos";
 import {
+  AnimatedPackagingBox,
+  AnimatedExpressTruck,
+  AnimatedOtpHandover,
+} from "@/components/TrackingStepIcons";
+import {
   Search,
   Package,
   Truck,
@@ -320,6 +325,7 @@ function OrderTrackingContent() {
   const [copiedAWB, setCopiedAWB] = useState(false);
   const [copiedOrderId, setCopiedOrderId] = useState(false);
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [activeStepCard, setActiveStepCard] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const journeySectionRef = useRef<HTMLDivElement | null>(null);
@@ -1316,10 +1322,15 @@ function OrderTrackingContent() {
                 </p>
               </div>
 
-              {/* 3 Step Process Cards (Redesigned to match Homepage aesthetic) */}
+              {/* 3 Step Process Cards (Interactive 3D Animations on Hover/Click) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mograph">
                 {/* Step 1 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between">
+                <div
+                  onMouseEnter={() => setActiveStepCard(1)}
+                  onMouseLeave={() => setActiveStepCard(null)}
+                  onClick={() => setActiveStepCard(activeStepCard === 1 ? null : 1)}
+                  className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between cursor-pointer select-none"
+                >
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-2.5 py-1 rounded-full font-mograph">
@@ -1329,7 +1340,7 @@ function OrderTrackingContent() {
                     </div>
 
                     <div className="w-12 h-12 rounded-2xl bg-[#F3FAF7] text-[#074230] group-hover:bg-[#10B981]/20 transition-colors flex items-center justify-center mb-4">
-                      <Package className="w-6 h-6 text-[#074230]" />
+                      <AnimatedPackagingBox isTriggered={activeStepCard === 1} />
                     </div>
 
                     <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-mograph tracking-tight">
@@ -1347,7 +1358,12 @@ function OrderTrackingContent() {
                 </div>
 
                 {/* Step 2 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between">
+                <div
+                  onMouseEnter={() => setActiveStepCard(2)}
+                  onMouseLeave={() => setActiveStepCard(null)}
+                  onClick={() => setActiveStepCard(activeStepCard === 2 ? null : 2)}
+                  className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between cursor-pointer select-none"
+                >
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-2.5 py-1 rounded-full font-mograph">
@@ -1357,7 +1373,7 @@ function OrderTrackingContent() {
                     </div>
 
                     <div className="w-12 h-12 rounded-2xl bg-[#F3FAF7] text-[#074230] group-hover:bg-[#10B981]/20 transition-colors flex items-center justify-center mb-4">
-                      <Truck className="w-6 h-6 text-[#074230]" />
+                      <AnimatedExpressTruck isTriggered={activeStepCard === 2} />
                     </div>
 
                     <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-mograph tracking-tight">
@@ -1375,7 +1391,12 @@ function OrderTrackingContent() {
                 </div>
 
                 {/* Step 3 */}
-                <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between">
+                <div
+                  onMouseEnter={() => setActiveStepCard(3)}
+                  onMouseLeave={() => setActiveStepCard(null)}
+                  onClick={() => setActiveStepCard(activeStepCard === 3 ? null : 3)}
+                  className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 border border-neutral-200/80 shadow-xs hover:shadow-md hover:border-[#10B981]/50 transition-all group flex flex-col justify-between cursor-pointer select-none"
+                >
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-[10px] font-bold bg-[#F3FAF7] text-[#074230] px-2.5 py-1 rounded-full font-mograph">
@@ -1385,7 +1406,7 @@ function OrderTrackingContent() {
                     </div>
 
                     <div className="w-12 h-12 rounded-2xl bg-[#F3FAF7] text-[#074230] group-hover:bg-[#10B981]/20 transition-colors flex items-center justify-center mb-4">
-                      <CheckCircle2 className="w-6 h-6 text-[#074230]" />
+                      <AnimatedOtpHandover isTriggered={activeStepCard === 3} />
                     </div>
 
                     <h3 className="font-bold text-base sm:text-lg text-neutral-900 mb-2 font-mograph tracking-tight">
@@ -1485,28 +1506,21 @@ function OrderTrackingContent() {
                   <p className="text-xs sm:text-sm text-neutral-300 mt-1.5 leading-relaxed">
                     Our customer care team is available 24/7 to assist with live tracking, address corrections, or courier coordination.
                   </p>
-                  <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 max-w-lg mx-auto">
+                  <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
                     <a
                       href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
                         `Hi ${siteConfig.name}, I need help tracking my order.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-xs transition-colors shadow-sm cursor-pointer font-mograph"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#0B5D44] hover:bg-[#074230] text-white font-bold text-xs transition-colors shadow-sm cursor-pointer font-mograph"
                     >
                       <MessageSquare className="w-4 h-4 shrink-0" />
                       <span>WhatsApp Support</span>
                     </a>
                     <a
-                      href={`tel:${siteConfig.supportPhone.replace(/\s+/g, "")}`}
-                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
-                    >
-                      <Phone className="w-4 h-4 text-[#10B981] shrink-0" />
-                      <span>Call</span>
-                    </a>
-                    <a
                       href={`mailto:${siteConfig.supportEmail}`}
-                      className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors border border-white/10 cursor-pointer"
                     >
                       <Mail className="w-4 h-4 text-[#10B981] shrink-0" />
                       <span>Email: {siteConfig.supportEmail}</span>
