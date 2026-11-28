@@ -1422,7 +1422,10 @@ function ProductsContent() {
           {/* ================================================================= */}
           {/* DESKTOP SIDEBAR: Dynamic Multi-Facet Filters (Independent Scroll) */}
           {/* ================================================================= */}
-          <aside className="hidden lg:block lg:col-span-1 bg-white border border-neutral-200/80 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] sticky top-24 xl:top-28 max-h-[calc(100vh-7.5rem)] text-neutral-900 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#94a3b8_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-neutral-400">
+          <aside
+            data-lenis-prevent
+            className="hidden lg:block lg:col-span-1 bg-white border border-neutral-200/80 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] sticky top-24 xl:top-28 max-h-[calc(100vh-7.5rem)] text-neutral-900 overflow-y-auto overscroll-contain [scrollbar-width:thin] [scrollbar-color:#94a3b8_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-neutral-400"
+          >
             {/* Pinned Sticky Header */}
             <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-20 flex items-center justify-between p-5 pb-3.5 border-b border-neutral-200/70 rounded-t-3xl shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
               <span className="text-sm font-bold text-neutral-950 flex items-center gap-2 font-mograph">
@@ -1778,11 +1781,12 @@ function ProductsContent() {
               onClick={() => setMobileFilterOpen(false)}
             />
             <motion.div
+              data-lenis-prevent
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="fixed inset-x-0 bottom-0 bg-white border-t border-neutral-200 text-neutral-900 rounded-t-3xl p-5 z-50 lg:hidden max-h-[85vh] overflow-y-auto space-y-5 shadow-2xl"
+              className="fixed inset-x-0 bottom-0 bg-white border-t border-neutral-200 text-neutral-900 rounded-t-3xl p-5 z-50 lg:hidden max-h-[85vh] overflow-y-auto overscroll-contain space-y-5 shadow-2xl"
             >
               <div className="flex items-center justify-between pb-3 border-b border-neutral-200">
                 <div className="flex items-center gap-2">
