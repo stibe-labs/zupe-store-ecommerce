@@ -1002,6 +1002,36 @@ function OrderTrackingContent() {
                             ? "Assigned upon dispatch (e.g. Blue Dart / Delhivery)"
                             : "Express Air Logistics";
 
+                        const getOfficialCourierUrl = (courier: string, awb: string): string => {
+                          const c = (courier || "").toLowerCase();
+                          const clean = encodeURIComponent(awb.trim());
+                          if (c.includes("dtdc")) {
+                            return `https://trackcourier.io/track-dtdc-courier?tracking_number=${clean}`;
+                          }
+                          if (c.includes("blue") || c.includes("dart")) {
+                            return `https://trackcourier.io/track-blue-dart-courier?tracking_number=${clean}`;
+                          }
+                          if (c.includes("shadowfax")) {
+                            return `https://tracker.shadowfax.in/#/track?orderId=${clean}`;
+                          }
+                          if (c.includes("xpress") || c.includes("bees")) {
+                            return `https://www.xpressbees.com/track?isawb=Yes&trackid=${clean}`;
+                          }
+                          if (c.includes("post") || c.includes("speed")) {
+                            return `https://trackcourier.io/track-india-post-courier?tracking_number=${clean}`;
+                          }
+                          return `https://www.delhivery.com/track/package/${clean}`;
+                        };
+
+                        const isKnownCourier =
+                          courierName &&
+                          (courierName.toLowerCase().includes("dtdc") ||
+                            courierName.toLowerCase().includes("delhivery") ||
+                            courierName.toLowerCase().includes("blue") ||
+                            courierName.toLowerCase().includes("shadowfax") ||
+                            courierName.toLowerCase().includes("xpress") ||
+                            courierName.toLowerCase().includes("post"));
+
                         return (
                           <div className="mt-8 pt-6 border-t border-neutral-200/80 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mograph">
                             <div className="bg-[#F3FAF7] rounded-2xl p-4 border border-neutral-200/80">
@@ -1009,7 +1039,16 @@ function OrderTrackingContent() {
                                 Courier Partner
                               </span>
                               <div className="flex items-center gap-2">
-                                <Truck className="w-4 h-4 text-[#0B5D44]" />
+                                {isKnownCourier ? (
+                                  <span className="h-6 px-2 py-0.5 rounded-lg bg-white border border-neutral-200/80 flex items-center justify-center shadow-2xs">
+                                    <LogisticsLogo
+                                      name={courierName}
+                                      className="h-3.5 w-auto max-w-[80px] object-contain"
+                                    />
+                                  </span>
+                                ) : (
+                                  <Truck className="w-4 h-4 text-[#0B5D44]" />
+                                )}
                                 <span className="text-sm font-bold text-neutral-900">
                                   {courierName}
                                 </span>
@@ -1046,22 +1085,12 @@ function OrderTrackingContent() {
                               </span>
                               {hasRealAwb ? (
                                 <a
-                                  href={
-                                    courierName.toLowerCase().includes("dtdc")
-                                      ? `https://www.trackcourier.io/track-dtdc-courier?tracking_number=${rawAwb}`
-                                      : courierName.toLowerCase().includes("bluedart")
-                                      ? `https://www.bluedart.com/tracking`
-                                      : courierName.toLowerCase().includes("post")
-                                      ? `https://www.indiapost.gov.in/_layouts/15/dpt.cept.tracking/trackconsignment.aspx`
-                                      : courierName.toLowerCase().includes("xpressbees")
-                                      ? `https://www.xpressbees.com/track?isawb=Yes&trackid=${rawAwb}`
-                                      : `https://www.delhivery.com/track/package/${rawAwb}`
-                                  }
+                                  href={getOfficialCourierUrl(courierName, rawAwb)}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#074230] hover:text-[#0B5D44] hover:underline cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0B5D44] hover:bg-[#074230] text-white text-xs font-bold transition-colors shadow-2xs cursor-pointer mt-0.5"
                                 >
-                                  <span>Open {courierName} Portal</span>
+                                  <span>Track on {courierName}</span>
                                   <ExternalLink className="w-3.5 h-3.5" />
                                 </a>
                               ) : (
