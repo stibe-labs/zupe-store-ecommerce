@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/config/siteConfig";
 import { useSearchParams, useRouter } from "next/navigation";
+import { LogisticsLogo } from "@/components/LogisticsLogos";
 import {
   Search,
   Package,
@@ -1417,9 +1418,14 @@ function OrderTrackingContent() {
                     {["Delhivery Air", "Blue Dart Express", "DTDC Courier", "Shadowfax", "Xpressbees", "India Post Speed"].map((courier) => (
                       <span
                         key={courier}
-                        className="px-3 py-1.5 rounded-xl bg-[#F3FAF7] hover:bg-[#F3FAF7] text-neutral-700 font-bold text-xs border border-neutral-200/80 transition-colors"
+                        title={courier}
+                        aria-label={courier}
+                        className="h-9 sm:h-10 px-3 sm:px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#F3FAF7] border border-neutral-200/90 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:border-[#10B981]/50 hover:shadow-xs transition-all flex items-center justify-center group"
                       >
-                        {courier}
+                        <LogisticsLogo
+                          name={courier}
+                          className="h-4.5 sm:h-5 w-auto max-w-[95px] sm:max-w-[110px] object-contain transition-transform group-hover:scale-105 duration-200"
+                        />
                       </span>
                     ))}
                   </div>
